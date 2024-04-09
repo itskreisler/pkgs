@@ -2,9 +2,6 @@
   "name": "@kreisler/pkgs",
   "version": "1.0.0",
   "description": "workspaces for kreisler's packages",
-  "workspaces": [
-    "packages/*"
-  ],
   "funding": {
     "type": "buymeacoffee",
     "url": "https://www.buymeacoffee.com/kreisler"
@@ -37,7 +34,10 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@s-ui/mono": "^2.45.0"
+    "@s-ui/mono": "^2.45.0",
+    "tsup": "^8.0.2",
+    "typescript": "^5.4.4",
+    "nx": "18.2.3"
   },
   "eslintConfig": {}
 }
