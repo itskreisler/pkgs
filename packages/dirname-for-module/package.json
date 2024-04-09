@@ -1,16 +1,20 @@
 {
-  "name": "@kreisler/template",
-  "version": "1.0.0",
-  "description": "",
-  "main": "./dist/index.js",
+  "name": "@kreisler/dirname-for-module-ts",
+  "version": "2.0.0",
+  "description": "dirname for module (import/export)",
+  "main": "./dist/index.mjs",
   "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
+  "types": "./dist/index.d.mts",
   "sideEffects": false,
   "files": [
     "dist/**"
   ],
+  "funding": {
+    "type": "buymeacoffee",
+    "url": "https://www.buymeacoffee.com/kreisler"
+  },
   "scripts": {
-    "build": "tsup src/index.ts --format esm,cjs --dts",
+    "build": "tsup src/index.ts --format esm --dts",
     "watch": "tsup src/index.ts --watch --ignore-watch ignore-this-folder-too",
     "test": "echo \"Testing ui package\"",
     "test:cjs": "cross-env NODE_ENV=test node --test test/test.spec.cjs",
@@ -22,11 +26,11 @@
   "keywords": [],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/itskreisler/template.git"
+    "url": "git+https://github.com/itskreisler/dirname-for-module-ts.git"
   },
-  "homepage": "https://github.com/itskreisler/template#readme",
+  "homepage": "https://github.com/itskreisler/dirname-for-module-ts#readme",
   "bugs": {
-    "url": "https://github.com/itskreisler/template/issues"
+    "url": "https://github.com/itskreisler/dirname-for-module-ts/issues"
   },
   "author": {
     "email": "tempkreisler@outlook.com",
@@ -44,5 +48,9 @@
   "devDependencies": {
     "typedoc": "^0.25.11"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@types/node": "^20.11.25",
+    "path": "^0.12.7",
+    "url": "^0.11.3"
+  }
 }
