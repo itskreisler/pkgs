@@ -1,5 +1,5 @@
 {
-  "name": "@kreisler/dirname-for-module-ts",
+  "name": "@kreisler/dirname-for-module",
   "version": "2.0.0",
   "description": "dirname for module (import/export)",
   "main": "./dist/index.mjs",
@@ -21,9 +21,16 @@
     "test:mjs": "cross-env NODE_ENV=test node --test test/test.spec.mjs",
     "docs": "typedoc --out docs src/index.ts",
     "serve": "pnpx serve -p 1234 ./docs",
-    "publish:public": "npm publish --access public"
+    "publish:public": "npm publish --access public",
+    "pp": "npm publish --access public"
   },
-  "keywords": [],
+  "keywords": [
+    "dirname",
+    "module",
+    "import",
+    "export",
+    "esm"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/itskreisler/dirname-for-module-ts.git"
