@@ -11,16 +11,39 @@
   ],
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts",
-    "test": "echo \"Testing ui package\""
+    "watch": "tsup src/index.ts --watch --ignore-watch ignore-this-folder-too",
+    "test": "echo \"Testing ui package\"",
+    "test:cjs": "cross-env NODE_ENV=test node --test test/test.spec.cjs",
+    "test:mjs": "cross-env NODE_ENV=test node --test test/test.spec.mjs",
+    "prepare": "npm run build",
+    "docs": "typedoc --out docs src/index.ts",
+    "serve": "pnpx serve -p 1234 ./docs",
+    "publish:public": "npm publish --access public"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.0"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/itskreisler/template.git"
   },
-  "dependencies": {
-    "react": "^18.2.0"
-  }
+  "homepage": "https://github.com/itskreisler/template#readme",
+  "bugs": {
+    "url": "https://github.com/itskreisler/template/issues"
+  },
+  "author": {
+    "email": "tempkreisler@outlook.com",
+    "name": "Kreisler",
+    "url": "https://linktr.ee/itskreisler"
+  },
+  "contributors": [
+    {
+      "name": "Kreisler Ramirez Sierra",
+      "email": "tempkreisler@outlook.com",
+      "url": "https://linktr.ee/itskreisler"
+    }
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "typedoc": "^0.25.11"
+  },
+  "dependencies": {}
 }
