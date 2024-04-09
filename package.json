@@ -1,0 +1,43 @@
+{
+  "name": "@kreisler/pkgs",
+  "version": "1.0.0",
+  "description": "workspaces for kreisler's packages",
+  "workspaces": [
+    "packages/*"
+  ],
+  "funding": {
+    "type": "buymeacoffee",
+    "url": "https://www.buymeacoffee.com/kreisler"
+  },
+  "scripts": {
+    "co": "sui-mono commit",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/itskreisler/pkgs.git"
+  },
+  "homepage": "https://github.com/itskreisler/pkgs#readme",
+  "bugs": {
+    "url": "https://github.com/itskreisler/pkgs/issues"
+  },
+  "keywords": [
+    "kreisler",
+    "packages",
+    "workspaces",
+    "monorepo"
+  ],
+  "author": "kreisler <tempkreisler@outlook.com> (https://linktr.ee/itskreisler)",
+  "contributors": [
+    {
+      "name": "Kreisler Ramirez Sierra",
+      "email": "tempkreisler@outlook.com",
+      "url": "https://linktr.ee/itskreisler"
+    }
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@s-ui/mono": "^2.45.0"
+  },
+  "eslintConfig": {}
+}
