@@ -1,43 +1,44 @@
 {
   "name": "@kreisler/createapi",
   "version": "1.0.0",
-  "description": "function to create a any api",
-  "main": "dist/index.cjs.js",
-  "module": "dist/index.esm.js",
-  "types": "dist/index.d.ts",
-  "jsdelivr": "dist/index.iife.js",
-  "unpkg": "dist/index.iife.js",
+  "description": "Un forma sensilla de hacer peticiones a una API",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "sideEffects": false,
   "files": [
-    "dist/**/*"
+    "dist/**"
   ],
-  "funding": {
-    "type": "buymeacoffee",
-    "url": "https://www.buymeacoffee.com/kreisler"
-  },
   "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts",
+    "watch": "tsup src/index.ts --watch --ignore-watch ignore-this-folder-too",
+    "test": "echo \"Testing ui package\"",
     "test:cjs": "cross-env NODE_ENV=test node --test test/test.spec.cjs",
     "test:mjs": "cross-env NODE_ENV=test node --test test/test.spec.mjs",
-    "build": "rogo",
-    "watch": "rogo -w",
     "docs": "typedoc --out docs src/index.ts",
     "serve": "pnpx serve -p 1234 ./docs",
-    "publish:public": "npm publish --access public"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/itskreisler/createapi.git"
-  },
-  "homepage": "https://github.com/itskreisler/createapi#readme",
-  "bugs": {
-    "url": "https://github.com/itskreisler/createapi/issues"
+    "pp": "pnpm run build && pnpm run docs && npm publish --access public"
   },
   "keywords": [
     "fetch",
     "api",
     "request",
-    "response"
+    "http",
+    "https"
   ],
-  "author": "kreisler <tempkreisler@outlook.com> (https://linktr.ee/itskreisler)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/itskreisler/pkgs.git"
+  },
+  "homepage": "https://github.com/itskreisler/pkgs/tree/master/packages/createapi#readme",
+  "bugs": {
+    "url": "https://github.com/itskreisler/pkgs/issues"
+  },
+  "author": {
+    "email": "tempkreisler@outlook.com",
+    "name": "Kreisler",
+    "url": "https://linktr.ee/itskreisler"
+  },
   "contributors": [
     {
       "name": "Kreisler Ramirez Sierra",
@@ -47,22 +48,7 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^20.11.25",
-    "@typescript-eslint/eslint-plugin": "^5.50.0",
-    "cross-env": "^7.0.3",
-    "eslint": "^8.0.1",
-    "eslint-config-standard-with-typescript": "^36.0.0",
-    "eslint-plugin-import": "^2.25.2",
-    "eslint-plugin-n": "^15.0.0",
-    "eslint-plugin-promise": "^6.0.0",
-    "rogo": "^3.1.5",
-    "ts-node": "^10.9.2",
-    "typedoc": "^0.25.11",
-    "typescript": "^5.4.2"
+    "typedoc": "^0.25.11"
   },
-  "dependencies": {
-    "axios": "1.6.7",
-    "@babel/runtime": "^7.24.0"
-  },
-  "eslintConfig": {}
+  "dependencies": {}
 }

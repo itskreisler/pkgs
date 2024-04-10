@@ -1,6 +1,6 @@
 {
   "name": "@kreisler/dirname-for-module",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "dirname for module (import/export)",
   "main": "./dist/index.mjs",
   "module": "./dist/index.mjs",
@@ -33,11 +33,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/itskreisler/dirname-for-module-ts.git"
+    "url": "git+https://github.com/itskreisler/dirname-for-module.git"
   },
-  "homepage": "https://github.com/itskreisler/dirname-for-module-ts#readme",
+  "homepage": "https://github.com/itskreisler/dirname-for-module#readme",
   "bugs": {
-    "url": "https://github.com/itskreisler/dirname-for-module-ts/issues"
+    "url": "https://github.com/itskreisler/dirname-for-module/issues"
   },
   "author": {
     "email": "tempkreisler@outlook.com",
