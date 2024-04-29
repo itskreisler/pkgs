@@ -1,6 +1,6 @@
-# Try Catch - A simple try-catch wrapper for async functions
+# Try Catch
 
-A simple try-catch wrapper for async functions.
+A simple try-catch wrapper for functions and async functions.
 
 ## Usage
 
@@ -50,6 +50,6 @@ if (!error){
 if (error.code !== 'EISDIR'){
   return error;
 }
-return await readdir(path);
+return await readdir('path');
 })();
 ```

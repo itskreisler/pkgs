@@ -22,7 +22,12 @@
   "keywords": [
     "try",
     "catch",
-    "try-catch"
+    "function",
+    "promise",
+    "async",
+    "await",
+    "try-catch",
+    "then"
   ],
   "funding": {
     "type": "buymeacoffee",
@@ -30,11 +35,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/itskreisler/template.git"
+    "url": "git+https://github.com/itskreisler/pkgs.git"
   },
-  "homepage": "https://github.com/itskreisler/template#readme",
+  "homepage": "https://github.com/itskreisler/pkgs/tree/master/packages/try-catch#readme",
   "bugs": {
-    "url": "https://github.com/itskreisler/template/issues"
+    "url": "https://github.com/itskreisler/pkgs/issues"
   },
   "author": {
     "email": "tempkreisler@outlook.com",
@@ -50,7 +55,7 @@
   ],
   "license": "MIT",
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "typedoc": "^0.25.11"
-  },
-  "dependencies": {}
+  }
 }

@@ -5,7 +5,7 @@ export default defineConfig({
     '.': 'src/index.ts',
   },
   banner: {
-    js: `// First line`,
+    js: `// @buymeacoffee https://www.buymeacoffee.com/kreisler`,
   },
   format: ['cjs', 'esm'],
   //external: ['react'],
