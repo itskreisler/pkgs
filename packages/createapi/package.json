@@ -26,6 +26,10 @@
     "http",
     "https"
   ],
+  "funding": {
+    "type": "buymeacoffee",
+    "url": "https://www.buymeacoffee.com/kreisler"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/itskreisler/pkgs.git"
