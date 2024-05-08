@@ -3,6 +3,7 @@ import { type ExecException } from 'child_process'
 /**
  * @example
  * const { stdout, stderr } = await execPromise('echo %PATH%')
+ * console.log({stdout, stderr})
  *
  * @param {String} comando
  * @returns {Promise<{stdout: String, stderr: String}|ExecException>}
