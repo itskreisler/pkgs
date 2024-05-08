@@ -1,5 +1,5 @@
 {
-  "name": "@kreisler/pkgs",
+  "name": "@kreisler/template",
   "version": "1.0.0",
   "description": "",
   "main": "./dist/index.js",
@@ -22,11 +22,11 @@
   "keywords": [],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/itskreisler/pkgs.git"
+    "url": "git+https://github.com/itskreisler/template.git"
   },
-  "homepage": "https://github.com/itskreisler/pkgs/tree/master/packages/repo#readme",
+  "homepage": "https://github.com/itskreisler/template#readme",
   "bugs": {
-    "url": "https://github.com/itskreisler/pkgs/issues"
+    "url": "https://github.com/itskreisler/template/issues"
   },
   "author": {
     "email": "tempkreisler@outlook.com",

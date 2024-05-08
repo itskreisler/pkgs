@@ -1,0 +1,1 @@
+export const clg = (msg: string) => console.log(msg);
