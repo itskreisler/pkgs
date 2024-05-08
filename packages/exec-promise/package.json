@@ -1,7 +1,8 @@
 {
-  "name": "@kreisler/template",
+  "name": "@kreisler/exec-promise",
   "version": "1.0.0",
-  "description": "",
+  "description": "Wrapper for child_process.exec that returns a promise",
+  "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -22,11 +23,11 @@
   "keywords": [],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/itskreisler/template.git"
+    "url": "git+https://github.com/itskreisler/pkgs.git"
   },
-  "homepage": "https://github.com/itskreisler/template#readme",
+  "homepage": "https://github.com/itskreisler/pkgs/tree/master/packages/exec-promise#readme",
   "bugs": {
-    "url": "https://github.com/itskreisler/template/issues"
+    "url": "https://github.com/itskreisler/pkgs/issues"
   },
   "author": {
     "email": "tempkreisler@outlook.com",

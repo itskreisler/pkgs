@@ -8,7 +8,8 @@
   },
   "scripts": {
     "co": "sui-mono commit",
-    "test": "pnpm --filter './packages/try-catch' run test:mjs"
+    "test": "pnpm --filter './packages/repo' run test:mjs",
+    "test2": "pnpm install pkg -D -w"
   },
   "repository": {
     "type": "git",
