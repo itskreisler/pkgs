@@ -6,7 +6,7 @@
       "ES2015"
     ],
     "module": "ESNext",
-    "target": "es6",
+    "target": "ESNext",
     "allowJs": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true

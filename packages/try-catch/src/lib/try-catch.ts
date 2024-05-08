@@ -1,9 +1,13 @@
+import { type T, type Tfn, type TtryCatch, type TtryCatchPromise } from './types';
 function check(fn: Tfn) {
   if (typeof fn !== 'function')
     throw Error('fn should be a function!');
 }
 /**
- * 
+ * @example
+ * const [error, result] = await tryCatchPromise(globalThis.fetch, 'https://jsonplaceholder.typicode.com/todos/1');
+ * if (error) console.error(error.message);
+ * else console.log(result.json());
  * @param {Function} fn function to be executed
  * @param {...any} args arguments to be passed to the function
  * @returns {Promise<[Error | null, any]>} [error: Error, result?: any]
@@ -18,11 +22,6 @@ export const tryCatchPromise = async (fn: Tfn, ...args: T[]): TtryCatchPromise =
   }
 }
 /**
- * 
- * @param {Function} fn function to be executed
- * @param {...any} args arguments to be passed to the function
- * @returns {[Error | null, any]} [error: Error, result?: any]
- * @throws {Error} if fn is not a function
  * @example
  * const [error, result] = tryCatch(() => { throw Error('error') });
  * if (error) console.error(error.message);
@@ -31,6 +30,10 @@ export const tryCatchPromise = async (fn: Tfn, ...args: T[]): TtryCatchPromise =
  * const [error, result] = tryCatch(() => { return 'result' });
  * if (error) console.error(error.message);
  * else console.log(result);
+ * @param {Function} fn function to be executed
+ * @param {...any} args arguments to be passed to the function
+ * @returns {[Error | null, any]} [error: Error, result?: any]
+ * @throws {Error} if fn is not a function
  */
 export const tryCatch = (fn: Tfn, ...args: T[]): TtryCatch => {
   check(fn);
@@ -41,9 +44,3 @@ export const tryCatch = (fn: Tfn, ...args: T[]): TtryCatch => {
     return [e];
   }
 }
-//declare function tryCatch(fn: Tfn, ...args: T[]): [error: Error, result?: any];
-//declare function tryCatchPromise(fn: Tfn, ...args: T[]): Promise<[error: Error, result?: any]>;
-type TtryCatchPromise = Promise<TtryCatch>;
-type TtryCatch = [error: Error | null | unknown, result?: T];
-type Tfn = (...args: any[]) => any;
-type T = any;

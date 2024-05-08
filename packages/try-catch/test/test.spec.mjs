@@ -11,6 +11,22 @@ import assert from 'node:assert'
 // » IMPORT MODULES
 import { tryCatch, tryCatchPromise } from '../dist/index.mjs'
 
+function req() {
+  return {
+
+  }
+}
+req.uest = async function (url) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      if (url === 'https://jsonplaceholder.typicode.com/todos/1') {
+        resolve({ userId: 1, id: 1, title: 'delectus aut autem', completed: false })
+      } else {
+        reject(new Error('URL not found'))
+      }
+    }, 2000)
+  })
+}
 // ━━ TEST ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 describe('TESTING', async () => {
   it('should return a Error', async () => {
@@ -37,5 +53,9 @@ describe('TESTING', async () => {
     assert.strictEqual(data.id, 1)
     assert.strictEqual(data.title, 'delectus aut autem')
     assert.strictEqual(data.completed, false)
+  })
+  it('should return a Error 2', async () => {
+    const [error, result] = await tryCatchPromise(req.uest, 'https://jsonplaceholder.typicode.com/todos/1')
+    assert.strictEqual(result.id, 1)
   })
 })
