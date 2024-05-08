@@ -9,12 +9,12 @@ const { describe, it } = require('node:test')
 const assert = require('node:assert')
 
 // » IMPORT MODULES
-const main = require('../dist/index.js')
+const { execPromise } = require('../dist/index.cjs')
 
 // ━━ TEST ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 describe('TESTING', async () => {
   it('Hello World', async () => {
-    const result = main()
-    assert.strictEqual(result, 'Hello World!')
+    const { stderr, stdout: result } = await execPromise('echo "Hello World!"')
+    assert.strictEqual(result.trim(), '"Hello World!"')
   })
 })
