@@ -1,6 +1,5 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
-  "extends": "D:\\xampp\\htdocs\\@kreisler\\node_modules\\.pnpm\\ts-node@10.9.2_@types+node@20.11.25_typescript@5.4.4\\node_modules\\@tsconfig\\node16\\tsconfig.json",
   "display": "Default",
   "compilerOptions": {
     "composite": false,

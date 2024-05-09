@@ -1,6 +1,6 @@
 {
   "name": "@kreisler/debounce",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Debounce function for javascript",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -19,7 +19,12 @@
     "serve": "pnpx serve -p 1234 ./docs",
     "publish:public": "npm publish --access public"
   },
-  "keywords": [],
+  "keywords": [
+    "debounce",
+    "function",
+    "javascript",
+    "typescript"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/itskreisler/pkgs.git"
