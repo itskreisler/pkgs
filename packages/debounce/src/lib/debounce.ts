@@ -17,7 +17,15 @@ export type TFns = {
  */
 
 /**
- * Function to create a debounce function
+ * @description Function to create a debounce function
+ * @example
+ * const consoleLogDebounced = debounce(console.log, 1000, {
+ *  immediate: true,
+ *  onCall: () => console.log('Calling debounce function'),
+ *  onComplete: () => console.log('Debounce function completed'),
+ *  flood: 7,
+ *  onFlood: () => console.log('Flood limit reached')
+ * })
  * @param {Function} func Function to debounce
  * @param {number} msWait Number of milliseconds to wait before calling function
  * @param {Fns} fns Object with functions to call
