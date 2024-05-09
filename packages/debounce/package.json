@@ -1,0 +1,48 @@
+{
+  "name": "@kreisler/debounce",
+  "version": "1.0.0",
+  "description": "Debounce function for javascript",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "sideEffects": false,
+  "files": [
+    "dist/**"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts",
+    "watch": "tsup src/index.ts --watch --ignore-watch ignore-this-folder-too",
+    "test": "echo \"Testing ui package\"",
+    "test:cjs": "cross-env NODE_ENV=test node --test test/test.spec.cjs",
+    "test:mjs": "cross-env NODE_ENV=test node --test test/test.spec.mjs",
+    "docs": "typedoc --out docs src/index.ts",
+    "serve": "pnpx serve -p 1234 ./docs",
+    "publish:public": "npm publish --access public"
+  },
+  "keywords": [],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/itskreisler/pkgs.git"
+  },
+  "homepage": "https://github.com/itskreisler/pkgs/tree/master/packages/debounce#readme",
+  "bugs": {
+    "url": "https://github.com/itskreisler/pkgs/issues"
+  },
+  "author": {
+    "email": "tempkreisler@outlook.com",
+    "name": "Kreisler",
+    "url": "https://linktr.ee/itskreisler"
+  },
+  "contributors": [
+    {
+      "name": "Kreisler Ramirez Sierra",
+      "email": "tempkreisler@outlook.com",
+      "url": "https://linktr.ee/itskreisler"
+    }
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "typedoc": "^0.25.11"
+  },
+  "dependencies": {}
+}
