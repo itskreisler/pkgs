@@ -12,7 +12,7 @@
   ],
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts",
-    "watch": "tsup src/index.ts --watch --ignore-watch ignore-this-folder-too",
+    "watch": "tsup src/index.ts --watch --onSuccess \"node dist/index.js\"",
     "test": "echo \"Testing ui package\"",
     "test:cjs": "cross-env NODE_ENV=test node --test test/test.spec.cjs",
     "test:mjs": "cross-env NODE_ENV=test node --test test/test.spec.mjs",

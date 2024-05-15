@@ -1,1 +1,5 @@
 export * from './lib/normalize'
+export * from './lib/stripHtmlTags'
+export * from './lib/b64'
+export * from './lib/abbreviateNumber'
+export * from './lib/converter'
