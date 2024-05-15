@@ -9,7 +9,8 @@
   "scripts": {
     "co": "sui-mono commit",
     "test": "pnpm --filter './packages/debounce' run test:mjs",
-    "test2": "pnpm install pkg -D -w"
+    "test2": "pnpm install pkg -D -w",
+    "lint": "next lint"
   },
   "repository": {
     "type": "git",
@@ -37,14 +38,29 @@
   "dependencies": {
     "@s-ui/mono": "^2.45.0",
     "nx": "18.2.3",
-    "tsup": "^8.0.2",
-    "typescript": "^5.4.4"
+    "tsup": "^8.0.2"
   },
-  "eslintConfig": {},
+  "eslintConfig": {
+    "extends": [
+      "./node_modules/ts-standard/eslintrc.json"
+    ],
+    "parserOptions": {
+      "project": "./tsconfig.base.json"
+    },
+    "rules": {
+      "@typescript-eslint/no-this-alias": "off",
+      "@typescript-eslint/space-before-function-paren": "off",
+      "@typescript-eslint/explicit-function-return-type": "off",
+      "@typescript-eslint/no-floating-promises": "off",
+      "@typescript-eslint/no-misused-promises": "off"
+    }
+  },
   "devDependencies": {
     "@types/node": "^20.11.25",
     "cross-env": "^7.0.3",
     "nodemon": "^3.1.0",
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.4",
+    "ts-standard": "^12.0.2"
   }
 }

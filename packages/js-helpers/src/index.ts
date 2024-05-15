@@ -1,1 +1,1 @@
-export * from './lib/normalize';
+export * from './lib/normalize'

@@ -9,10 +9,15 @@ const { describe, it } = require('node:test')
 const assert = require('node:assert')
 
 // » IMPORT MODULES
-const { } = require('../dist/index.js')
+const { normalize } = require('../dist/index.js')
 
 // ━━ TEST ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 describe('TESTING', async () => {
-
+  it('normalize', async () => {
+    assert.strictEqual(normalize('  Hello   World  '), 'Hello World')
+    assert.strictEqual(normalize('  Hello   World  ', true), 'Hello World')
+    assert.strictEqual(normalize('  Hello   World  ', false), '  Hello   World  ')
+    assert.strictEqual(normalize('  Hello   World  ', true, true), 'Hello World')
+    assert.strictEqual(normalize('  Hello   World  ', false, true), '  Hello   World  ')
+  })
 })
-

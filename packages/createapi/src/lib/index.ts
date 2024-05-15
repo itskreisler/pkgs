@@ -58,4 +58,3 @@ export const createApi = (url: 'https://nekobot.xyz/api' | 'https://www3.animefl
   })
 }
 export default createApi
-

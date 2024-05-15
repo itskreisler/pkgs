@@ -1,6 +1,6 @@
 export type T = any
-export type TArrowFunction = (...args: T[]) => T;
-export type TFns = {
+export type TArrowFunction = (...args: T[]) => T
+export interface TFns {
   immediate: boolean
   onCall: Function
   onComplete: Function
@@ -47,26 +47,26 @@ export function debounce(
   const { onCall, onComplete, flood, onFlood, immediate } = fns
   //
   const isFunction = (fn: T): boolean => typeof fn === 'function'
-  const isNotUndefined = (val: T): boolean => typeof val !== "undefined"
+  // const isNotUndefined = (val: T): boolean => typeof val !== 'undefined'
   //
   return function (...args: T) {
     const context = this // as unknown as ThisParameterType<typeof _>
     clearTimeout(timeout)
 
-    if (immediate && callCount === 0) {
+    if (Boolean(immediate) && callCount === 0) {
       func.apply(context, args)
       callCount++
     } else {
-      if (onCall && isFunction(onCall)) {
+      if ((onCall != null) && isFunction(onCall)) {
         onCall.apply(context, args)
       }
 
       callCount++
 
-      if (flood &&
-        isNotUndefined(flood) &&
+      if (Boolean(flood) &&
+        typeof flood !== 'undefined' &&
         callCount % flood === 0 &&
-        onFlood &&
+        (onFlood != null) &&
         isFunction(onFlood)) {
         onFlood.apply(context, args)
       }
@@ -75,7 +75,7 @@ export function debounce(
         func.apply(context, args)
         callCount = 0 // callCount % flood
 
-        if (onComplete && isFunction(onComplete)) {
+        if ((onComplete != null) && isFunction(onComplete)) {
           onComplete.apply(context, args)
         }
       }, msWait)
