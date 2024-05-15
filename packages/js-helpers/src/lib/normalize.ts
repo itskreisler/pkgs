@@ -27,3 +27,12 @@ export const normalize = (function () {
     return (urls) ? ret.join('') : ret.join('').replace(/[^-A-Za-z0-9]+/g, '-').toLowerCase()
   }
 })()
+
+/**
+ * @param {string} str
+ * @returns {string}
+ * @example
+ * const str = '       Hello World!        \n\n\n   Welcome to the world of programming.   '
+ * trimText(str) // 'Hello World! Welcome to the world of programming.'
+ */
+export const trimText = (str: string): string => str.replace(/^\s*\n/gm, '').replace(/^\s*|\s*$|\s+(?=\s)/gm, '')
