@@ -1,4 +1,5 @@
 type TBulletPoint = '-' | '*'
+const initialValue = 1
 /**
  * https://faq.whatsapp.com/539178204879377
  * @description
@@ -74,7 +75,7 @@ export const MarkdownWsp = {
    * NumberedLists(['Hola', 'Mundo']) // 1. Hola\n2. Mundo
    * NumberedLists('Hola') // 1. Hola
    */
-  NumberedLists: (text: Required<string[] | string>): string => Array.isArray(text) ? text.map((t, i) => `${i + 1}. ${t}`).join('\n') : `${text}`,
+  NumberedLists: (text: Required<string[] | string>): string => Array.isArray(text) ? text.map((t, i) => `${i + initialValue}. ${t}`).join('\n') : `${initialValue} ${text}`,
   /**
    *
    * @param {String} text
