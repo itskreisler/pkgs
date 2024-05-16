@@ -1,4 +1,4 @@
-export type T = any
+type T = any
 export type TArrowFunction = (...args: T[]) => T
 export interface TFns {
   immediate: boolean

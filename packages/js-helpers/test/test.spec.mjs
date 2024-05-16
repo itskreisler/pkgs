@@ -9,8 +9,7 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert'
 
 // » IMPORT MODULES
-import { } from '../dist/index.mjs'
-
+import { createApi } from '../dist/index.mjs'
 
 // ━━ TEST ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 describe('TESTING', async () => {

@@ -9,7 +9,7 @@ const { describe, it } = require('node:test')
 const assert = require('node:assert')
 
 // » IMPORT MODULES
-const { trimText, normalize, MarkdownWsp } = require('../dist/index.js')
+const { trimText, normalize, MarkdownWsp, debounce } = require('../dist/index.js')
 
 // ━━ TEST ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 describe('TESTING', async () => {
