@@ -1,6 +1,7 @@
 # Create API
 
 Create API is a simple package to create API requests with ease.
+[@kreisler/createapi](https://www.npmjs.com/package/@kreisler/createapi)
 
 ## Usage
 
