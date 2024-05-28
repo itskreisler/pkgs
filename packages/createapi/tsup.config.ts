@@ -1,13 +1,14 @@
-import { defineConfig } from 'tsup';
+import { defineConfig } from 'tsup'
 
 export default defineConfig({
   entry: {
-    '.': 'src/index.ts',
+    index: 'src/index.ts',
+    createapi: 'src/lib/index.ts'
   },
   banner: {
-    js: `// @ts-check`,
+    js: '// @ts-check'
   },
   format: ['cjs', 'esm'],
-  //external: ['react'],
-  dts: true,
-});
+  // external: ['react'],
+  dts: true
+})

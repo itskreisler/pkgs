@@ -1,14 +1,13 @@
 /**
  * @author Kreisler Ramirez Sierra
- * @file 
+ * @file
  */
 
 // ━━ IMPORT MODULES ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // » IMPORT NATIVE NODE MODULES
 
-
 // » IMPORT MODULES
-import { createApi } from '../dist/index.mjs'
+import { createApi } from '../dist/index.js'
 
 // ━━ TEST ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 (async () => {
@@ -16,4 +15,4 @@ import { createApi } from '../dist/index.mjs'
   const output = await api.advice()
   // final url: https://api.adviceslip.com/advice
   console.log({ output })
-})();
+})()

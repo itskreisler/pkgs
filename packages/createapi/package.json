@@ -1,16 +1,19 @@
 {
   "name": "@kreisler/createapi",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Un forma sensilla de hacer peticiones a una API",
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "sideEffects": false,
   "files": [
     "dist/**"
   ],
   "scripts": {
-    "build": "tsup src/index.ts --format esm,cjs --dts",
+    "build": "tsup",
+    "build:all": "tsup src/index.ts --format esm,cjs --dts",
+    "build:entry": "tsup --entry.index src/index.ts --entry.MarkdownWsp src/lib/MarkdownWsp.ts --format esm,cjs --dts",
     "watch": "tsup src/index.ts --watch --onSuccess \"node dist/index.js\"",
     "test": "echo \"Testing ui package\"",
     "test:cjs": "cross-env NODE_ENV=test node --test test/test.spec.cjs",

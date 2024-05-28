@@ -1,13 +1,23 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "lib": ["dom", "ES2015"],
+    "lib": [
+      "dom",
+      "ES2015"
+    ],
     "module": "ESNext",
-    "target": "es6",
+    "target": "ESNext",
     "allowJs": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true
   },
-  "include": ["."],
-  "exclude": ["dist", "build", "node_modules"]
+  "include": [
+    "."
+  ],
+  "exclude": [
+    "dist",
+    "build",
+    "node_modules",
+    "test"
+  ]
 }
