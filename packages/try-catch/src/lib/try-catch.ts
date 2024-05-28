@@ -1,7 +1,6 @@
-import { type T, type Tfn, type TtryCatch, type TtryCatchPromise } from './types';
+import { type T, type Tfn, type TtryCatch, type TtryCatchPromise } from './types'
 function check(fn: Tfn) {
-  if (typeof fn !== 'function')
-    throw Error('fn should be a function!');
+  if (typeof fn !== 'function') { throw Error('fn should be a function!') }
 }
 /**
  * @example
@@ -13,12 +12,12 @@ function check(fn: Tfn) {
  * @returns {Promise<[Error | null, any]>} [error: Error, result?: any]
  */
 export const tryCatchPromise = async (fn: Tfn, ...args: T[]): TtryCatchPromise => {
-  check(fn);
+  check(fn)
 
   try {
-    return [null, await fn(...args)];
+    return [null, await fn(...args)]
   } catch (e) {
-    return [e as Error];
+    return [e as Error]
   }
 }
 /**
@@ -36,11 +35,11 @@ export const tryCatchPromise = async (fn: Tfn, ...args: T[]): TtryCatchPromise =
  * @throws {Error} if fn is not a function
  */
 export const tryCatch = (fn: Tfn, ...args: T[]): TtryCatch => {
-  check(fn);
+  check(fn)
 
   try {
-    return [null, fn(...args)];
+    return [null, fn(...args)]
   } catch (e) {
-    return [e];
+    return [e]
   }
 }
