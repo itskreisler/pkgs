@@ -1,7 +1,7 @@
 {
   "name": "@kreisler/createapi",
   "version": "2.0.0",
-  "description": "Un forma sensilla de hacer peticiones a una API",
+  "description": "Un forma diferente de hacer peticiones a una API",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -20,7 +20,7 @@
     "test:mjs": "cross-env NODE_ENV=test node --test test/test.spec.mjs",
     "docs": "typedoc --out docs src/index.ts",
     "serve": "pnpx serve -p 1234 ./docs",
-    "pp": "pnpm run build && pnpm run docs && npm publish --access public"
+    "pp": "pnpm run build:all && pnpm run test:mjs && pnpm run test:cjs && pnpm run docs && npm publish --access public"
   },
   "keywords": [
     "fetch",

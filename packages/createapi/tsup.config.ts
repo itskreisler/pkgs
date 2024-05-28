@@ -6,7 +6,7 @@ export default defineConfig({
     createapi: 'src/lib/index.ts'
   },
   banner: {
-    js: '// @ts-check'
+    js: '// @buymeacoffee https://www.buymeacoffee.com/kreisler'
   },
   format: ['cjs', 'esm'],
   // external: ['react'],

@@ -18,13 +18,26 @@ const FALSE: boolean = false as const
  * @param {ExampleUrl | URL | String} url - API URL
  * @param {TypesArgs | RequestInit} args - RequestInit
  * @returns {Object} API response
- * @example
+ * @example // Example usage of createApi
  * const api = createApi('https://nekobot.xyz/api')
  * const res = await api.image({ type: 'neko' })
- * const res2 = await api['kudasai.php']() # alternative
- * console.log({ res, res2})
+ * console.log({ res})
  *
- *
+ * @example
+ * interface YameteResponse {
+ * 'kudasai.php': () => Promise<Array<{
+ *  title: string
+ *  image: string
+ *  slug: string
+ *  date: string
+ *  category: {
+ *    name: string
+ *    slug: string
+ *  }
+ * }>>
+ * }
+ * const yamete = createApi('https://www3.animeflv.net') as YameteResponse
+ * yamete['kudasai.php']().then(data => console.log(data.map(x => x.title)))
  */
 export const createApi = (url: Required<ExampleUrl | URL | String>, args?: TypesArgs): { [key: string]: any } => {
   return new Proxy({}, {
@@ -38,7 +51,8 @@ export const createApi = (url: Required<ExampleUrl | URL | String>, args?: Types
           query = typeof typeOfId !== 'undefined' ? ['?', new URLSearchParams(id as URLSearchParams).toString()] : []
           path = path.concat(...query)
         }
-        if (['string', 'number'].some(tof => typeOfId === tof) || (typeof params !== 'undefined' && params !== null)) {
+        const hasParams = typeof params !== 'undefined' && params !== null
+        if (['string', 'number'].some(tof => typeOfId === tof) || hasParams) {
           query = typeof params !== 'undefined' ? ['?', new URLSearchParams(params).toString()] : []
           path = [path, id].join('/').concat(...query)
         }
@@ -60,5 +74,3 @@ export const createApi = (url: Required<ExampleUrl | URL | String>, args?: Types
     }
   })
 }
-
-export default createApi
