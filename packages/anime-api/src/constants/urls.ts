@@ -1,5 +1,7 @@
+import { Iurls } from '@/interfaces/interfaces'
+
 const BASE_JIKA_API = 'https://api.jikan.moe/v4/'
-module.exports = {
+export const URLS: Iurls = {
   BASE_URL: 'https://animeflv.net',
   BROWSE_URL: 'https://animeflv.net/browse?',
   SEARCH_URL: 'https://animeflv.net/browse?q=',

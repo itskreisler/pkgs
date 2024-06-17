@@ -1,4 +1,4 @@
-export interface ProcessEnv {
+export interface TprocessEnv extends NodeJS.ProcessEnv {
   /** PORT */
-  readonly PORT?: number | string
+  readonly PORT?: string
 }

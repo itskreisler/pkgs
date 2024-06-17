@@ -1,13 +1,13 @@
-import express from 'express'
+import express, { type Application } from 'express'
 import morgan from 'morgan'
 import helmet from 'helmet'
 import cors from 'cors'
 import bodyParser from 'body-parser'
-import api from './api'
+import api from '@/api/animeflv/index'
 
-import { middleware } from './middlewares/index'
+import { middleware } from '@/api/middlewares/index'
 
-const app = express()
+const app: Application = express()
 
 app.use(morgan('dev'))
 app.use(helmet())

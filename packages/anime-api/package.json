@@ -55,7 +55,24 @@
   ],
   "license": "MIT",
   "devDependencies": {
+    "@types/body-parser": "^1.19.5",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/image-to-base64": "^2.1.2",
+    "@types/morgan": "^1.9.9",
     "typedoc": "^0.25.11"
   },
-  "dependencies": {}
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "cheerio": "1.0.0-rc.12",
+    "cheerio-tableparser": "^1.0.1",
+    "cloudscraper": "^4.6.0",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "helmet": "^7.1.0",
+    "image-to-base64": "^2.2.0",
+    "morgan": "^1.10.0",
+    "tsup": "^8.1.0",
+    "zs-extract": "^1.4.2"
+  }
 }

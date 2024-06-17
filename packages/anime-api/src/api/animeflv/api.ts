@@ -1,14 +1,14 @@
-import cheerio from 'cheerio'
+import { load } from 'cheerio'
 import cheerioTableparser from 'cheerio-tableparser'
 import cloudscraper from 'cloudscraper'
 import decodeURL from 'urldecode'
 import { MergeRecursive, urlify, decodeZippyURL, imageUrlToBase64 } from './utils/index'
+import { URLS } from '@/constants/urls'
 const {
   BASE_URL, SEARCH_URL, BROWSE_URL,
   ANIME_VIDEO_URL, BASE_EPISODE_IMG_URL,
   BASE_JIKA_URL, BASE_MYANIME_LIST_URL, BASE_JIKA_API
-} = require('../../constants/urls')
-
+} = URLS
 const animeExtraInfo = async (title) => {
   const res = await cloudscraper(`${BASE_JIKA_URL}${title}`, { method: 'GET' })
   const matchAnime = JSON.parse(res).results.filter(x => x.title === title)
@@ -21,7 +21,7 @@ const animeExtraInfo = async (title) => {
   const body = Array(JSON.parse(data))
   const promises = []
 
-  body.map(doc => {
+  body.forEach(doc => {
     promises.push({
       titleJapanese: doc.title_japanese,
       source: doc.source,
@@ -58,23 +58,23 @@ const animeExtraInfo = async (title) => {
 const downloadLinksByEpsId = async (id) => {
   const res = await cloudscraper(`${ANIME_VIDEO_URL}${id}`, { method: 'GET' })
   const body = await res
-  const $ = cheerio.load(body)
+  const $ = load(body)
   cheerioTableparser($)
   const tempServerNames = $('table.RTbl').parsetable(true, true, true)[0]
   const serverNames = tempServerNames.filter(x => x !== 'SERVIDOR')
   const urls = []
 
   try {
-    const table = $('table.RTbl').html()
-    const data = await urlify(table).then(res => { return res })
+    const table = $('table.RTbl').html() as string
+    const data = await urlify(table)
     const tempUrls = []
-    data.map(baseUrl => {
+    data.forEach(baseUrl => {
       const url = baseUrl.split('"')[0]
       tempUrls.push(url)
     })
 
     const urlDecoded = []
-    tempUrls.map(url => {
+    tempUrls.forEach(url => {
       const urlFixed = decodeURL(url).toString().split('?s=')[1]
       urlDecoded.push(urlFixed)
     })

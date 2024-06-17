@@ -1,6 +1,6 @@
-import express from 'express'
+import express, { type Router } from 'express'
 import api from '../api'
-const router = express.Router()
+const router: Router = express.Router()
 
 /**
  *  @api {get} /LatestAnimeAdded Get list of recently added anime
@@ -1329,6 +1329,7 @@ router.get('/AnimeTrailers/:title', (req, res) => {
  */
 
 router.get('/GetAnimeInfo/:id*/:title', (req, res) => {
+  // eslint-disable-next-line
   const id = `anime${req.params[0]}`
   const title = req.params.title
   api.getAnimeInfo(id, title)
@@ -1399,4 +1400,4 @@ router.get('/DownloadLinksByEpsId/:epsId([^/]+/[^/]+)', (req, res) => {
     })
 })
 
-module.exports = router
+export default router
