@@ -85,7 +85,7 @@ export const createApi = (url: Required<ExampleUrl | URL | String | string>, arg
     }
   })
 }
-
+/*
 async function r34API(tag: string[], limit: number): Promise<{ preview_url: string, sample_url: string, file_url: string } | 'no résult found'> {
   const tags = tag.join(' ')
   const r34 = createApi('https://api.rule34.xxx') as { ['index.php']: (params: { tags: string, page: 'dapi', s: 'post', q: 'index', limit: number, pid: number, json: 1 }) => Promise<Array<{ preview_url: string, sample_url: string, file_url: string }> | []> }
@@ -121,3 +121,4 @@ getTags('hu_tao').then(([{ label, value: tag }]) => {
     r34API([tag], limit).then(console.log)
   }
 })
+*/
