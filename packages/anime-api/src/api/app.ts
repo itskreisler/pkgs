@@ -3,9 +3,9 @@ import morgan from 'morgan'
 import helmet from 'helmet'
 import cors from 'cors'
 import bodyParser from 'body-parser'
-// import api from '@/api/animeflv/index'
+import api from '@/api/animeflv/index'
 
-// import { middleware } from '@/api/middlewares/index'
+import { middleware } from '@/api/middlewares/index'
 
 const app: Application = express()
 
@@ -21,9 +21,9 @@ app.get('/', (req, res) => {
   })
 })
 
-// app.use('/api/v1', api)
+app.use('/api/v1', api)
 // app.use('/api/v1/animeflv-docs', express.static('./animeflv-docs'))
 
-// app.use(middleware)
+app.use(middleware)
 
 export default app

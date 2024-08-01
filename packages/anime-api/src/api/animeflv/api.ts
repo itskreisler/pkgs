@@ -1,25 +1,35 @@
 import { load } from 'cheerio'
 import cheerioTableparser from 'cheerio-tableparser'
-import cloudscraper from 'cloudscraper'
-import decodeURL from 'urldecode'
-import { MergeRecursive, urlify, decodeZippyURL, imageUrlToBase64 } from './utils/index'
+import cloudscraper, { type OptionsWithUrl } from 'cloudscraper'
+// import decodeURL from 'urldecode'
+import { urlify, imageUrlToBase64 } from './utils/index'
 import { URLS } from '@/constants/urls'
 const {
   BASE_URL, SEARCH_URL, BROWSE_URL,
   ANIME_VIDEO_URL, BASE_EPISODE_IMG_URL,
-  BASE_JIKA_URL, BASE_MYANIME_LIST_URL, BASE_JIKA_API
+  BASE_JIKA_URL, BASE_JIKA_API
 } = URLS
-const animeExtraInfo = async (title) => {
-  const res = await cloudscraper(`${BASE_JIKA_URL}${title}`, { method: 'GET' })
-  const matchAnime = JSON.parse(res).results.filter(x => x.title === title)
+export const options: OptionsWithUrl = {
+  headers: {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36',
+    'Cache-Control': 'private',
+    Referer: 'https://www.google.com/search?q=animeflv',
+    Connection: 'keep-alive'
+  },
+  uri: ''
+}
+const animeExtraInfo = async (title: string) => {
+  const res = await cloudscraper({ method: 'GET', uri: BASE_JIKA_URL.concat(title) })
+  const _matchAnime = JSON.parse(res).results as any[]
+  const matchAnime = _matchAnime.filter(x => x.title === title)
   const malId = matchAnime[0].mal_id
 
   if (typeof matchAnime[0].mal_id === 'undefined') return null
 
-  const animeDetails = `${BASE_JIKA_API}anime/${malId}`
+  const animeDetails = BASE_JIKA_API.concat('anime/').concat(malId)
   const data = await cloudscraper.get(animeDetails)
   const body = Array(JSON.parse(data))
-  const promises = []
+  const promises: any[] = []
 
   body.forEach(doc => {
     promises.push({
@@ -40,13 +50,13 @@ const animeExtraInfo = async (title) => {
       premiered: doc.premiered,
       broadcast: doc.broadcast,
       producers: {
-        names: doc.producers.map(x => x.name)
+        names: doc.producers.map((x: { name: string }) => x.name)
       },
       licensors: {
-        names: doc.licensors.map(x => x.name)
+        names: doc.licensors.map((x: { name: string }) => x.name)
       },
       studios: {
-        names: doc.studios.map(x => x.name)
+        names: doc.studios.map((x: { name: string }) => x.name)
       },
       openingThemes: doc.opening_themes,
       endingThemes: doc.ending_themes
@@ -54,48 +64,35 @@ const animeExtraInfo = async (title) => {
   })
   return await Promise.all(promises)
 }
-
-const downloadLinksByEpsId = async (id) => {
-  const res = await cloudscraper(`${ANIME_VIDEO_URL}${id}`, { method: 'GET' })
+interface IDownloadLinksByEpsId {
+  server: string
+  url: string
+}
+const downloadLinksByEpsId = async (id: string) => {
+  const res = await cloudscraper(ANIME_VIDEO_URL.concat(id), { method: 'GET' })
   const body = await res
   const $ = load(body)
   cheerioTableparser($)
   const tempServerNames = $('table.RTbl').parsetable(true, true, true)[0]
   const serverNames = tempServerNames.filter(x => x !== 'SERVIDOR')
-  const urls = []
-
+  const urls: IDownloadLinksByEpsId[] = []
   try {
     const table = $('table.RTbl').html() as string
-    const data = await urlify(table)
-    const tempUrls = []
-    data.forEach(baseUrl => {
-      const url = baseUrl.split('"')[0]
-      tempUrls.push(url)
-    })
 
-    const urlDecoded = []
-    tempUrls.forEach(url => {
-      const urlFixed = decodeURL(url).toString().split('?s=')[1]
-      urlDecoded.push(urlFixed)
-    })
-
-    Array.from({ length: tempUrls.length }, (v, k) => {
-      urls.push({
-        server: serverNames[k],
-        url: urlDecoded[k]
-      })
-    })
-
-    const zippyshareURL = urls.filter(doc => doc.server == 'Zippyshare')[0].url || null
-    const zippyMP4 = await decodeZippyURL(zippyshareURL)
-
-    for (const key in urls) {
-      if (urls.hasOwnProperty(key)) {
-        if (urls[key].server == 'Zippyshare') {
-          urls[key].url = zippyMP4
-        }
-      }
+    const data = await urlify(table) as string[]
+    const tempUrls = serverNames.map((server, index) => ({
+      server,
+      url: data[index]
+    }))
+    // const urlFixed = decodeURL('url').toString().split('?s=')[1]
+    // debido a que Zippyshare ya dejo de funcionar, se elimina de la lista de servidores
+    const ZIPPY = 'Zippyshare'
+    const zippyshareURL = tempUrls.find(doc => doc.server === ZIPPY)?.url ?? null
+    console.log({ zippyshareURL })
+    if (zippyshareURL !== null) {
+      tempUrls.splice(tempUrls.findIndex(doc => doc.server === ZIPPY), 1)
     }
+    urls.push(...tempUrls)
   } catch (err) {
     console.log(err)
   }
@@ -229,7 +226,7 @@ const getAnimeCharacters = async (title) => {
 const search = async (query) => {
   const res = await cloudscraper(`${SEARCH_URL}${query}`, { method: 'GET' })
   const body = await res
-  const $ = cheerio.load(body)
+  const $ = load(body)
   const promises = []
 
   $('div.Container ul.ListAnimes li article').each((index, element) => {
@@ -263,7 +260,7 @@ const search = async (query) => {
 const animeByState = async (state, order, page) => {
   const res = await cloudscraper(`${BROWSE_URL}type%5B%5D=tv&status%5B%5D=${state}&order=${order}&page=${page}`, { method: 'GET' })
   const body = await res
-  const $ = cheerio.load(body)
+  const $ = load(body)
   const promises = []
 
   $('div.Container ul.ListAnimes li article').each((index, element) => {
@@ -296,7 +293,7 @@ const animeByState = async (state, order, page) => {
 const tv = async (order, page) => {
   const res = await cloudscraper(`${BROWSE_URL}type%5B%5D=tv&order=${order}&page=${page}`, { method: 'GET' })
   const body = await res
-  const $ = cheerio.load(body)
+  const $ = load(body)
   const promises = []
 
   $('div.Container ul.ListAnimes li article').each((index, element) => {
@@ -329,7 +326,7 @@ const tv = async (order, page) => {
 const ova = async (order, page) => {
   const res = await cloudscraper(`${BROWSE_URL}type%5B%5D=ova&order=${order}&page=${page}`, { method: 'GET' })
   const body = await res
-  const $ = cheerio.load(body)
+  const $ = load(body)
   const promises = []
 
   $('div.Container ul.ListAnimes li article').each((index, element) => {
@@ -362,7 +359,7 @@ const ova = async (order, page) => {
 const special = async (order, page) => {
   const res = await cloudscraper(`${BROWSE_URL}type%5B%5D=special&order=${order}&page=${page}`, { method: 'GET' })
   const body = await res
-  const $ = cheerio.load(body)
+  const $ = load(body)
   const promises = []
 
   $('div.Container ul.ListAnimes li article').each((index, element) => {
@@ -395,7 +392,7 @@ const special = async (order, page) => {
 const movies = async (order, page) => {
   const res = await cloudscraper(`${BROWSE_URL}type%5B%5D=movie&order=${order}&page=${page}`, { method: 'GET' })
   const body = await res
-  const $ = cheerio.load(body)
+  const $ = load(body)
   const promises = []
 
   $('div.Container ul.ListAnimes li article').each((index, element) => {
@@ -428,7 +425,7 @@ const movies = async (order, page) => {
 const animeByGenres = async (genre, order, page) => {
   const res = await cloudscraper(`${BROWSE_URL}genre%5B%5D=${genre}&order=${order}&page=${page}`, { method: 'GET' })
   const body = await res
-  const $ = cheerio.load(body)
+  const $ = load(body)
   const promises = []
 
   $('div.Container ul.ListAnimes li article').each((index, element) => {
@@ -459,22 +456,24 @@ const animeByGenres = async (genre, order, page) => {
 }
 
 const latestEpisodesAdded = async () => {
-  const res = await cloudscraper(`${BASE_URL}`, { method: 'GET' })
+  const res = await cloudscraper({ method: 'GET', uri: BASE_URL })
   const body = await res
-  const $ = cheerio.load(body)
-  const promises = []
+  const $ = load(body)
+  const promises: any[] = []
   $('div.Container ul.ListEpisodios li').each((index, element) => {
     const $element = $(element)
-    const id = $element.find('a').attr('href').replace('/ver/', '').trim()
+    const id = $element.find('a')?.attr('href')?.replace('/ver/', '').trim()
     const title = $element.find('a strong.Title').text()
-    const poster = BASE_URL + $element.find('a span.Image img').attr('src')
-    const episode = parseInt($element.find('a span.Capi').text().match(/\d+/g), 10)
+    const poster = BASE_URL.concat($element?.find('a span.Image img')?.attr('src') ?? '')
+    const cap = $element?.find('a span.Capi')?.text()?.match(/\d+/g)?.shift() as string
+    const episode = parseInt(cap, 10)
     promises.push(getAnimeServers(id).then(async servers => ({
-      id: id || null,
-      title: title || null,
-      poster: await imageUrlToBase64(poster) || null,
-      episode: episode || null,
-      servers: servers || null
+      id: id ?? null,
+      title: title ?? null,
+      // poster64: 'data:image/png;base64,'.concat(await imageUrlToBase64(poster)) ?? null,
+      poster: await imageUrlToBase64(poster) ?? null,
+      episode: episode ?? null,
+      servers: servers ?? null
     })))
   })
   return await Promise.all(promises)
@@ -483,7 +482,7 @@ const latestEpisodesAdded = async () => {
 const latestAnimeAdded = async () => {
   const res = await cloudscraper(`${BASE_URL}`, { method: 'GET' })
   const body = await res
-  const $ = cheerio.load(body)
+  const $ = load(body)
   const promises = []
   $('div.Container ul.ListAnimes li article').each((index, element) => {
     const $element = $(element)
@@ -515,7 +514,7 @@ const animeEpisodesHandler = async (id) => {
   try {
     const res = await cloudscraper(`${BASE_URL}/${id}`, { method: 'GET' })
     const body = await res
-    const $ = cheerio.load(body)
+    const $ = load(body)
     const scripts = $('script')
     const anime_info_ids = []
     const anime_eps_data = []
@@ -601,7 +600,7 @@ const animeEpisodesHandler = async (id) => {
 const getAnimeServers = async (id) => {
   const res = await cloudscraper(`${ANIME_VIDEO_URL}${id}`, { method: 'GET' })
   const body = await res
-  const $ = cheerio.load(body)
+  const $ = load(body)
   const scripts = $('script')
   const servers = []
 

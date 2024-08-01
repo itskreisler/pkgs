@@ -1388,7 +1388,8 @@ router.get('/GetAnimeInfo/:id*/:title', (req, res) => {
  *  }
  */
 
-router.get('/DownloadLinksByEpsId/:epsId([^/]+/[^/]+)', (req, res) => {
+// router.get('/DownloadLinksByEpsId/:epsId([^/]+/[^/]+)', (req, res) => {
+router.get('/DownloadLinksByEpsId/:epsId([^/]+)', (req, res) => {
   const epsId = req.params.epsId
   api.downloadLinksByEpsId(epsId)
     .then(downloads => {

@@ -1,6 +1,5 @@
 import cloudscraper from 'cloudscraper'
 // import imageToBase64 from 'image-to-base64'
-import zsExtract from 'zs-extract'
 
 const MergeRecursive = (obj1: any, obj2: any) => {
   for (const p in obj2) {
@@ -19,9 +18,9 @@ const MergeRecursive = (obj1: any, obj2: any) => {
   return obj1
 }
 
-const imageUrlToBase64 = async(url: string) => {
+const imageUrlToBase64 = async(uri: string) => {
   const res = await cloudscraper({
-    url,
+    uri,
     method: 'GET',
     encoding: null
   })
@@ -30,18 +29,12 @@ const imageUrlToBase64 = async(url: string) => {
 }
 
 const urlify = async(text: string) => {
-  const urlRegex = /(https?:\/\/[^\s]+)/g
+  const urlRegex = /[>]*(https?:\/\/[^\s"]+)/g // /(https?:\/\/[^\s]+)/g
   return await Promise.all(text.match(urlRegex) ?? [])
-}
-
-const decodeZippyURL = async(url: string) => {
-  const mp4 = await zsExtract.extract(url)
-  return mp4.download
 }
 
 export {
   MergeRecursive,
   imageUrlToBase64,
-  urlify,
-  decodeZippyURL
+  urlify
 }
