@@ -1,5 +1,6 @@
 import express, { type Router } from 'express'
 import api from '../api'
+import { type IFlvFiltrosParams } from '@/interfaces/interfaces'
 const router: Router = express.Router()
 
 /**
@@ -223,7 +224,8 @@ router.get('/LatestEpisodesAdded', (req, res) => {
  *   }
  */
 
-router.get('/GetAnimeServers/:id([^/]+/[^/]+)', (req, res) => {
+// router.get('/GetAnimeServers/:id([^/]+/[^/]+)', (req, res) => {
+router.get('/GetAnimeServers/:id([^/]+)', (req, res) => {
   const id = req.params.id
   api.getAnimeServers(id)
     .then(servers => {
@@ -326,7 +328,7 @@ router.get('/GetAnimeServers/:id([^/]+/[^/]+)', (req, res) => {
  *
  */
 
-router.get('/Genres/:genre/:order/:page', (req, res) => {
+router.get('/Genres/:genre/:order/:page', (req: express.Request<IFlvFiltrosParams>, res) => {
   const genre = req.params.genre
   const order = req.params.order
   const page = req.params.page
@@ -1328,8 +1330,11 @@ router.get('/AnimeTrailers/:title', (req, res) => {
  *   }
  */
 
-router.get('/GetAnimeInfo/:id*/:title', (req, res) => {
-  // eslint-disable-next-line
+router.get('/GetAnimeInfo/:id*/:title', (req: express.Request<{
+  title: string
+  /** id  */
+  '0': string
+}>, res) => {
   const id = `anime${req.params[0]}`
   const title = req.params.title
   api.getAnimeInfo(id, title)

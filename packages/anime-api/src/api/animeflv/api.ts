@@ -4,6 +4,7 @@ import cloudscraper, { type OptionsWithUrl } from 'cloudscraper'
 // import decodeURL from 'urldecode'
 import { urlify, imageUrlToBase64 } from './utils/index'
 import { URLS } from '@/constants/urls'
+import { IFlvFiltros, IFlvFiltrosRecord } from '@/interfaces/interfaces'
 const {
   BASE_URL, SEARCH_URL, BROWSE_URL,
   ANIME_VIDEO_URL, BASE_EPISODE_IMG_URL,
@@ -136,8 +137,8 @@ const getAnimeInfo = async (id, title) => {
       debut: extra.animeExtraInfo[0].debut || null,
       type: extra.animeExtraInfo[0].type || null,
       rating: extra.animeExtraInfo[0].rating || null,
-      genres: extra.genres || null,
-      episodes: extra.listByEps || null,
+      genres: (extra.genres != null) || null,
+      episodes: (extra.listByEps != null) || null,
       moreInfo: await animeExtraInfo(title).then(info => {
         return (info != null) || null
       }),
@@ -250,8 +251,8 @@ const search = async (query) => {
       debut: extra.animeExtraInfo[0].debut || null,
       type: type || null,
       rating: rating || null,
-      genres: extra.genres || null,
-      episodes: extra.listByEps || null
+      genres: (extra.genres != null) || null,
+      episodes: (extra.listByEps != null) || null
     })))
   })
   return await Promise.all(promises)
@@ -283,8 +284,8 @@ const animeByState = async (state, order, page) => {
       debut: extra.animeExtraInfo[0].debut || null,
       type: type || null,
       rating: rating || null,
-      genres: extra.genres || null,
-      episodes: extra.listByEps || null
+      genres: (extra.genres != null) || null,
+      episodes: (extra.listByEps != null) || null
     })))
   })
   return await Promise.all(promises)
@@ -316,8 +317,8 @@ const tv = async (order, page) => {
       debut: extra.animeExtraInfo[0].debut || null,
       type: type || null,
       rating: rating || null,
-      genres: extra.genres || null,
-      episodes: extra.listByEps || null
+      genres: (extra.genres != null) || null,
+      episodes: (extra.listByEps != null) || null
     })))
   })
   return await Promise.all(promises)
@@ -349,8 +350,8 @@ const ova = async (order, page) => {
       debut: extra.animeExtraInfo[0].debut || null,
       type: type || null,
       rating: rating || null,
-      genres: extra.genres || null,
-      episodes: extra.listByEps || null
+      genres: (extra.genres != null) || null,
+      episodes: (extra.listByEps != null) || null
     })))
   })
   return await Promise.all(promises)
@@ -382,8 +383,8 @@ const special = async (order, page) => {
       debut: extra.animeExtraInfo[0].debut || null,
       type: type || null,
       rating: rating || null,
-      genres: extra.genres || null,
-      episodes: extra.listByEps || null
+      genres: (extra.genres != null) || null,
+      episodes: (extra.listByEps != null) || null
     })))
   })
   return await Promise.all(promises)
@@ -415,15 +416,23 @@ const movies = async (order, page) => {
       debut: extra.animeExtraInfo[0].debut || null,
       type: type || null,
       rating: rating || null,
-      genres: extra.genres || null,
-      episodes: extra.listByEps || null
+      genres: (extra.genres != null) || null,
+      episodes: (extra.listByEps != null) || null
     })))
   })
   return await Promise.all(promises)
 }
 
-const animeByGenres = async (genre, order, page) => {
-  const res = await cloudscraper(`${BROWSE_URL}genre%5B%5D=${genre}&order=${order}&page=${page}`, { method: 'GET' })
+const animeByGenres = async (genre: IFlvFiltros['genre[]'], order: IFlvFiltros['order'], page: string) => {
+  const params: IFlvFiltrosRecord = {
+    'genre[]': genre, // comedia,
+    order,
+    page
+  }
+  const queryString = new URLSearchParams(params).toString()
+  const uri = BROWSE_URL.concat(queryString)
+  const res = await cloudscraper({ uri, method: 'GET' })
+
   const body = await res
   const $ = load(body)
   const promises = []
@@ -448,8 +457,8 @@ const animeByGenres = async (genre, order, page) => {
       debut: extra.animeExtraInfo[0].debut || null,
       type: type || null,
       rating: rating || null,
-      genres: extra.genres || null,
-      episodes: extra.listByEps || null
+      genres: (extra.genres != null) || null,
+      episodes: (extra.listByEps != null) || null
     })))
   })
   return await Promise.all(promises)
@@ -478,52 +487,75 @@ const latestEpisodesAdded = async () => {
   })
   return await Promise.all(promises)
 }
-
+type ILatestAnimeAdded = Promise<{
+  id: string | null
+  poster: string | null
+}>
 const latestAnimeAdded = async () => {
-  const res = await cloudscraper(`${BASE_URL}`, { method: 'GET' })
+  const res = await cloudscraper(BASE_URL, { method: 'GET' })
   const body = await res
   const $ = load(body)
-  const promises = []
+  const promises: ILatestAnimeAdded[] = []
   $('div.Container ul.ListAnimes li article').each((index, element) => {
     const $element = $(element)
-    const id = $element.find('div.Description a.Button').attr('href').slice(1)
+    const id = $element.find('div.Description a.Button')?.attr('href')?.slice(1) as string ?? null
     const title = $element.find('a h3').text()
-    const poster = BASE_URL + $element.find('a div.Image figure img').attr('src')
+    const poster = BASE_URL.concat($element.find('a div.Image figure img')?.attr('src') as string)
     const banner = poster.replace('covers', 'banners').trim()
     const type = $element.find('div.Description p span.Type').text()
     const synopsis = $element.find('div.Description p').text().trim()
     const rating = $element.find('div.Description p span.Vts').text()
-    const debut = $element.find('a span.Estreno').text().toLowerCase()
+    // const debut = $element.find('a span.Estreno').text().toLowerCase()
     promises.push(animeEpisodesHandler(id).then(async extra => ({
-      id: id || null,
-      title: title || null,
-      poster: await imageUrlToBase64(poster) || null,
-      banner: banner || null,
-      synopsis: synopsis || null,
-      debut: extra.animeExtraInfo[0].debut.toString() || null,
-      type: type || null,
-      rating: rating || null,
-      genres: extra.genres || null,
-      episodes: extra.listByEps || null
+      id,
+      title,
+      poster: await imageUrlToBase64(poster),
+      banner,
+      synopsis,
+      debut: extra.animeExtraInfo[0].debut.toString() ?? null,
+      type: type ?? null,
+      rating: rating ?? null,
+      genres: extra.genres ?? null,
+      episodes: extra.listByEps ?? null
     })))
   })
   return await Promise.all(promises)
 }
+interface AnimeEpisode {
+  episode?: string
+  id?: string
+  imagePreview?: string
+  nextEpisodeDate?: string
+}
 
-const animeEpisodesHandler = async (id) => {
+interface AnimeExtraInfo {
+  title: string
+  poster: string
+  banner: string
+  synopsis: string
+  rating: string
+  debut: string
+  type: string
+}
+
+interface AnimeEpisodesHandlerResult {
+  listByEps: AnimeEpisode[] | null
+  genres: string[] | null
+  animeExtraInfo: AnimeExtraInfo[]
+}
+const animeEpisodesHandler = async (id: string): Promise<AnimeEpisodesHandlerResult> => {
   try {
-    const res = await cloudscraper(`${BASE_URL}/${id}`, { method: 'GET' })
+    const res = await cloudscraper(BASE_URL.concat('/').concat(id), { method: 'GET' })
     const body = await res
     const $ = load(body)
     const scripts = $('script')
-    const anime_info_ids = []
-    const anime_eps_data = []
-    const animeExtraInfo = []
-    const genres = []
-    let listByEps
+    const animeInfoIds: any[] = []
+    const animeEpsData: any[] = []
+    const animeExtraInfo: any[] = []
+    const genres: string[] = []
 
     const animeTitle = $('body div.Wrapper div.Body div div.Ficha.fchlt div.Container h2.Title').text()
-    const poster = `${BASE_URL}` + $('body div div div div div aside div.AnimeCover div.Image figure img').attr('src')
+    const poster = BASE_URL.concat($('body div div div div div aside div.AnimeCover div.Image figure img').attr('src') as string)
     const banner = poster.replace('covers', 'banners').trim()
     const synopsis = $('body div div div div div main section div.Description p').text().trim()
     const rating = $('body div div div.Ficha.fchlt div.Container div.vtshr div.Votes span#votes_prmd').text()
@@ -542,41 +574,56 @@ const animeEpisodesHandler = async (id) => {
 
     $('main.Main section.WdgtCn nav.Nvgnrs a').each((index, element) => {
       const $element = $(element)
-      const genre = $element.attr('href').split('=')[1] || null
+      const genre = $element.attr('href')?.split('=')[1] as string ?? null
       genres.push(genre)
     })
 
-    Array.from({ length: scripts.length }, (v, k) => {
-      const $script = $(scripts[k])
-      const contents = $script.html()
-      if ((contents || '').includes('var anime_info = [')) {
-        const anime_info = contents.split('var anime_info = ')[1].split(';')[0]
-        const dat_anime_info = JSON.parse(anime_info)
-        anime_info_ids.push(dat_anime_info)
+    Array.from({ length: scripts.length }).forEach((_, index) => {
+      const $script = $(scripts[index])
+      const contents = $script.html() as string ?? ''
+
+      if (contents.includes('var anime_info = [')) {
+        const animeInfo = contents.split('var anime_info = ')[1].split(';')[0]
+        try {
+          const parsedAnimeInfo = JSON.parse(animeInfo)
+          animeInfoIds.push(parsedAnimeInfo)
+        } catch (error) {
+          console.error('Failed to parse anime_info:', error)
+        }
       }
-      if ((contents || '').includes('var episodes = [')) {
+
+      if (contents.includes('var episodes = [')) {
         const episodes = contents.split('var episodes = ')[1].split(';')[0]
-        const eps_data = JSON.parse(episodes)
-        anime_eps_data.push(eps_data)
+        try {
+          const parsedEpisodes = JSON.parse(episodes)
+          animeEpsData.push(parsedEpisodes)
+        } catch (error) {
+          console.error('Failed to parse episodes:', error)
+        }
       }
     })
-    const AnimeThumbnailsId = anime_info_ids[0][0]
-    const animeId = anime_info_ids[0][2]
-    const nextEpisodeDate = anime_info_ids[0][3] || null
-    const amimeTempList = []
-    for (const [key, value] of Object.entries(anime_eps_data)) {
-      const episode = anime_eps_data[key].map(x => x[0])
-      const episodeId = anime_eps_data[key].map(x => x[1])
+
+    const AnimeThumbnailsId = animeInfoIds[0][0]
+    const animeId = animeInfoIds[0][2]
+    const nextEpisodeDate = animeInfoIds[0][3] as string ?? null
+    const amimeTempList: any[] = []
+    for (const [key] of Object.entries(animeEpsData)) {
+      const episode = animeEpsData[key as unknown as number].map((x: string) => x[0])
+      const episodeId = animeEpsData[key as unknown as number].map((x: string) => x[1])
       amimeTempList.push(episode, episodeId)
     }
-    const animeListEps = [{ nextEpisodeDate }]
-    Array.from({ length: amimeTempList[1].length }, (v, k) => {
+    const animeListEps: Array<{
+      episode?: string
+      id?: string
+      imagePreview?: string
+      nextEpisodeDate?: string
+    }> = [{ nextEpisodeDate }]
+    Array.from({ length: amimeTempList[1].length }).forEach((_, k) => {
       const data = amimeTempList.map(x => x[k])
       const episode = data[0]
-      const id = data[1]
-      const imagePreview = `${BASE_EPISODE_IMG_URL}${AnimeThumbnailsId}/${episode}/th_3.jpg`
-      const link = `${id}/${animeId}-${episode}`
-      // @ts-expect-error
+      const id = String(data[1])
+      const imagePreview = BASE_EPISODE_IMG_URL.concat(AnimeThumbnailsId).concat('/').concat(episode).concat('/th_3.jpg')
+      const link = id.concat('/').concat(animeId).concat('-').concat(episode)
       animeListEps.push({
         episode,
         id: link,
@@ -584,11 +631,12 @@ const animeEpisodesHandler = async (id) => {
       })
     })
 
-    listByEps = animeListEps
+    const listByEps = animeListEps
 
     return { listByEps, genres, animeExtraInfo }
   } catch (err) {
     console.error(err)
+    return { listByEps: null, genres: null, animeExtraInfo: [] }
   }
 }
 
@@ -596,18 +644,25 @@ const animeEpisodesHandler = async (id) => {
 //  .then(doc =>{
 //    console.log(JSON.stringify(doc , null , 2));
 // })
-
-const getAnimeServers = async (id) => {
-  const res = await cloudscraper(`${ANIME_VIDEO_URL}${id}`, { method: 'GET' })
+interface IServersData {
+  server: string
+  title: string
+  ads: number
+  url?: string
+  allow_mobile: boolean
+  code: string
+}
+const getAnimeServers = async (id: string) => {
+  const res = await cloudscraper(ANIME_VIDEO_URL.concat(id), { method: 'GET' })
   const body = await res
   const $ = load(body)
   const scripts = $('script')
-  const servers = []
+  const servers: IServersData[] = []
 
-  Array.from({ length: scripts.length }, (v, k) => {
+  Array.from({ length: scripts.length }).forEach((v, k) => {
     const $script = $(scripts[k])
-    const contents = $script.html()
-    if ((contents || '').includes('var videos = {')) {
+    const contents = $script.html() as string ?? ''
+    if (contents.includes('var videos = {')) {
       const videos = contents.split('var videos = ')[1].split(';')[0]
       const data = JSON.parse(videos)
       const serverList = data.SUB

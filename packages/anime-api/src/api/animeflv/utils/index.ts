@@ -27,6 +27,7 @@ const imageUrlToBase64 = async(uri: string) => {
 
   return Buffer.from(res).toString('base64')
 }
+const poster64 = (poster: string) => 'data:image/png;base64,'.concat(poster)
 
 const urlify = async(text: string) => {
   const urlRegex = /[>]*(https?:\/\/[^\s"]+)/g // /(https?:\/\/[^\s]+)/g
@@ -36,5 +37,6 @@ const urlify = async(text: string) => {
 export {
   MergeRecursive,
   imageUrlToBase64,
+  poster64,
   urlify
 }
