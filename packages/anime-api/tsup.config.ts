@@ -9,7 +9,7 @@ export default defineConfig({
   banner: {
     js: '// @buymeacoffee https://www.buymeacoffee.com/kreisler'
   },
-  format: ['cjs', 'esm'],
+  format: ['cjs', 'esm']
   // external: ['react'],
-  dts: true
+  // dts: true
 })

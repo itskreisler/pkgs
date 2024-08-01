@@ -9,7 +9,7 @@ const { describe, it } = require('node:test')
 const assert = require('node:assert')
 
 // » IMPORT MODULES
-const { createApi } = require('../dist/index.cjs')
+const { } = require('../dist/index.cjs')
 
 // ━━ TEST ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 

@@ -9,7 +9,7 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert'
 
 // » IMPORT MODULES
-import { createApi } from '../dist/index.js'
+import { animeByGenres, animeByState, downloadLinksByEpsId, getAnimeCharacters, getAnimeInfo } from '../dist/index.js'
 
 // ━━ TEST ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 describe('createApi', () => {
