@@ -64,7 +64,7 @@ const animeExtraInfo = async (title: string) => {
   })
   return await Promise.all(promises)
 }
-interface IDownloadLinksByEpsId {
+export interface IDownloadLinksByEpsId {
   server: string
   url: string
 }

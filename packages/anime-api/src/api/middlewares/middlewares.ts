@@ -19,7 +19,7 @@ const requestLoggerMiddleware = (req: Request, res: Response, next: (err?: any) 
   const start = new Date().getTime()
   res.on('finish', () => {
     const elapsed = new Date().getTime() - start
-    console.info(`${req.method} ${req.originalUrl} ${req.statusCode ?? 500} ${elapsed}ms`)
+    console.info(`${req.method} ${req.originalUrl} ${req.statusCode ?? 1234} ${elapsed}ms`)
   })
   next()
 }
