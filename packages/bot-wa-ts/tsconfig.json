@@ -8,15 +8,13 @@
         "./src/*"
       ]
     },
-    "lib": [
-      "dom",
-      "ES2015"
-    ],
+    "moduleResolution": "node",
     "module": "ESNext",
     "target": "ESNext",
     "allowJs": true,
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck":true
   },
   "include": [
     "."

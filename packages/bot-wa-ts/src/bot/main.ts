@@ -1,30 +1,129 @@
-import makeWASocket, {
+import {
+  makeWASocket,
   DisconnectReason,
   useMultiFileAuthState,
-  type WASocket
+  downloadContentFromMessage,
+  type WASocket,
+  type WAMessage,
+  type MediaType,
+  type AnyMessageContent,
+  type MiscMessageGenerationOptions
 } from '@whiskeysockets/baileys'
-import MAIN_LOGGER from 'pino'
+
+// const nodefetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args))
+import pino, {
+// type Logger,
+// type LoggerOptions
+} from 'pino'
 // import qrcode from 'qrcode-terminal'
 // import fs from 'fs'
+
 //
-export default class Whatsapp {
-  logger
+class Whatsapp {
+  BOT_USERNAME: string = 'botsito'
+  logger: any
   sock: WASocket
-  status
+  status: number
   qr: string | null | undefined
   count
+  saveCreds: () => Promise<void>
   constructor() {
-    this.logger = MAIN_LOGGER.default()
-    this.logger.level = 'silent' // Change this to silent or error
+    this.logger = pino({ level: 'silent' })
     /**
      * @type {import('@whiskeysockets/baileys').WASocket}
      */
-    this.sock = null
+    this.sock = null as unknown as WASocket
     this.status = 0
     this.qr = null
+    this.saveCreds = null as unknown as () => Promise<void>
     this.count = 0
+  }
 
-    this.readCount()
+  async getLogger() { return this.logger }
+  async imageUrl2Base64 (url: string): Promise<[Buffer, string]> {
+    const req = await globalThis.fetch(url, {
+      method: 'GET'
+    })
+    // leer el mimetype
+    const mimeType = req.headers.get('Content-Type') ?? 'application/octet-stream'
+    // Validar si es de tipo imagen
+    if (!mimeType.startsWith('image/')) {
+      throw new Error(`El archivo no es una imagen. Tipo MIME recibido: ${mimeType}`)
+    }
+    // const contentLength = req.headers.get('Content-Length')
+
+    const res = await req.arrayBuffer()
+    // const size = (contentLength != null) ? parseInt(contentLength, 10) : res.byteLength
+
+    return [Buffer.from(res), mimeType]
+  }
+
+  buffer2base64 (buffer: Buffer, mimeType: `image/${string | 'png'}`) {
+    const BASE_64 = 'base64'
+    return `data:${mimeType};${BASE_64},`.concat(buffer.toString(BASE_64))
+  }
+
+  async getMedia (msg: WAMessage): Promise<Buffer> {
+    type MessageType = 'imageMessage' | 'stickerMessage' | 'extendedTextMessage'
+    console.log(msg)
+    this.buffer2base64(Buffer.from([]), 'image/')
+    const messageType = Object.keys(msg as { [key: string]: any })[0] as MessageType
+    // console.log({ messageType }, msg.message[messageType])
+    const stream = await downloadContentFromMessage((msg as any)[messageType as any], messageType.replace('Message', '') as MediaType)
+    let buffer = Buffer.from([])
+    for await (const chunk of stream) {
+      buffer = Buffer.concat([buffer, chunk])
+    }
+
+    return buffer
+  }
+
+  /**
+   *
+   * @param {string} prop - Propiedad a buscar
+   * @param {any} obj - Objeto en el que se buscará la propiedad
+   * @returns {boolean}
+   */
+  hasOwnProp (obj: any, prop: string): boolean {
+    // Dividir la propiedad en partes usando el punto como separador
+    const parts = prop.split('.')
+
+    // Recorrer cada parte de la propiedad
+    for (let i = 0; i < parts.length; i++) {
+    // Verificar si el objeto tiene la propiedad en cuestión
+      if (!Object.prototype.hasOwnProperty.call(obj, parts[i])) {
+        return false // Si no la tiene, devolver false
+      }
+      // Si la tiene, mover el objeto a la propiedad actual para la siguiente iteración
+      obj = obj[parts[i]]
+    }
+
+    // Si se recorrieron todas las partes y se encontraron, devolver true
+    return true
+  }
+
+  /**
+   * @description Obtener una propiedad anidada de un objeto
+   * @param {any} obj - Objeto en el que se buscará la propiedad
+   * @param {string} propPath - Propiedad a buscar
+   * @returns {U | undefined} - Valor de la propiedad o undefined si no se encuentra
+   */
+  getNestedProp<U>(obj: any, propPath: string): U | undefined {
+    // Dividir la ruta de la propiedad en partes usando el punto como separador
+    const parts = propPath.split('.')
+
+    // Recorrer cada parte de la propiedad
+    for (let i = 0; i < parts.length; i++) {
+      // Verificar si el objeto tiene la propiedad en cuestión
+      if (!Object.prototype.hasOwnProperty.call(obj, parts[i])) {
+        return undefined // Si no la tiene, devolver undefined
+      }
+      // Si la tiene, mover el objeto a la propiedad actual para la siguiente iteración
+      obj = obj[parts[i]]
+    }
+
+    // Devolver el valor final de la propiedad
+    return obj
   }
 
   async readCount() {
@@ -33,107 +132,23 @@ export default class Whatsapp {
 
   async WAConnect() {
     const { state, saveCreds } = await useMultiFileAuthState('creds')
-    this.sock = makeWASocket.default({
+    this.sock = makeWASocket({
       auth: state,
       logger: this.logger,
       printQRInTerminal: true
     })
-
+    this.saveCreds = saveCreds
+    this.loadEvents()
+    /*
     this.sock.ev.on('creds.update', saveCreds)
 
     this.sock.ev.on('connection.update', (update) => {
-      const { connection, lastDisconnect } = update
-      if (connection === 'close') {
-        const koneksiUlang =
-          lastDisconnect.error.output.payload.statusCode !==
-          DisconnectReason.loggedOut
-        if (koneksiUlang) {
-          this.WAConnect()
-        }
-        this.status = 0
-        this.qr = null
-      } else if (connection === 'open') {
-        this.status = 3
-        this.qr = null
-      } else {
-        const QR = !(update.qr == null)
-        if (QR) {
-          // qrcode.generate(QR, { small: true })
-          this.status = 1
-          this.qr = update.qr
-        } else {
-          this.status = 3
-          this.qr = null
-        }
-      }
+
     })
 
     this.sock.ev.on('messages.upsert', async (m) => {
-      // fs.writeFileSync('message.json', JSON.stringify(m, null, 2))
-      // descargar si es un sticker
 
-      const isRevoked = m.messages[0]?.hasOwnProperty('message')
-        ? !!m.messages[0].message.hasOwnProperty('protocolMessage')
-        : false
-      // console.log(m)
-      if (!m.messages[0].key.fromMe) {
-        if (!isRevoked) {
-          const isMessage = !!m.messages[0]?.hasOwnProperty('message')
-          const isImage = isMessage
-            ? !!m.messages[0].message.hasOwnProperty('imageMessage')
-            : false
-          const from = m.messages[0].key.remoteJid
-          const msg = isMessage
-            ? isImage
-              ? m.messages[0].message.imageMessage.caption
-              : m.messages[0].message.hasOwnProperty('conversation')
-                ? m.messages[0].message.conversation
-                : m.messages[0].message.hasOwnProperty('extendedTextMessage')
-                  ? m.messages[0].message.extendedTextMessage.text
-                  : ''
-            : ''
-
-          const regex = /wa\.me\/settings/gi
-          // console.log("True 1");
-          // console.log(m.messages[0])
-          // console.log(msg)
-          if (regex.test(msg)) {
-            // console.log("True 2");
-            await this.sock.readMessages([m.messages[0].key])
-            await this.sock.chatModify(
-              {
-                clear: {
-                  messages: [
-                    {
-                      id: m.messages[0].key.id,
-                      fromMe: m.messages[0].key.fromMe,
-                      timestamp: m.messages[0].messageTimestamp
-                    }
-                  ]
-                }
-              },
-              from,
-              []
-            )
-            // await this.sendText(from, "Shinjimae !")
-            this.count += 1
-            // await writeCount(this.count)
-            // await writeLog('From        : ' + m.messages[0].key.remoteJid)
-            // await writeLog('PushName    : ' + m.messages[0].pushName)
-            // await writeLog('Message     : ' + msg)
-            // await writeLog(newline)
-          }
-
-          if (msg === '@isalive') {
-            await this.sock.readMessages([m.messages[0].key])
-            setTimeout(
-              async () => await this.sendText(from, { text: 'I am still Alive' }),
-              1300
-            )
-          }
-        }
-      }
-    })
+      */
   }
 
   getCount() {
@@ -145,11 +160,30 @@ export default class Whatsapp {
    * @param {import('@whiskeysockets/baileys').AnyMessageContent} str
    * @param {import('@whiskeysockets/baileys').MiscMessageGenerationOptions} [op={}]
    */
-  async sendText(jid: string, str: import('@whiskeysockets/baileys').AnyMessageContent, op: import('@whiskeysockets/baileys').MiscMessageGenerationOptions = {}) {
+  async sendText(jid: string, str: AnyMessageContent, op: MiscMessageGenerationOptions = {}) {
     await this.sock.sendMessage(jid, str, op)
+  }
+
+  async loadEvents() {
+    console.log('(%) Cargando eventos')
+
+    // this.sock.ev.removeAllListeners('messages.upsert')
+    try {
+      // creds.update
+      this.sock.ev.on('creds.update', this.saveCreds)
+      // connection.update
+      const { handler: conUp } = await import('@/bot/events/client/connection.update')
+      this.sock.ev.on('connection.update', conUp.bind(null, this))
+      // messages.upsert
+      const { handler: msgUpsert } = await import('@/bot/events/client/messages.upsert')
+      this.sock.ev.on('messages.upsert', msgUpsert.bind(null, this))
+      //
+      console.log('(✅) Eventos cargaods correctamente')
+    } catch (e) {
+      console.error('(X) Errror al cargar eventos', e)
+    }
   }
 }
 
-const WhatsappInterface = new Whatsapp()
-WhatsappInterface.WAConnect()
-export { WhatsappInterface }
+export { Whatsapp }
+export default Whatsapp

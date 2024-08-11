@@ -1,4 +1,7 @@
 /**
- * Export all the functions from the api folder
+ * Export all
  */
-export * from '@/bot/main'
+// export * from '@/bot/main'
+import { Whatsapp } from '@/bot/main'
+const WhatsappInterface = new Whatsapp()
+WhatsappInterface.WAConnect()
