@@ -31,3 +31,4 @@ pnpm-lock.yaml
 _*.test
 temp/*
 creds/*
+**/creds/*
