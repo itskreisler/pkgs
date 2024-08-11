@@ -1,6 +1,5 @@
 import {
   makeWASocket,
-  DisconnectReason,
   useMultiFileAuthState,
   downloadContentFromMessage,
   type WASocket,
@@ -9,14 +8,7 @@ import {
   type AnyMessageContent,
   type MiscMessageGenerationOptions
 } from '@whiskeysockets/baileys'
-
-// const nodefetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args))
-import pino, {
-// type Logger,
-// type LoggerOptions
-} from 'pino'
-// import qrcode from 'qrcode-terminal'
-// import fs from 'fs'
+import pino from 'pino'
 
 //
 class Whatsapp {
@@ -25,7 +17,6 @@ class Whatsapp {
   sock: WASocket
   status: number
   qr: string | null | undefined
-  count
   saveCreds: () => Promise<void>
   constructor() {
     this.logger = pino({ level: 'silent' })
@@ -36,7 +27,6 @@ class Whatsapp {
     this.status = 0
     this.qr = null
     this.saveCreds = null as unknown as () => Promise<void>
-    this.count = 0
   }
 
   async getLogger() { return this.logger }
@@ -126,10 +116,6 @@ class Whatsapp {
     return obj
   }
 
-  async readCount() {
-    // this.count = await readCount()
-  }
-
   async WAConnect() {
     const { state, saveCreds } = await useMultiFileAuthState('creds')
     this.sock = makeWASocket({
@@ -139,20 +125,6 @@ class Whatsapp {
     })
     this.saveCreds = saveCreds
     this.loadEvents()
-    /*
-    this.sock.ev.on('creds.update', saveCreds)
-
-    this.sock.ev.on('connection.update', (update) => {
-
-    })
-
-    this.sock.ev.on('messages.upsert', async (m) => {
-
-      */
-  }
-
-  getCount() {
-    return this.count
   }
 
   /**
@@ -168,9 +140,14 @@ class Whatsapp {
     console.log('(%) Cargando eventos')
 
     // this.sock.ev.removeAllListeners('messages.upsert')
+    /*
+    const { loadFiles } = await import('@/bot/helpers/utils')
+    const RUTA_ARCHIVOS = await loadFiles('src/bot/events/client')
+    */
     try {
       // creds.update
       this.sock.ev.on('creds.update', this.saveCreds)
+
       // connection.update
       const { handler: conUp } = await import('@/bot/events/client/connection.update')
       this.sock.ev.on('connection.update', conUp.bind(null, this))
@@ -178,6 +155,7 @@ class Whatsapp {
       const { handler: msgUpsert } = await import('@/bot/events/client/messages.upsert')
       this.sock.ev.on('messages.upsert', msgUpsert.bind(null, this))
       //
+
       console.log('(✅) Eventos cargaods correctamente')
     } catch (e) {
       console.error('(X) Errror al cargar eventos', e)

@@ -4,6 +4,11 @@ import {
 } from '@whiskeysockets/baileys'
 import { createSticker, StickerTypes, type IStickerOptions } from 'wa-sticker-formatter'
 //
+/**
+ * @description Manejador de eventos de mensajes
+ * @param {import('@/bot/main').Whatsapp} client
+ * @param {{ messages: import("@whiskeysockets/baileys").WAMessage[], type: import("@whiskeysockets/baileys").MessageUpsertType }} content
+ */
 export async function handler (client: import('@/bot/main').Whatsapp, content: {
   messages: WAMessage[]
   type: MessageUpsertType
@@ -18,6 +23,7 @@ export async function handler (client: import('@/bot/main').Whatsapp, content: {
   const hasExtendedTextMessage: boolean = client.hasOwnProp(content.messages[0].message, 'extendedTextMessage')
   const hasQuotedMessage: boolean = client.hasOwnProp(content.messages[0].message, 'extendedTextMessage.contextInfo.quotedMessage')
   const protocolMessage: boolean = client.hasOwnProp(content.messages[0].message, 'protocolMessage')
+  const hasDocumentWithCaptionMessage: boolean = client.hasOwnProp(content.messages[0].message, 'documentWithCaptionMessage.message.documentMessage.caption')
   // const hasImageMessageCaption = client.hasOwnProp(content.messages[0].message, 'imageMessage.caption')
   const isRevoked = hasMessage
     ? !!protocolMessage
@@ -37,7 +43,9 @@ export async function handler (client: import('@/bot/main').Whatsapp, content: {
             ? client.getNestedProp<string>(content.messages[0].message, 'conversation')
             : hasExtendedTextMessage
               ? client.getNestedProp<string>(content.messages[0].message, 'extendedTextMessage.text')
-              : ''
+              : hasDocumentWithCaptionMessage
+                ? client.getNestedProp<string>(content.messages[0].message, 'documentWithCaptionMessage.message.documentMessage.caption')
+                : ''
         : ''
       console.log({ msg })
       const regex = /wa\.me\/settings/gi
@@ -45,7 +53,7 @@ export async function handler (client: import('@/bot/main').Whatsapp, content: {
       // console.log("True 1");
       // console.log(content.messages[0])
       // console.log(msg)
-      if ((st.test(msg as string) && isImage) || hasQuotedMessage) {
+      if ((st.test(msg as string) && isImage) || hasQuotedMessage || hasDocumentWithCaptionMessage) {
         console.log('Sticker')
         const quotedMessage = client.getNestedProp<WAMessage>(content.messages[0].message, 'extendedTextMessage.contextInfo.quotedMessage')
         const mediaData = hasQuotedMessage ? await client.getMedia(quotedMessage as WAMessage) : await client.getMedia(content.messages[0].message as WAMessage)

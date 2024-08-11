@@ -10,8 +10,5 @@ export const MDL = {
    */
   async cmd(client: WASocket, msg: WAMessage, match: RegExpMatchArray) {
 
-  },
-  clg(m: string) {
-    console.log(m)
   }
 }
