@@ -96,6 +96,8 @@ class Whatsapp {
     // Recorrer cada parte de la propiedad
     for (let i = 0; i < parts.length; i++) {
     // Verificar si el objeto tiene la propiedad en cuestión
+      if (obj === null) return false
+      if (parts[i] === null) return false
       if (!Object.prototype.hasOwnProperty.call(obj, parts[i])) {
         return false // Si no la tiene, devolver false
       }
@@ -120,6 +122,8 @@ class Whatsapp {
     // Recorrer cada parte de la propiedad
     for (let i = 0; i < parts.length; i++) {
       // Verificar si el objeto tiene la propiedad en cuestión
+      if (obj === null) return undefined
+      if (parts[i] === null) return undefined
       if (!Object.prototype.hasOwnProperty.call(obj, parts[i])) {
         return undefined // Si no la tiene, devolver undefined
       }
