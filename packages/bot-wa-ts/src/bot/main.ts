@@ -3,12 +3,14 @@ import {
   useMultiFileAuthState,
   downloadContentFromMessage,
   type WASocket,
-  type WAMessage,
   type MediaType,
   type AnyMessageContent,
-  type MiscMessageGenerationOptions
+  type MiscMessageGenerationOptions,
+  type DownloadableMessage
 } from '@whiskeysockets/baileys'
 import pino from 'pino'
+import { createSticker, type IStickerOptions, StickerTypes } from 'wa-sticker-formatter'
+import { CommandImport } from '@/bot/interfaces/inter'
 
 //
 class Whatsapp {
@@ -18,6 +20,8 @@ class Whatsapp {
   status: number
   qr: string | null | undefined
   saveCreds: () => Promise<void>
+  commands: Map<RegExp, CommandImport>
+
   constructor() {
     this.logger = pino({ level: 'silent' })
     /**
@@ -27,6 +31,12 @@ class Whatsapp {
     this.status = 0
     this.qr = null
     this.saveCreds = null as unknown as () => Promise<void>
+    this.commands = new Map()
+  }
+
+  async saveFile(file: import('fs').PathOrFileDescriptor, content: string) {
+    const fs = await import('fs')
+    fs.writeFileSync(file, content, 'utf-8')
   }
 
   async getLogger() { return this.logger }
@@ -53,18 +63,23 @@ class Whatsapp {
     return `data:${mimeType};${BASE_64},`.concat(buffer.toString(BASE_64))
   }
 
-  async getMedia (msg: WAMessage): Promise<Buffer> {
-    type MessageType = 'imageMessage' | 'stickerMessage' | 'extendedTextMessage'
-    console.log(msg)
-    this.buffer2base64(Buffer.from([]), 'image/')
-    const messageType = Object.keys(msg as { [key: string]: any })[0] as MessageType
-    // console.log({ messageType }, msg.message[messageType])
-    const stream = await downloadContentFromMessage((msg as any)[messageType as any], messageType.replace('Message', '') as MediaType)
+  async stickerGenerator (mediaData: string | Buffer): Promise<Buffer> {
+    const stickerOption: IStickerOptions = {
+      pack: 'KafkaSticker',
+      author: 'Kreisler',
+      type: StickerTypes.FULL,
+      quality: 100
+    }
+    const generateSticker = await createSticker(mediaData, stickerOption)
+    return generateSticker
+  }
+
+  async getMedia (msg: DownloadableMessage, type: MediaType): Promise<Buffer> {
+    const stream = await downloadContentFromMessage(msg, type)
     let buffer = Buffer.from([])
     for await (const chunk of stream) {
       buffer = Buffer.concat([buffer, chunk])
     }
-
     return buffer
   }
 
@@ -124,7 +139,7 @@ class Whatsapp {
       printQRInTerminal: true
     })
     this.saveCreds = saveCreds
-    this.loadEvents()
+    this.start()
   }
 
   /**
@@ -136,14 +151,27 @@ class Whatsapp {
     await this.sock.sendMessage(jid, str, op)
   }
 
+  async start() {
+    await this.loadEvents()
+    await this.loadHandlers()
+    await this.loadCommands()
+  }
+
+  async loadHandlers() {
+    console.log('(%) Cargando handlers')
+
+    try {
+      (await import('@/bot/handlers/antiCrash')).default.bind(this)()
+    } catch (e) {
+      console.log('ERROR AL CARGAR EL HANDLER')
+    }
+  }
+
   async loadEvents() {
     console.log('(%) Cargando eventos')
 
-    // this.sock.ev.removeAllListeners('messages.upsert')
-    /*
-    const { loadFiles } = await import('@/bot/helpers/utils')
-    const RUTA_ARCHIVOS = await loadFiles('src/bot/events/client')
-    */
+    this.sock.ev.removeAllListeners('messages.upsert')
+
     try {
       // creds.update
       this.sock.ev.on('creds.update', this.saveCreds)
@@ -159,6 +187,31 @@ class Whatsapp {
       console.log('(✅) Eventos cargaods correctamente')
     } catch (e) {
       console.error('(X) Errror al cargar eventos', e)
+    }
+  }
+
+  getCommands(): Array<[RegExp, CommandImport]> {
+    return Array.from(this.commands)
+  }
+
+  findCommand(str: string): [boolean, [RegExp, CommandImport] | []] {
+    const cmd = this.getCommands().find(([expreg]) => expreg.test(str))
+    if (typeof cmd === 'undefined') {
+      return [false, []]
+    }
+    return [true, cmd]
+  }
+
+  async loadCommands() {
+    console.log('(%) Cargando comandos')
+    this.commands.clear()
+    try {
+      const COMANDO = await import('@/bot/commands/public/cmdPing')
+      if (this.hasOwnProp(COMANDO.default, 'active')) {
+        if (COMANDO.default.active === true) this.commands.set(COMANDO.default.ExpReg, COMANDO.default)
+      }
+    } catch (e) {
+      console.error({ e })
     }
   }
 }

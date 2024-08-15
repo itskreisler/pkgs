@@ -1,10 +1,14 @@
 import { ConnectionState, DisconnectReason } from '@whiskeysockets/baileys'
 import { WaConnectionState } from '@/bot/interfaces/inter'
+import { Boom } from '@hapi/boom'
+//
+
+//
 export async function handler (client: import('@/bot/main').Whatsapp, update: Partial<ConnectionState>): Promise<void> {
   const { connection, lastDisconnect } = update
   if (connection === WaConnectionState.close) {
     console.log('BOT WHATSAPP ❌ -- BY KREISLER!')
-    const koneksiUlang = (lastDisconnect as any).error.output.payload.statusCode !== DisconnectReason.loggedOut
+    const koneksiUlang = (lastDisconnect?.error as Boom)?.output.payload.statusCode !== DisconnectReason.loggedOut
     if (koneksiUlang) {
       client.WAConnect()
     }

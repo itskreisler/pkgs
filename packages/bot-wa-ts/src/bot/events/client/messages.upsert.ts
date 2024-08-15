@@ -2,8 +2,11 @@ import {
   WAMessage,
   type MessageUpsertType
 } from '@whiskeysockets/baileys'
-import { createSticker, StickerTypes, type IStickerOptions } from 'wa-sticker-formatter'
+import { configEnv } from '@/bot/helpers/env.test'
+import { CommandImport } from '@/bot/interfaces/inter'
+
 //
+const { BOT_PREFIX } = configEnv as { BOT_PREFIX: string }
 /**
  * @description Manejador de eventos de mensajes
  * @param {import('@/bot/main').Whatsapp} client
@@ -13,10 +16,7 @@ export async function handler (client: import('@/bot/main').Whatsapp, content: {
   messages: WAMessage[]
   type: MessageUpsertType
 }): Promise<void> {
-  // const chat = content.messages[0]
-  console.log(JSON.stringify({ content }, null, 2))
-  // fs.writeFileSync('message.json', JSON.stringify(m, null, 2))
-  // descargar si es un sticker
+  const chat = content.messages[0]
   const hasMessage: boolean = client.hasOwnProp(content.messages[0], 'message')
   const hasConversation: boolean = client.hasOwnProp(content.messages[0].message, 'conversation')
   const hasImageMessage: boolean = client.hasOwnProp(content.messages[0].message, 'imageMessage')
@@ -24,52 +24,73 @@ export async function handler (client: import('@/bot/main').Whatsapp, content: {
   const hasQuotedMessage: boolean = client.hasOwnProp(content.messages[0].message, 'extendedTextMessage.contextInfo.quotedMessage')
   const protocolMessage: boolean = client.hasOwnProp(content.messages[0].message, 'protocolMessage')
   const hasDocumentWithCaptionMessage: boolean = client.hasOwnProp(content.messages[0].message, 'documentWithCaptionMessage.message.documentMessage.caption')
+  console.log({
+    hasMessage,
+    hasConversation,
+    hasImageMessage,
+    hasExtendedTextMessage,
+    hasQuotedMessage,
+    protocolMessage,
+    hasDocumentWithCaptionMessage
+  })
   // const hasImageMessageCaption = client.hasOwnProp(content.messages[0].message, 'imageMessage.caption')
   const isRevoked = hasMessage
     ? !!protocolMessage
     : false
-    // console.log(m)
+
   if (content.messages[0].key.fromMe === false) {
     if (!isRevoked) {
       const isMessage = !!hasMessage
       const isImage = isMessage
         ? !!hasImageMessage
         : false
-      const from = content.messages[0].key.remoteJid as string
-      const msg = isMessage
+      const from: string = content.messages[0].key.remoteJid as string
+      const body: string = isMessage
         ? isImage
           ? client.getNestedProp<string>(content.messages[0].message, 'imageMessage.caption') ?? ''
           : hasConversation
-            ? client.getNestedProp<string>(content.messages[0].message, 'conversation')
+            ? client.getNestedProp<string>(content.messages[0].message, 'conversation') ?? ''
             : hasExtendedTextMessage
-              ? client.getNestedProp<string>(content.messages[0].message, 'extendedTextMessage.text')
+              ? client.getNestedProp<string>(content.messages[0].message, 'extendedTextMessage.text') ?? ''
               : hasDocumentWithCaptionMessage
-                ? client.getNestedProp<string>(content.messages[0].message, 'documentWithCaptionMessage.message.documentMessage.caption')
+                ? client.getNestedProp<string>(content.messages[0].message, 'documentWithCaptionMessage.message.documentMessage.caption') ?? ''
                 : ''
-        : ''
-      console.log({ msg })
+        : '' as string
+      if (!body.startsWith(BOT_PREFIX)) return
+      console.log({ body })
+      const [existe, [ExpReg, comando]] = client.findCommand(body)
+      if (existe === true) {
+        try {
+          const match = body.match(ExpReg as RegExp);
+          (comando as CommandImport).cmd(client, chat, match)
+        } catch (e) {
+          console.log({ e })
+          client.sendText(
+            from,
+            { text: `*Ha ocurrido un error al ejecutar el comando \`${body}\`*\n*Mira la consola para más detalle*` }
+          )
+        }
+      }
+      /*
+      async function getQuotedMessageRecursive(message: proto.IMessage | null | undefined) {
+        const quotedMessage = client.getNestedProp<WAMessage>(content.messages[0].message, 'extendedTextMessage.contextInfo.quotedMessage')
+        if (typeof quotedMessage !== 'undefined') return quotedMessage
+        return message
+      }
+      const quotedMessage = await getQuotedMessageRecursive(content.messages[0].message)
       const regex = /wa\.me\/settings/gi
       const st = /^\/st/gi
-      // console.log("True 1");
-      // console.log(content.messages[0])
-      // console.log(msg)
+
       if ((st.test(msg as string) && isImage) || hasQuotedMessage || hasDocumentWithCaptionMessage) {
-        console.log('Sticker')
-        const quotedMessage = client.getNestedProp<WAMessage>(content.messages[0].message, 'extendedTextMessage.contextInfo.quotedMessage')
-        const mediaData = hasQuotedMessage ? await client.getMedia(quotedMessage as WAMessage) : await client.getMedia(content.messages[0].message as WAMessage)
-        const stickerOption: IStickerOptions = {
-          pack: 'KafkaSticker',
-          author: 'Kreisler',
-          type: StickerTypes.FULL,
-          quality: 100
-        }
-        const generateSticker = await createSticker(mediaData, stickerOption)
+        // const quotedMessage = client.getNestedProp<WAMessage>(content.messages[0].message, 'extendedTextMessage.contextInfo.quotedMessage')
+        /* const mediaData = hasQuotedMessage ? await client.getMedia(quotedMessage?.message?.documentMessage as WAMessage) : await client.getMedia(content.messages[0].message?.stickerMessage as WAMessage)
+
         await client.sock.sendMessage(from, {
           sticker: generateSticker
         }, { quoted: content.messages[0] })
+
       }
       if (regex.test(msg as string)) {
-        // console.log("True 2");
         await client.sock.readMessages([content.messages[0].key])
         await client.sock.chatModify(
           {
@@ -100,7 +121,7 @@ export async function handler (client: import('@/bot/main').Whatsapp, content: {
           async () => client.sendText(from, { text: 'Hola como estas' }),
           1300
         )
-      }
+      } */
     }
   }
 }
