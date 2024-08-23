@@ -16,6 +16,7 @@
     "build:index": "tsup src/index.ts --format esm,cjs --onSuccess \"cp -r dist/* tmpbot\"",
     "build:server": "tsup --entry.server src/api/server.ts --format esm,cjs",
     "watch": "tsup src/index.ts --watch --onSuccess \"node dist/index.js\"",
+    "watch:test": "tsup src/index.ts --watch --onSuccess \"node dist/index.js\"",
     "watch:server": "tsup src/api/server.ts --watch --onSuccess \"node dist/server.js\"",
     "test": "echo \"Testing ui package\"",
     "test:cjs": "cross-env NODE_ENV=test node --test test/test.spec.cjs",
