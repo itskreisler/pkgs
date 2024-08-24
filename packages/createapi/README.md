@@ -58,7 +58,7 @@ interface Adviceslip {
 }
 const adviceslip = async () => {
   // createApi
-  const api = createApi('https://api.adviceslip.com') as Adviceslip
+  const api: Adviceslip = createApi('https://api.adviceslip.com')
   const output = await api.advice()
   // final url: https://api.adviceslip.com/advice
   console.log({ output }, output.slip.advice)
@@ -90,7 +90,7 @@ interface NekoBot {
   }>
 }
 const neko = async () => {
-  const api = createApi('https://nekobot.xyz/api', { debug: true }) as NekoBot
+  const api: NekoBot = createApi('https://nekobot.xyz/api', { debug: true })
   const res = await api.image({ type: 'neko' })
   console.log(res)
   /* {

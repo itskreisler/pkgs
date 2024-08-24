@@ -1,3 +1,7 @@
+/**
+ * @typedef {object} TypesArgs
+ * @property {boolean} [debug=false] - Debug mode
+ */
 export interface TypesArgs extends RequestInit {
   /** debug mode */
   debug?: boolean | undefined
@@ -8,13 +12,20 @@ export interface TypesArgs extends RequestInit {
   /** globalThis.decodeURIComponent */
   decodeURI?: Function | undefined
 }
+export enum DemoUrlsEnum {
+  NEKOBOT = 'https://nekobot.xyz/api',
+  POKEAPI = 'https://pokeapi.co/api/v2',
+  POSTMAN = 'https://postman-echo.com', /* /get,/post */
+  ANIMEFLV_KUDASAI = 'https://www3.animeflv.net', // /kudasai.php
+  FRASEDELDIA = 'https://frasedeldia.azurewebsites.net/api', // /phrase
+  ADVICE = 'https://api.adviceslip.com' // /advice
+}
+
+// Tipo que obtiene los valores de DemoUrls
 export type ExampleUrl = 'https://nekobot.xyz/api' | 'https://pokeapi.co/api/v2' | 'https://postman-echo.com' /* get,post */ | 'https://www3.animeflv.net' // kudasai.php
 const TRUE: boolean = true as const
 const FALSE: boolean = false as const
-/**
- * @typedef {object} TypesArgs
- * @property {boolean} [debug=false] - Debug mode
- */
+
 /**
  * @name createApi
  * @description Create an API instance for the specified URL
@@ -22,9 +33,9 @@ const FALSE: boolean = false as const
  * @param {TypesArgs | RequestInit} args - RequestInit
  * @returns {Object} API response
  * @example // Example usage of createApi
- * const api = createApi('https://nekobot.xyz/api')
- * const res = await api.image({ type: 'neko' })
- * console.log({ res})
+ * const nekobot = createApi('https://nekobot.xyz/api')
+ * const response = await nekobot.image({ type: 'neko' })
+ * console.log({ response }) // { "success": true, "message": "https://i0.nekobot.xyz/2/6/1/197f86b7789ad7db7ebbda6b3d7cf.jpg", "color": 15521502, "version": "2021070801" }
  *
  * @example
  * interface YameteResponse {
@@ -36,13 +47,13 @@ const FALSE: boolean = false as const
  *  category: {
  *    name: string
  *    slug: string
- *  }
- * }>>
+ *   }
+ *  }>>
  * }
- * const yamete = createApi('https://www3.animeflv.net') as YameteResponse
+ * const yamete: YameteResponse  = createApi('https://www3.animeflv.net')
  * yamete['kudasai.php']().then(data => console.log(data.map(x => x.title)))
  */
-export const createApi = (url: Required<ExampleUrl | URL | String | string>, args?: Partial<TypesArgs>): { [key: string]: any } => {
+export const createApi = <D>(url: Partial<ExampleUrl & Partial< URL | String | string>>, args?: Partial<TypesArgs>): D => {
   return new Proxy({}, {
     get: function (target, prop: string, receiver) {
       return async (id?: string | number | object | undefined | null, params?: string | string[][] | undefined, extraparams?: RequestInit): Promise<Response | string | any> => {
@@ -71,20 +82,21 @@ export const createApi = (url: Required<ExampleUrl | URL | String | string>, arg
         if ((args?.debug) === TRUE) return { prop, path, id, params, args: { ...args, ...extraparams }, target, receiver }
         const response = await globalThis.fetch(path, { ...args, ...extraparams })
         // no force json() text() response
-        if ((args?.force) === FALSE) return response
+        if ((args?.force) === FALSE) return response as D
         try {
-          return await response.json()
+          if (response.ok) return await response.json() as D
         } catch (errorJson) {
           try {
-            return await response.text()
+            return await response.text() as D
           } catch (errorText) {
             throw new Error('Error parsing response')
           }
         }
       }
     }
-  })
+  }) as D
 }
+
 /*
 async function r34API(tag: string[], limit: number): Promise<{ preview_url: string, sample_url: string, file_url: string } | 'no résult found'> {
   const tags = tag.join(' ')

@@ -84,6 +84,6 @@ describe('createApi', () => {
       headers: { 'Content-Type': 'application/json' }
 
     })
-    assert.strictEqual(response.url, 'https://postman-echo.com/post')
+    assert.strictEqual(response.url, 'http://postman-echo.com/post')
   })
 })
