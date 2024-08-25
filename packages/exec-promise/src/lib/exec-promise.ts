@@ -4,7 +4,7 @@ import { exec, type ExecException } from 'child_process'
  * const { stdout, stderr } = await execPromise('echo %PATH%')
  * console.log({stdout, stderr})
  *
- * @param {String} comando
+ * @param {String} comando - Comando a ejecutar
  * @returns {Promise<{stdout: String, stderr: String}|ExecException>}
  */
 export const execPromise = async (comando: string): Promise<{ stdout: string, stderr: string }> => {

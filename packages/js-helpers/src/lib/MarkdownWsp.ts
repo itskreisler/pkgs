@@ -75,7 +75,7 @@ export const MarkdownWsp = {
    * NumberedLists(['Hola', 'Mundo']) // 1. Hola\n2. Mundo
    * NumberedLists('Hola') // 1. Hola
    */
-  NumberedLists: (text: Required<string[] | string>): string => Array.isArray(text) ? text.map((t, i) => `${i + initialValue}. ${t}`).join('\n') : `${initialValue} ${text}`,
+  NumberedLists: (text: Required<string[] | string>): string => Array.isArray(text) ? text.map((t, i) => `${i + initialValue}. ${t}`).join('\n') : `${initialValue}. ${text}`,
   /**
    *
    * @param {String} text
