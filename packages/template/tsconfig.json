@@ -1,15 +1,25 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "lib": [
-      "dom",
-      "ES2015"
+    "typeRoots": [
+      "./node_modules/@types",
+      "./@types/*",
+      "./@types/**/*"
     ],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    },
+    "moduleResolution": "node",
     "module": "ESNext",
     "target": "ESNext",
     "allowJs": true,
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "removeComments": false
   },
   "include": [
     "."
@@ -17,7 +27,6 @@
   "exclude": [
     "dist",
     "build",
-    "node_modules",
-    "test"
+    "node_modules"
   ]
 }

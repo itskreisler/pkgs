@@ -10,14 +10,16 @@
     "dist/**"
   ],
   "scripts": {
-    "build": "tsup src/index.ts --format esm,cjs --dts",
+    "build": "tsup",
+    "build:all": "tsup src/index.ts --format esm,cjs --dts",
+    "build:entry": "tsup src/index.ts --format esm,cjs --onSuccess \"cp -r dist/* tmpbot\"",
     "watch": "tsup src/index.ts --watch --onSuccess \"node dist/index.js\"",
-    "test": "echo \"Testing ui package\"",
+    "test": "pnpm run build:all && tsup test/test.spec.ts --format esm --onSuccess \"cross-env NODE_ENV=test node --test dist/test.spec.mjs\"",
     "test:cjs": "cross-env NODE_ENV=test node --test test/test.spec.cjs",
     "test:mjs": "cross-env NODE_ENV=test node --test test/test.spec.mjs",
     "docs": "typedoc --out docs src/index.ts",
     "serve": "pnpx serve -p 1234 ./docs",
-    "publish:public": "npm publish --access public"
+    "pp": "pnpm run build:all && pnpm run test:mjs && pnpm run test:cjs && pnpm run docs && npm publish --access public"
   },
   "keywords": [],
   "repository": {
@@ -29,20 +31,18 @@
     "url": "https://github.com/itskreisler/pkgs/issues"
   },
   "author": {
-    "email": "tempkreisler@outlook.com",
+    "email": "cvkreisler@outlook.com",
     "name": "Kreisler",
     "url": "https://linktr.ee/itskreisler"
   },
   "contributors": [
     {
       "name": "Kreisler Ramirez Sierra",
-      "email": "tempkreisler@outlook.com",
+      "email": "cvkreisler@outlook.com",
       "url": "https://linktr.ee/itskreisler"
     }
   ],
   "license": "MIT",
-  "devDependencies": {
-    "typedoc": "^0.25.11"
-  },
+  "devDependencies": {},
   "dependencies": {}
 }

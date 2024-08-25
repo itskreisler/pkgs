@@ -1,13 +1,13 @@
-import { defineConfig } from 'tsup';
+import { defineConfig } from 'tsup'
 
 export default defineConfig({
   entry: {
-    '.': 'src/index.ts',
+    '.': 'src/index.ts'
   },
   banner: {
-    js: `// @buymeacoffee https://www.buymeacoffee.com/kreisler`,
+    js: '// @buymeacoffee https://www.buymeacoffee.com/kreisler'
   },
   format: ['cjs', 'esm'],
-  //external: ['react'],
-  dts: true,
-});
+  // external: ['react'],
+  dts: true
+})

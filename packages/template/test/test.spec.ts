@@ -5,16 +5,18 @@
 
 // ━━ IMPORT MODULES ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // » IMPORT NATIVE NODE MODULES
-const { describe, it } = require('node:test')
-const assert = require('node:assert')
+import { describe, it } from 'node:test'
+import assert from 'node:assert'
 
 // » IMPORT MODULES
-const main = require('../dist/index.js')
+import { helloWorld } from '@/lib/helloworld'
 
 // ━━ TEST ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 describe('TESTING', async () => {
   it('Hello World', async () => {
-    const result = main()
+    const result = helloWorld
     assert.strictEqual(result, 'Hello World!')
+    assert.strictEqual(result.length, 'Hello World!'.length)
+    assert.strictEqual('string', typeof result)
   })
 })
