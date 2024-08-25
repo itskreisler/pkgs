@@ -5,7 +5,9 @@
 
 // ━━ IMPORT MODULES ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // » IMPORT NATIVE NODE MODULES
+// @ts-expect-error
 import { describe, it } from 'node:test'
+// @ts-expect-error
 import assert from 'node:assert'
 
 // » IMPORT MODULES

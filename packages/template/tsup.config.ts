@@ -2,7 +2,7 @@ import { defineConfig } from 'tsup'
 
 export default defineConfig({
   entry: {
-    '.': 'src/index.ts'
+    index: 'src/index.ts'
   },
   banner: {
     js: '// @buymeacoffee https://www.buymeacoffee.com/kreisler'
