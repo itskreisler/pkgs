@@ -8,6 +8,11 @@ export async function handler (client: import('@/bot/main').Whatsapp, update: Pa
   const { connection, lastDisconnect } = update
   if (connection === WaConnectionState.close) {
     console.log('BOT WHATSAPP ❌ -- BY KREISLER!')
+    /*
+    const fs = await import('fs')
+    fs.rmSync(client.folderCreds, { recursive: true })
+    console.log('Credenciales eliminadas')
+    */
     const koneksiUlang = (lastDisconnect?.error as Boom)?.output.payload.statusCode !== DisconnectReason.loggedOut
     if (koneksiUlang) {
       client.WAConnect()

@@ -8,7 +8,7 @@ export enum CONSOLE_COLORS {
 export enum CONSOLE_COLORS_OUTLINE {
   purple = 105
 }
-export const CLG = {
+export const ASD = {
   purple: (message: string) => console.log(`\x1b[38;5;105m${message}\x1b[0m`)
 }
 /**

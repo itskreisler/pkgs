@@ -45,6 +45,5 @@
   "license": "MIT",
   "devDependencies": {},
   "dependencies": {
-  "bot": "file:dist/index"
   }
 }

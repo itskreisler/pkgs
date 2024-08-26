@@ -14,7 +14,7 @@ const initialValue = 1
  * - Inline Code: `text`
  *
  */
-export const MarkdownWsp = {
+const MarkdownWsp = {
   /**
    *
    * @param {String} text
@@ -85,3 +85,14 @@ export const MarkdownWsp = {
    */
   InlineCode: (text: string): string => `\`${text}\``
 }
+export {
+  MarkdownWsp
+}
+export const Italic = MarkdownWsp.Italic
+export const Bold = MarkdownWsp.Bold
+export const Strikethrough = MarkdownWsp.Strikethrough
+export const Monospace = MarkdownWsp.Monospace
+export const Quote = MarkdownWsp.Quote
+export const BulletedList = MarkdownWsp.BulletedList
+export const NumberedLists = MarkdownWsp.NumberedLists
+export const InlineCode = MarkdownWsp.InlineCode

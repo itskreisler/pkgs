@@ -6,11 +6,14 @@ import {
   type MediaType,
   type AnyMessageContent,
   type MiscMessageGenerationOptions,
-  type DownloadableMessage
+  type DownloadableMessage,
+  proto
 } from '@whiskeysockets/baileys'
 import pino from 'pino'
 import { createSticker, type IStickerOptions, StickerTypes } from 'wa-sticker-formatter'
 import { CommandImport } from '@/bot/interfaces/inter'
+import { Media } from '@/bot/interfaces/media'
+import { Message } from './interfaces/message'
 
 //
 class Whatsapp {
@@ -21,7 +24,7 @@ class Whatsapp {
   qr: string | null | undefined
   saveCreds: () => Promise<void>
   commands: Map<RegExp, CommandImport>
-
+  folderCreds: string = 'creds'
   constructor() {
     this.logger = pino({ level: 'silent' })
     /**
@@ -36,7 +39,14 @@ class Whatsapp {
 
   async saveFile(file: import('fs').PathOrFileDescriptor, content: string) {
     const fs = await import('fs')
-    fs.writeFileSync(file, content, 'utf-8')
+    // archivo no existe crearlo
+    if (!fs.existsSync(file as import('fs').PathLike)) {
+      fs.writeFileSync(file, '[]', { encoding: 'utf-8' })
+    }
+    const temp = fs.readFileSync(file, { encoding: 'utf-8' })
+    const data: any[] = JSON.parse(temp)
+    data.push(JSON.parse(content)[0])
+    fs.writeFileSync(file, JSON.stringify(data, null, 2), { encoding: 'utf-8' })
   }
 
   async getLogger() { return this.logger }
@@ -96,17 +106,17 @@ class Whatsapp {
     // Recorrer cada parte de la propiedad
     for (let i = 0; i < parts.length; i++) {
     // Verificar si el objeto tiene la propiedad en cuestión
-      if (obj === null) return false
-      if (parts[i] === null) return false
+      if (obj === null) return false as boolean
+      if (parts[i] === null) return false as boolean
       if (!Object.prototype.hasOwnProperty.call(obj, parts[i])) {
-        return false // Si no la tiene, devolver false
+        return false as boolean // Si no la tiene, devolver false
       }
       // Si la tiene, mover el objeto a la propiedad actual para la siguiente iteración
       obj = obj[parts[i]]
     }
 
     // Si se recorrieron todas las partes y se encontraron, devolver true
-    return true
+    return true as boolean
   }
 
   /**
@@ -136,7 +146,7 @@ class Whatsapp {
   }
 
   async WAConnect() {
-    const { state, saveCreds } = await useMultiFileAuthState('creds')
+    const { state, saveCreds } = await useMultiFileAuthState(this.folderCreds)
     this.sock = makeWASocket({
       auth: state,
       logger: this.logger,
@@ -210,13 +220,50 @@ class Whatsapp {
     console.log('(%) Cargando comandos')
     this.commands.clear()
     try {
-      const COMANDO = await import('@/bot/commands/public/cmdPing')
-      if (this.hasOwnProp(COMANDO.default, 'active')) {
-        if (COMANDO.default.active === true) this.commands.set(COMANDO.default.ExpReg, COMANDO.default)
+      //
+      const CMD_PING = await import('@/bot/commands/public/cmdPing')
+      if (this.hasOwnProp(CMD_PING.default, 'active')) {
+        if (CMD_PING.default.active === true) this.commands.set(CMD_PING.default.ExpReg, CMD_PING.default)
+      }
+      //
+      const CMD_MAL = await import('@/bot/commands/public/cmd.mal')
+      if (this.hasOwnProp(CMD_MAL.default, 'active')) {
+        if (CMD_MAL.default.active === true) this.commands.set(CMD_MAL.default.ExpReg, CMD_MAL.default)
       }
     } catch (e) {
       console.error({ e })
     }
+  }
+
+  /**
+   * @deprecated
+   * @param id
+   * @param content
+   * @param opts
+   * @returns
+   */
+  async send(id: string, content: string | Media | AnyMessageContent, opts?: MiscMessageGenerationOptions): Promise<Message> {
+    return await new Promise((resolve) => {
+      (async () => {
+        let msg: proto.WebMessageInfo
+        if (typeof content === 'string') msg = (await this.sock.sendMessage(id, { text: content }, opts)) as proto.WebMessageInfo
+        else if (content instanceof Media) {
+          msg = (await this.sock.sendMessage(id, {
+            text: content.text,
+            video: (content.isVideo === true) ? content.buffer : undefined,
+            image: (content.isImage === true) ? content.buffer : undefined,
+            // @ts-expect-error
+            audio: (content.isAudio === true) ? content.buffer : undefined
+          }, opts)) as proto.WebMessageInfo
+        } else {
+          msg = (await this.sock.sendMessage(id, content, {
+            ...opts
+          })) as proto.WebMessageInfo
+        }
+
+        resolve(new Message(this, msg))
+      })()
+    })
   }
 }
 

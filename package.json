@@ -35,9 +35,7 @@
     }
   ],
   "license": "MIT",
-  "dependencies": {
-    
-  },
+  "dependencies": {},
   "eslintConfig": {
     "extends": [
       "./node_modules/ts-standard/eslintrc.json"

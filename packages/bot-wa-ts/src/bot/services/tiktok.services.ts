@@ -26,7 +26,7 @@ export interface Data {
   wmplay: string
   hdplay: string
   size: number | null
-  wm_size: null | number
+  wm_size: number | null
   hd_size: number | null
   music: string
   music_info: MusicInfo
@@ -89,7 +89,25 @@ export const tikwm = async (
   return await new Promise((resolve, reject) => {
     const bodyParsed = new URLSearchParams(op.body as unknown as Record<string, string>).toString()
     fetchUrl(
-            `${op.domain}/api/?${bodyParsed}`).then(async response => {
+            `${op.domain}/api/?${bodyParsed}`, {
+              headers: {
+                accept: 'application/json, text/javascript, */*; q=0.01',
+                'accept-language': 'es-US,es-ES;q=0.9,es-CO;q=0.8,es-419;q=0.7,es;q=0.6,en;q=0.5,fr;q=0.4',
+                'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                priority: 'u=1, i',
+                'sec-ch-ua': '"Not)A;Brand";v="99", "Google Chrome";v="127", "Chromium";v="127"',
+                'sec-ch-ua-mobile': '?0',
+                'sec-ch-ua-platform': '"Windows"',
+                'sec-fetch-dest': 'empty',
+                'sec-fetch-mode': 'cors',
+                'sec-fetch-site': 'same-origin',
+                'sec-gpc': '1',
+                'x-requested-with': 'XMLHttpRequest',
+                cookie: 'current_language=es',
+                Referer: 'https://www.tikwm.com/es/',
+                'Referrer-Policy': 'strict-origin-when-cross-origin'
+              }
+            }).then(async response => {
       if (response.ok) {
         return await response.text()
       }
@@ -104,8 +122,4 @@ export const tikwm = async (
     }).catch(reject)
   })
 }
-export default () => {
-  return {
-    tikwm
-  }
-}
+export const sizeMB = (size: number | null, fractionDigits: number | undefined = 2): string => typeof size === 'number' ? (size / 1024 / 1024).toFixed(fractionDigits) : '0.00'

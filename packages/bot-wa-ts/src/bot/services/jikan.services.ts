@@ -1,4 +1,18 @@
 import { createApi } from '@kreisler/createapi'
+import JsGoogleTranslateFree from '@kreisler/js-google-translate-free'
+export const en2es = async (text: string) => {
+  let translation
+  try {
+    translation = await JsGoogleTranslateFree.translate({
+      from: 'en',
+      to: 'es',
+      text
+    })
+  } catch {
+    translation = ''
+  }
+  return translation
+}
 //
 export const JIKAN_MOE_API_URL = 'https://api.jikan.moe/v4'
 /** Enum: "tv","movie" "ova" "special" "ona" "music" "cm" "pv" "tv_special" */
@@ -46,6 +60,14 @@ export enum JikanApiOrderBy {
   'members',
   'favorites'
 }
+export enum JikanApiRandomTypes {
+  anime = 'anime',
+  manga = 'manga',
+  characters = 'characters',
+  people = 'people',
+  users = 'users'
+}
+export type JikanApiRandomStr = keyof typeof JikanApiRandomTypes
 export interface JikanApiParams {
   unapproved?: boolean
   page?: number
@@ -74,14 +96,20 @@ export interface JikanApi {
     (id: number): Promise<JikanResponseById>
     (parametros: JikanApiParams): Promise<JikanResponse>
   }
+  random: (type?: JikanApiRandomStr) => Promise<JikanResponseById>
 }
 export const jikanMoeApi: JikanApi = createApi(JIKAN_MOE_API_URL)
 export const getAnimeSearch = async (q: string) => await jikanMoeApi.anime({ q, limit: 1 })
 export const getAnimeById = async (id: number) => await jikanMoeApi.anime(id)
 export const getAnimeFullById = async (id: number) => await jikanMoeApi.anime(id.toString().concat('/full'))
+export const getRandom = async (type: JikanApiRandomStr = 'anime') => await jikanMoeApi.random(type)
 //
 export interface JikanResponseById {
   data: Daum
+  status?: 404
+  type?: 'BadResponseException'
+  message?: 'Resource does not exist'
+  error?: '404 on https://myanimelist.net/anime/12324/'
 }
 export interface JikanResponse {
   data: Daum[]

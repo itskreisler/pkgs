@@ -63,6 +63,7 @@
   "dependencies": {
     "@hapi/boom": "^10.0.1",
     "@kreisler/createapi": "^2.5.0",
+    "@kreisler/js-google-translate-free": "^4.0.2",
     "@whiskeysockets/baileys": "^6.7.7",
     "dotenv": "^16.4.5",
     "pino": "^9.3.2",
