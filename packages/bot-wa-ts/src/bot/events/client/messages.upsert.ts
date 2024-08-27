@@ -3,7 +3,7 @@ import {
   type MessageUpsertType,
   type proto
 } from '@whiskeysockets/baileys'
-import { configEnv } from '@/bot/helpers/env.test'
+import { configEnv } from '@/bot/helpers/env'
 import { CommandImport, WaMessageTypes } from '@/bot/interfaces/inter'
 import { Message } from '@/bot/interfaces/message'
 
@@ -98,6 +98,7 @@ export async function handler (client: import('@/bot/main').Whatsapp, content: {
   const [existe, [ExpReg, comando]] = client.findCommand(body)
   if (existe === true) {
     try {
+      console.log({ existe })
       const msg = new Message(client, chat)
       const match = body.match(ExpReg as RegExp);
       (comando as CommandImport).cmd(client, { msg, wamsg: chat }, match as RegExpMatchArray)

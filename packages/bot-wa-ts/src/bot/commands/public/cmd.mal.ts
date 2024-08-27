@@ -1,4 +1,4 @@
-import { configEnv } from '@/bot/helpers/env.test'
+import { configEnv } from '@/bot/helpers/env'
 import { type ContextMsg } from '@/bot/interfaces/inter'
 import type Whatsapp from '@/bot/main'
 import { MarkdownWsp } from './../../../../../js-helpers/src/lib/MarkdownWsp'
