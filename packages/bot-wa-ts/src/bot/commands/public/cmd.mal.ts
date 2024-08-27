@@ -1,7 +1,7 @@
 import { configEnv } from '@/bot/helpers/env'
 import { type ContextMsg } from '@/bot/interfaces/inter'
 import type Whatsapp from '@/bot/main'
-import { MarkdownWsp } from './../../../../../js-helpers/src/lib/MarkdownWsp'
+import { MarkdownWsp } from '@kreisler/js-helpers/dist/MarkdownWsp'
 import { en2es, getAnimeById, getAnimeSearch, getRandom } from '@/bot/services/jikan.services'
 const { BOT_USERNAME } = configEnv as { BOT_USERNAME: string }
 const DEFALT_TEXT = 'N/A'
