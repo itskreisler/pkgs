@@ -221,14 +221,22 @@ class Whatsapp {
     this.commands.clear()
     try {
       //
-      const CMD_PING = await import('@/bot/commands/public/cmdPing')
-      if (this.hasOwnProp(CMD_PING.default, 'active')) {
-        if (CMD_PING.default.active === true) this.commands.set(CMD_PING.default.ExpReg, CMD_PING.default)
+      try {
+        const CMD_PING = await import('@/bot/commands/public/cmdPing')
+        if (this.hasOwnProp(CMD_PING.default, 'active')) {
+          if (CMD_PING.default.active === true) this.commands.set(CMD_PING.default.ExpReg, CMD_PING.default)
+        }
+      } catch (e) {
+        console.log('Error al cargar el comando ping', { e })
       }
       //
-      const CMD_MAL = await import('@/bot/commands/public/cmd.mal')
-      if (this.hasOwnProp(CMD_MAL.default, 'active')) {
-        if (CMD_MAL.default.active === true) this.commands.set(CMD_MAL.default.ExpReg, CMD_MAL.default)
+      try {
+        const CMD_MAL = await import('@/bot/commands/public/cmd.mal')
+        if (this.hasOwnProp(CMD_MAL.default, 'active')) {
+          if (CMD_MAL.default.active === true) this.commands.set(CMD_MAL.default.ExpReg, CMD_MAL.default)
+        }
+      } catch (e) {
+        console.log('Error al cargar el comando mal', { e })
       }
     } catch (e) {
       console.error({ e })
