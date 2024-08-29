@@ -64,3 +64,15 @@ export const formatter = (size: number, { unit = 'kilobyte' }: {
     maximumFractionDigits: 2
   }).format(FileSizeUnit.kilobyte === unit ? (size / 1024) : (size / 1024 / 1024))
 }
+export const sleep = async (ms: number) => await new Promise((resolve) => setTimeout(resolve, ms))
+/*
+globalThis.fetch('https://www.tikwm.com/video/media/play/7407636590996114693.mp4')
+  .then(async r => await r.arrayBuffer())
+  .then(async (data) => {
+    console.log(data)
+    const fileType = await fileTypeFromBuffer(data)
+    console.log(fileType)
+    const buffer = Buffer.from(data)
+    saveFile(Date.now().toString().concat('.', fileType?.ext), buffer)
+  })
+*/

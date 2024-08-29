@@ -8,8 +8,12 @@ export enum TikTokTypes {
   COVER = '/video/cover/',
   MUSIC = '/video/music/'
 }
+export enum TikTokStatusCodes {
+  OK = 0,
+  FAILED = -1
+}
 export interface TikTokResponse {
-  code: -1 | 0
+  code: TikTokStatusCodes.OK | TikTokStatusCodes.FAILED
   msg: 'success' | 'Url parsing is failed! Please check url.'
   processed_time: number
   data?: Data

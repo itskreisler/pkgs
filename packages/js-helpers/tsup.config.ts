@@ -8,7 +8,8 @@ export default defineConfig({
     normalize: 'src/lib/normalize.ts',
     stripHtmlTags: 'src/lib/stripHtmlTags.ts',
     converter: 'src/lib/converter.ts',
-    abbreviateNumber: 'src/lib/abbreviateNumber.ts'
+    abbreviateNumber: 'src/lib/abbreviateNumber.ts',
+    argv2Object: 'src/lib/argv2Object.ts'
   },
   banner: {
     js: '// @buymeacoffee https://www.buymeacoffee.com/kreisler'

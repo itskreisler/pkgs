@@ -37,6 +37,16 @@ class Whatsapp {
     this.commands = new Map()
   }
 
+  //
+  async sendMediaGroup (jid: string, media: AnyMessageContent[], options = {}, step: number = 10) {
+    const promises = []
+    for (const chunk of media) {
+      promises.push(this.sock.sendMessage(jid, chunk, options))
+    }
+    return await Promise.all(promises)
+  }
+
+  //
   getTextMessage(c: proto.IMessage | null | undefined): BodyMsg {
     let typeMessage = Object.keys(c as proto.IMessage)[0] as WaMessageTypes
     // logica en caso de que sea un mensaje de texto extendido
@@ -356,8 +366,9 @@ class Whatsapp {
             text: content.text,
             video: (content.isVideo === true) ? content.buffer : undefined,
             image: (content.isImage === true) ? content.buffer : undefined,
+            audio: (content.isAudio === true) ? content.buffer : undefined,
             // @ts-expect-error
-            audio: (content.isAudio === true) ? content.buffer : undefined
+            document: (content.isDocument === true) ? content.buffer : undefined
           }, opts)) as proto.WebMessageInfo
         } else {
           msg = (await this.sock.sendMessage(id, content, {

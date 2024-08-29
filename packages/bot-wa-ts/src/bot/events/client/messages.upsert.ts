@@ -2,18 +2,38 @@ import {
   type WAMessage,
   type MessageUpsertType
 } from '@whiskeysockets/baileys'
+import type Whatsapp from '@/bot/main'
 import { configEnv } from '@/bot/helpers/env'
-import { CommandImport } from '@/bot/interfaces/inter'
+import { type ContextMsg, type decounceMessage } from '@/bot/interfaces/inter'
 import { Message } from '@/bot/interfaces/message'
-
+import { debounce } from '@kreisler/debounce'
 //
 const { BOT_PREFIX } = configEnv as { BOT_PREFIX: string }
+const messageDebounced = debounce(messageHandler, 5000, {
+  immediate: true,
+  flood: 5,
+  onFlood: (result: decounceMessage) => {
+    result.context.msg.reply({
+      text: '🚨 *Flood detectado*\n_Espera 5 segundos antes de volver a ejecutar un comando_'
+    })
+  },
+  onComplete: (result: decounceMessage) => {
+    console.log(
+      'Se ha ejecutado el comando', result.ExpReg, result.context.body
+    )
+  }
+})
+function messageHandler ({ client, context, comando, ExpReg }: decounceMessage) {
+  // @ts-expect-error
+  const match = context.body.match(ExpReg) as RegExpMatchArray
+  comando.cmd(client, context, match)
+}
 /**
  * @description Manejador de eventos de mensajes
- * @param {import('@/bot/main').Whatsapp} client
+ * @param {Whatsapp} client
  * @param {{ messages: import("@whiskeysockets/baileys").WAMessage[], type: import("@whiskeysockets/baileys").MessageUpsertType }} content
  */
-export async function handler (client: import('@/bot/main').Whatsapp, content: {
+export async function handler (client: Whatsapp, content: {
   messages: WAMessage[]
   type: MessageUpsertType
 }): Promise<void> {
@@ -31,9 +51,8 @@ export async function handler (client: import('@/bot/main').Whatsapp, content: {
   if (existe === true) {
     try {
       const msg = new Message(client, chat)
-      console.log({ isReply: msg.isReply })
-      const match = body.match(ExpReg as RegExp) as RegExpMatchArray;
-      (comando as CommandImport).cmd(client, { msg, wamsg: chat, ...getMessageBody }, match)
+      const context: ContextMsg = { msg, wamsg: chat, ...getMessageBody }
+      messageDebounced({ client, context, comando, ExpReg })
     } catch (e) {
       console.log('Ha ocurrido un error al ejecutar el comando', { e })
       const from: string = chat.key.remoteJid as string

@@ -37,3 +37,9 @@ export interface CommandImport {
   ExpReg: RegExp
   cmd: (client: Whatsapp, context: ContextMsg, match: RegExpMatchArray) => Promise<void>
 }
+export interface decounceMessage {
+  client: Whatsapp
+  context: ContextMsg
+  comando: CommandImport
+  ExpReg: RegExp
+}
