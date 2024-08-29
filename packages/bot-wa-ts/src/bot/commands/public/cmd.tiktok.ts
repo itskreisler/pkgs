@@ -3,6 +3,7 @@ import { type ContextMsg } from '@/bot/interfaces/inter'
 import type Whatsapp from '@/bot/main'
 import { tikwm, TikTokStatusCodes } from '@/bot/services/tiktok.services'
 import { nodeFetchBuffer } from '@/bot/helpers/polyfill'
+import { MarkdownWsp } from '@kreisler/js-helpers'
 // const { BOT_USERNAME } = configEnv as { BOT_USERNAME: string }
 //
 const ExpReg = /^\/tt(?:\s+(https?:\/\/((?:www\.)?|(?:vm\.)?|(?:m\.)?)tiktok\.com\/(?:@[a-zA-Z0-9_]+\/)?(?:video\/)?([a-zA-Z0-9]+)))?/ims
@@ -62,26 +63,47 @@ export default {
           })
       } else {
         const urlPLay = (str: 'play' | 'hdplay' | 'hdplay'): string => domain.concat(data[str])
+        const caption = [{
+          type: 'play',
+          url: urlPLay('play')
+        }, {
+          type: 'hdplay',
+          url: urlPLay('hdplay')
+        },
+        {
+          type: 'cover',
+          url: urlPLay('cover')
+        }
+        ].map(({ type, url }) => MarkdownWsp.Quote(type.concat(': ', url))).join('\n')
+        console.log(
+          caption
+        )
         const playMB = Math.round((data.size as number) / 1024 / 1024)
         const hdplayMB = Math.round((data.hd_size as number) / 1024 / 1024)
+        console.log(hdplayMB, playMB)
         let tempBuffer
         if (hdplayMB < 49) {
-          tempBuffer = await nodeFetchBuffer(urlPLay('play'))
+          tempBuffer = await nodeFetchBuffer(urlPLay('hdplay'))
+          console.log('Enviando video en hd')
           await client.sock.sendMessage(wamsg.key.remoteJid as string, {
             video: tempBuffer.buffer,
             mimetype: tempBuffer.fileType?.mime as string,
             fileName: Date.now().toString().concat('.', tempBuffer.fileType?.ext as string),
-            caption: urlPLay('play')
-          }).catch(async (e) => {
-            console.log('Ha ocurrido un error al enviar el video', { e })
-            msg.reply({ text: 'Ha ocurrido un error al enviar el video' })
+            caption
+          }).catch(async (e1) => {
+            console.log('Ha ocurrido un error al enviar el video en hd', { e1 })
+            msg.reply({ text: 'Ha ocurrido un error al enviar el video en hd' })
             //
-            tempBuffer = await nodeFetchBuffer(urlPLay('hdplay'))
+            tempBuffer = await nodeFetchBuffer(urlPLay('play'))
             await client.sock.sendMessage(wamsg.key.remoteJid as string, {
               video: tempBuffer.buffer,
               mimetype: tempBuffer.fileType?.mime as string,
               fileName: Date.now().toString().concat('.', tempBuffer.fileType?.ext as string),
-              caption: urlPLay('play')
+              caption
+            }).catch((e2) => {
+              console.log('Ha ocurrido un error al enviar el video en play', { e2 })
+              msg.reply({ text: 'Ha ocurrido un error al enviar el video en play' })
+              // send cover
             })
           })
         }

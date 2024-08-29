@@ -99,7 +99,7 @@ export interface JikanApi {
   random: (type?: JikanApiRandomStr) => Promise<JikanResponseById>
 }
 export const jikanMoeApi: JikanApi = createApi(JIKAN_MOE_API_URL)
-export const getAnimeSearch = async (q: string) => await jikanMoeApi.anime({ q, limit: 1 })
+export const getAnimeSearch = async (q: string, limit: number = 10) => await jikanMoeApi.anime({ q, limit })
 export const getAnimeById = async (id: number) => await jikanMoeApi.anime(id)
 export const getAnimeFullById = async (id: number) => await jikanMoeApi.anime(id.toString().concat('/full'))
 export const getRandom = async (type: JikanApiRandomStr = 'anime') => await jikanMoeApi.random(type)
