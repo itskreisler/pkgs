@@ -1,6 +1,7 @@
 import { AnyMessageContent, downloadMediaMessage, GroupMetadata, MiscMessageGenerationOptions, proto, WABusinessProfile } from '@whiskeysockets/baileys'
 import { Media } from './media'
 import P from 'pino'
+import { WaMessageTypes } from './inter'
 export class Message {
   protected _data: import('@whiskeysockets/baileys').proto.IWebMessageInfo
   id: string
@@ -23,11 +24,20 @@ export class Message {
     this.fromMe = fromMe as boolean
     // @ts-expect-error
     this.isReply = !((message[Object.keys(message)[0] as keyof proto.IMessage]?.contextInfo as proto.ContextInfo)?.quotedMessage === false)
-    const type = Object.keys(data.message ?? {})[0]
-    // @ts-expect-error
-    this.content = message?.conversation ?? message?.extendedTextMessage?.text ?? message[type]?.caption ?? ''
-    this.hasMedia = ['imageMessage', 'videoMessage', 'stickerMessage', 'audioMessage', 'documentMessage', 'documentWithCaptionMessage', 'viewOnceMessage'].includes(type)
-    if ((message?.documentWithCaptionMessage) != null) this.content = message.documentWithCaptionMessage.message?.documentMessage?.caption as string
+    const type = Object.keys(data.message ?? {})[0] as WaMessageTypes
+
+    this.content = client.getMessageBody(data).body
+    // this.hasMedia = ['imageMessage', 'videoMessage', 'stickerMessage', 'audioMessage', 'documentMessage', 'documentWithCaptionMessage', 'viewOnceMessage'].includes(type)
+    this.hasMedia = [
+      WaMessageTypes.imageMessage,
+      WaMessageTypes.videoMessage,
+      WaMessageTypes.stickerMessage,
+      WaMessageTypes.audioMessage,
+      WaMessageTypes.documentMessage,
+      WaMessageTypes.documentWithCaptionMessage,
+      WaMessageTypes.viewOnceMessage
+    ].includes(type)
+    // console.log({ c: this.content })
   }
 
   async reply(content: AnyMessageContent, opts?: MiscMessageGenerationOptions) {

@@ -20,6 +20,11 @@ export enum WaMessageTypes {
   conversation = 'conversation'
 }
 export type WAMessageTypesStr = keyof typeof WaMessageTypes
+export interface BodyMsgType {
+  body: string
+  typeMessage: string & keyof typeof WaMessageTypes
+  quotedBody?: string
+}
 export interface ContextMsg { wamsg: WAMessage, msg: Message }
 export interface CommandImport {
   active: boolean

@@ -1,10 +1,9 @@
 import {
   type WAMessage,
-  type MessageUpsertType,
-  type proto
+  type MessageUpsertType
 } from '@whiskeysockets/baileys'
 import { configEnv } from '@/bot/helpers/env'
-import { CommandImport, WaMessageTypes } from '@/bot/interfaces/inter'
+import { CommandImport } from '@/bot/interfaces/inter'
 import { Message } from '@/bot/interfaces/message'
 
 //
@@ -18,96 +17,26 @@ export async function handler (client: import('@/bot/main').Whatsapp, content: {
   messages: WAMessage[]
   type: MessageUpsertType
 }): Promise<void> {
-  const getMessageBody = (c: proto.IWebMessageInfo): { body: string, typeMessage: string & keyof typeof WaMessageTypes } => {
-    const hasMessage: boolean = client.hasOwnProp(c, 'message')
-    if (hasMessage) {
-      // logica en caso de que sea una imagen
-      const hasImageMessage: boolean = client.hasOwnProp(c.message, WaMessageTypes.imageMessage)
-      if (hasImageMessage) {
-        const hasImageMessageCaption: boolean = client.hasOwnProp(c.message, WaMessageTypes.imageMessage.concat('.').concat('caption'))
-        if (hasImageMessageCaption) {
-          return {
-            body: c.message?.imageMessage?.caption ?? '',
-            typeMessage: WaMessageTypes.imageMessage
-          }
-        }
-      }
-      // logica en caso de que sea un mensaje de texto
-      const hasExtendedTextMessage: boolean = client.hasOwnProp(c.message, WaMessageTypes.extendedTextMessage)
-      if (hasExtendedTextMessage) {
-        // logica en caso de que sea una respuesta
-        if (client.hasOwnProp(c.message?.extendedTextMessage, 'contextInfo') as boolean) {
-          const hasQuotedMessage: boolean = client.hasOwnProp(c.message?.extendedTextMessage?.contextInfo, 'quotedMessage')
-          if (hasQuotedMessage) {
-            let conversation: string | undefined = ''
-            const hasQuotedMessageConversation: boolean = client.hasOwnProp(c.message, 'extendedTextMessage.contextInfo.quotedMessage.conversation')
-            const hasQuotedMessageConversationExtendedTextMessage: boolean = client.hasOwnProp(c.message, 'extendedTextMessage.contextInfo.quotedMessage.conversation.extendedTextMessage')
-            if (hasQuotedMessageConversation) {
-              conversation = client.getNestedProp<string>(c.message, 'extendedTextMessage.contextInfo.quotedMessage.conversation')
-            }
-            if (hasQuotedMessageConversationExtendedTextMessage) {
-              conversation = client.getNestedProp<string>(c.message, 'extendedTextMessage.contextInfo.quotedMessage.conversation.extendedTextMessage.text')
-            }
-            if (hasQuotedMessageConversation || hasQuotedMessageConversationExtendedTextMessage) {
-              console.log({
-                hasQuotedMessageConversation,
-                conversation,
-                hasQuotedMessageConversationExtendedTextMessage
-              })
-            }
-          }
-        }
-        return {
-          body: c.message?.extendedTextMessage?.text ?? '',
-          typeMessage: WaMessageTypes.extendedTextMessage
-        }
-      }
-      // logica en caso de que sea un documento con caption
-      const hasDocumentWithCaptionMessage: boolean = client.hasOwnProp(c.message, WaMessageTypes.documentWithCaptionMessage)
-      if (hasDocumentWithCaptionMessage) {
-        return {
-          body: c.message?.documentWithCaptionMessage?.message?.documentMessage?.caption ?? '',
-          typeMessage: WaMessageTypes.documentWithCaptionMessage
-        }
-      }
-      // logica en caso de que sea una conversacion
-      const hasConversation: boolean = client.hasOwnProp(c.message, WaMessageTypes.conversation)
-      if (hasConversation) {
-        return {
-          body: c.message?.conversation ?? '',
-          typeMessage: WaMessageTypes.conversation
-        }
-      }
-      //
-      const hasEphemeralMessage: boolean = client.hasOwnProp(c.message, WaMessageTypes.ephemeralMessage)
-      if (hasEphemeralMessage) {
-        return {
-          body: c.message?.ephemeralMessage?.message?.extendedTextMessage?.text ?? '',
-          typeMessage: WaMessageTypes.ephemeralMessage
-        }
-      }
-    }
-    return { body: '', typeMessage: '' as keyof typeof WaMessageTypes }
-  }
   const chat = content.messages[0]
-  const { body, typeMessage } = getMessageBody(chat)
-  // client.saveFile('./dist/chat.json', JSON.stringify([chat], null, 2))
-  if (chat?.key?.remoteJid === 'status@broadcast' || ((chat?.message) == null) || chat.key.fromMe === true || body.length === 0) return
-  console.log({ typeMessage, body })
-  if (!body.startsWith(BOT_PREFIX)) return
+  const { body, typeMessage, quotedBody } = client.getMessageBody(chat)
+  client.saveFile('./dist/chat.json', JSON.stringify([chat], null, 2))
+  // if (chat?.key?.remoteJid === 'status@broadcast' || ((chat?.message) == null) || chat.key.fromMe === true || body.length === 0) return
+  if (chat.key.fromMe === true || body.length === 0) return
+  console.log({ typeMessage, body, quotedBody })
+  if (body.startsWith(BOT_PREFIX) === false) return
   const [existe, [ExpReg, comando]] = client.findCommand(body)
   if (existe === true) {
     try {
-      console.log({ existe })
       const msg = new Message(client, chat)
-      const match = body.match(ExpReg as RegExp);
-      (comando as CommandImport).cmd(client, { msg, wamsg: chat }, match as RegExpMatchArray)
+      console.log({ isReply: msg.isReply })
+      const match = body.match(ExpReg as RegExp) as RegExpMatchArray;
+      (comando as CommandImport).cmd(client, { msg, wamsg: chat }, match)
     } catch (e) {
-      console.log({ e })
+      console.log('Ha ocurrido un error al ejecutar el comando', { e })
       const from: string = chat.key.remoteJid as string
       client.sendText(
         from,
-        { text: `*Ha ocurrido un error al ejecutar el comando \`${body}\`*\n*Mira la consola para más detalle*` }
+        { text: `*Ha ocurrido un error al ejecutar el comando \`${body as string}\`*\n*Mira la consola para más detalle*` }
       )
     }
   }

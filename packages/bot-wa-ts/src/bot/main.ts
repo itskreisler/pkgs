@@ -11,7 +11,7 @@ import {
 } from '@whiskeysockets/baileys'
 import pino from 'pino'
 import { createSticker, type IStickerOptions, StickerTypes } from 'wa-sticker-formatter'
-import { CommandImport } from '@/bot/interfaces/inter'
+import { CommandImport, WaMessageTypes, type BodyMsgType } from '@/bot/interfaces/inter'
 import { Media } from '@/bot/interfaces/media'
 import { Message } from './interfaces/message'
 
@@ -37,6 +37,104 @@ class Whatsapp {
     this.commands = new Map()
   }
 
+  getMessageBody(c: proto.IWebMessageInfo): BodyMsgType {
+    const hasMessage: boolean = this.hasOwnProp(c, 'message')
+    let quotedBody: string | undefined
+    // logica en caso de que sea un mensaje de texto
+    const hasExtendedTextMessage: boolean = this.hasOwnProp(c.message, WaMessageTypes.extendedTextMessage)
+    if (hasExtendedTextMessage) {
+      // logica en caso de que sea una respuesta
+      const hasContextInfo: boolean = this.hasOwnProp(c.message?.extendedTextMessage, 'contextInfo')
+      if (hasContextInfo) {
+        const hasQuoted: boolean = this.hasOwnProp(c.message?.extendedTextMessage?.contextInfo, 'quotedMessage')
+        if (hasQuoted) {
+          const hasQuotedConversation: boolean = this.hasOwnProp(c.message, 'extendedTextMessage.contextInfo.quotedMessage.conversation')
+          const hasQuotedConversationExtended: boolean = this.hasOwnProp(c.message, 'extendedTextMessage.contextInfo.quotedMessage.conversation.extendedTextMessage')
+          const hasQuotedExtended: boolean = this.hasOwnProp(c.message, 'extendedTextMessage.contextInfo.quotedMessage.extendedTextMessage')
+          const hasQuotedImageMessage: boolean = this.hasOwnProp(c.message, 'extendedTextMessage.contextInfo.quotedMessage.imageMessage.caption')
+          const hasQuotedVideoMessage: boolean = this.hasOwnProp(c.message, 'extendedTextMessage.contextInfo.quotedMessage.videoMessage.caption')
+
+          if (hasQuotedConversation) {
+            quotedBody = this.getNestedProp<string>(c.message, 'extendedTextMessage.contextInfo.quotedMessage.conversation')
+          }
+          if (hasQuotedConversationExtended) {
+            quotedBody = this.getNestedProp<string>(c.message, 'extendedTextMessage.contextInfo.quotedMessage.conversation.extendedTextMessage.text')
+          }
+          if (hasQuotedExtended) {
+            quotedBody = this.getNestedProp<string>(c.message, 'extendedTextMessage.contextInfo.quotedMessage.extendedTextMessage.text')
+          }
+          if (hasQuotedImageMessage) {
+            quotedBody = this.getNestedProp<string>(c.message, 'extendedTextMessage.contextInfo.quotedMessage.imageMessage.caption')
+          }
+          if (hasQuotedVideoMessage) {
+            quotedBody = this.getNestedProp<string>(c.message, 'extendedTextMessage.contextInfo.quotedMessage.videoMessage.caption')
+          }
+          const hasAnyQuotedMessage: boolean = [
+            hasQuotedConversation,
+            hasQuotedConversationExtended,
+            hasQuotedExtended,
+            hasQuotedImageMessage,
+            hasQuotedVideoMessage
+          ].some(Boolean)
+          if (hasAnyQuotedMessage) {
+            /* console.log({
+              conversation,
+              hasQuotedMessageConversation,
+              hasQuotedMessageConversationExtendedTextMessage,
+              hasQuotedMessageExtendedTextMessage,
+              hasQuotedMessageExtendedTextimageMessage
+            }) */
+          }
+        }
+      }
+      return {
+        body: c.message?.extendedTextMessage?.text ?? '',
+        typeMessage: WaMessageTypes.extendedTextMessage,
+        quotedBody
+      }
+    }
+    // logica en caso de que sea un mensaje de texto
+    if (hasMessage) {
+      // logica en caso de que sea una imagen
+      const hasImageMessage: boolean = this.hasOwnProp(c.message, WaMessageTypes.imageMessage)
+      if (hasImageMessage) {
+        const hasImageMessageCaption: boolean = this.hasOwnProp(c.message, WaMessageTypes.imageMessage.concat('.').concat('caption'))
+        if (hasImageMessageCaption) {
+          return {
+            body: c.message?.imageMessage?.caption ?? '',
+            typeMessage: WaMessageTypes.imageMessage
+          }
+        }
+      }
+      // logica en caso de que sea un documento con caption
+      const hasDocumentWithCaptionMessage: boolean = this.hasOwnProp(c.message, WaMessageTypes.documentWithCaptionMessage)
+      if (hasDocumentWithCaptionMessage) {
+        return {
+          body: c.message?.documentWithCaptionMessage?.message?.documentMessage?.caption ?? '',
+          typeMessage: WaMessageTypes.documentWithCaptionMessage
+        }
+      }
+      // logica en caso de que sea una conversacion
+      const hasConversation: boolean = this.hasOwnProp(c.message, WaMessageTypes.conversation)
+      if (hasConversation) {
+        return {
+          body: c.message?.conversation ?? '',
+          typeMessage: WaMessageTypes.conversation
+        }
+      }
+      //
+      const hasEphemeralMessage: boolean = this.hasOwnProp(c.message, WaMessageTypes.ephemeralMessage)
+      if (hasEphemeralMessage) {
+        return {
+          body: c.message?.ephemeralMessage?.message?.extendedTextMessage?.text ?? '',
+          typeMessage: WaMessageTypes.ephemeralMessage
+        }
+      }
+    }
+    return { body: '', typeMessage: '' as keyof typeof WaMessageTypes }
+  }
+
+  //
   async saveFile(file: import('fs').PathOrFileDescriptor, content: string) {
     const fs = await import('fs')
     // archivo no existe crearlo

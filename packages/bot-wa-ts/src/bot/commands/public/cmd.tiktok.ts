@@ -1,11 +1,11 @@
-import { configEnv } from '@/bot/helpers/env'
+// import { configEnv } from '@/bot/helpers/env'
 import { type ContextMsg } from '@/bot/interfaces/inter'
 import type Whatsapp from '@/bot/main'
-const { BOT_USERNAME } = configEnv as { BOT_USERNAME: string }
+// const { BOT_USERNAME } = configEnv as { BOT_USERNAME: string }
 //
 export default {
   active: true,
-  ExpReg: new RegExp(`^/ping(?:@${BOT_USERNAME})?$`, 'im'), // /^\/ping(?:@username)?$/im
+  ExpReg: /^\/tt(?:\s+(https?:\/\/((?:www\.)?|(?:vm\.)?|(?:m\.)?)tiktok\.com\/(?:@[a-zA-Z0-9_]+\/)?(?:video\/)?([a-zA-Z0-9]+)))?/ims,
 
   /**
    * @description
@@ -14,8 +14,6 @@ export default {
    * @param {RegExpMatchArray} match
    */
   async cmd(client: Whatsapp, { wamsg, msg }: ContextMsg, match: RegExpMatchArray): Promise<void> {
-    const from: string = wamsg.key.remoteJid as string
-    client.sendText(from, { text: '🏓 Pong!' }, { quoted: wamsg })
-    msg.react('🏓')
+    const [, url] = match
   }
 }
