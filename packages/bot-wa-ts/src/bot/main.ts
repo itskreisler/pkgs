@@ -346,6 +346,8 @@ class Whatsapp {
       }
     } catch (e) {
       console.error({ e })
+    } finally {
+      console.log('(✅) Comandos cargados correctamente')
     }
   }
 
