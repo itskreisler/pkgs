@@ -22,11 +22,10 @@ export class Message {
       ? new User(client, pushName ?? verifiedBizName ?? '', (remoteJid ?? '').split('@')[0], (remoteJid ?? ''))
       : new GroupUser(client, (remoteJid ?? ''), pushName ?? verifiedBizName ?? '', (participant ?? '').split('@')[0], (participant ?? ''))
     this.fromMe = fromMe as boolean
-    // @ts-expect-error
-    this.isReply = !((message[Object.keys(message)[0] as keyof proto.IMessage]?.contextInfo as proto.ContextInfo)?.quotedMessage === false)
+    this.isReply = client.hasOwnProp(message, 'extendedTextMessage.contextInfo.quotedMessage')
     const type = Object.keys(data.message ?? {})[0] as WaMessageTypes
-
-    this.content = client.getMessageBody(data).body
+    const { body } = client.getMessageBody(data.message)
+    this.content = typeof body === 'string' ? body : ''
     // this.hasMedia = ['imageMessage', 'videoMessage', 'stickerMessage', 'audioMessage', 'documentMessage', 'documentWithCaptionMessage', 'viewOnceMessage'].includes(type)
     this.hasMedia = [
       WaMessageTypes.imageMessage,
@@ -48,11 +47,11 @@ export class Message {
     })
   }
 
-  async react(reaction: string): Promise<Message> {
+  async react(reaction: string): Promise<proto.WebMessageInfo | undefined> {
     return await new Promise((resolve) => {
       (async () => {
         await this.client.sock.readMessages([this._data.key])
-        resolve(await this.client.send(this._data.key.remoteJid as string, {
+        resolve(await this.client.sock.sendMessage(this._data.key.remoteJid as string, {
           react: { text: reaction, key: this._data.key }
         }))
       })()
