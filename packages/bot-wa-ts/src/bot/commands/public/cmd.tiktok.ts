@@ -134,6 +134,14 @@ export default {
           })
         } else {
           console.log('Tamaño de video muy grande')
+          // send document
+          tempBuffer = await nodeFetchBuffer(urlPLay('hdplay'))
+          console.log('Enviando video documento en hd')
+          await client.sock.sendMessage(wamsg.key.remoteJid as string, {
+            document: tempBuffer.buffer,
+            mimetype: tempBuffer.fileType?.mime as string,
+            fileName: Date.now().toString().concat('.', tempBuffer.fileType?.ext as string)
+          })
           await client.sock.sendMessage(wamsg.key.remoteJid as string, {
             text: caption
           })
