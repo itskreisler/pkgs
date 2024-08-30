@@ -28,7 +28,11 @@ export default {
     if (typeof quotedBody?.body !== 'undefined') {
       url = client.getNestedProp<string>(quotedBody, 'body')
     }
-    if (typeof url !== 'undefined' && validateDomainTikTok(url)) {
+    if (typeof url !== 'undefined') {
+      if (!validateDomainTikTok(url)) {
+        msg.reply({ text: 'El enlace no es de tiktok' })
+        return
+      }
       const { code, data, domain, msg: mg } = await tikwm(url)
       // si codigo es -1 es que ha fallado
       if (code === TikTokStatusCodes.FAILED) {
@@ -53,6 +57,7 @@ export default {
             })
           )
         }
+        console.log('Enviando imagenes')
         await Promise.all(promises)
           .then(() => {
             msg.reply({ text: 'Cantidad de imagenes enviadas: '.concat(String(data.images?.length)) })
@@ -62,29 +67,33 @@ export default {
             msg.reply({ text: 'Ha ocurrido un error al enviar las imagenes' })
           })
       } else {
-        const urlPLay = (str: 'play' | 'hdplay' | 'hdplay'): string => domain.concat(data[str])
+        const urlPLay = (str: 'play' | 'hdplay' | 'wmplay' | 'cover' | 'music'): string => domain.concat(data[str])
         const caption = [{
-          type: 'play',
+          title: 'No Watermark',
           url: urlPLay('play')
         }, {
-          type: 'hdplay',
+          title: 'No Watermark(HD)',
           url: urlPLay('hdplay')
         },
         {
-          type: 'cover',
+          title: 'Watermark',
+          url: urlPLay('wmplay')
+        },
+        {
+          title: 'Cover',
           url: urlPLay('cover')
+        },
+        {
+          title: 'Music',
+          url: urlPLay('music')
         }
-        ].map(({ type, url }) => MarkdownWsp.Quote(type.concat(': ', url))).join('\n')
-        console.log(
-          caption
-        )
-        const playMB = Math.round((data.size as number) / 1024 / 1024)
+        ].map(({ title, url }) => MarkdownWsp.Quote(title.concat(': ', url))).join('\n')
+        // const playMB = Math.round((data.size as number) / 1024 / 1024)
         const hdplayMB = Math.round((data.hd_size as number) / 1024 / 1024)
-        console.log(hdplayMB, playMB)
         let tempBuffer
         if (hdplayMB < 49) {
           tempBuffer = await nodeFetchBuffer(urlPLay('hdplay'))
-          console.log('Enviando video en hd')
+          console.log('Enviando video en hdplay')
           await client.sock.sendMessage(wamsg.key.remoteJid as string, {
             video: tempBuffer.buffer,
             mimetype: tempBuffer.fileType?.mime as string,
@@ -95,15 +104,27 @@ export default {
             msg.reply({ text: 'Ha ocurrido un error al enviar el video en hd' })
             //
             tempBuffer = await nodeFetchBuffer(urlPLay('play'))
+            console.log('Enviando video en play')
             await client.sock.sendMessage(wamsg.key.remoteJid as string, {
               video: tempBuffer.buffer,
               mimetype: tempBuffer.fileType?.mime as string,
               fileName: Date.now().toString().concat('.', tempBuffer.fileType?.ext as string),
               caption
-            }).catch((e2) => {
+            }).catch(async (e2) => {
               console.log('Ha ocurrido un error al enviar el video en play', { e2 })
               msg.reply({ text: 'Ha ocurrido un error al enviar el video en play' })
               // send cover
+              tempBuffer = await nodeFetchBuffer(urlPLay('cover'))
+              console.log('Enviando cover')
+              await client.sock.sendMessage(wamsg.key.remoteJid as string, {
+                image: tempBuffer.buffer,
+                mimetype: tempBuffer.fileType?.mime as string,
+                fileName: Date.now().toString().concat('.', tempBuffer.fileType?.ext as string),
+                caption
+              }).catch((e3) => {
+                console.log('Ha ocurrido un error al enviar el cover', { e3 })
+                msg.reply({ text: 'Ha ocurrido un error al enviar el cover' })
+              })
             })
           })
         }
@@ -111,3 +132,11 @@ export default {
     }
   }
 }
+/* async function tryCatch<T, U = any>(fn: (...args: U[]) => Promise<T>, ...args: U[]): Promise<[Error | null, T | null]> {
+  try {
+    const data = await fn(...args)
+    return [null, data]
+  } catch (error) {
+    return [error as Error, null]
+  }
+} */

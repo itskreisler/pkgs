@@ -23,10 +23,10 @@ const messageDebounced = debounce(messageHandler, 5000, {
     )
   }
 })
-function messageHandler ({ client, context, comando, ExpReg }: decounceMessage) {
+async function messageHandler ({ client, context, comando, ExpReg }: decounceMessage) {
   // @ts-expect-error
   const match = context.body.match(ExpReg) as RegExpMatchArray
-  comando.cmd(client, context, match)
+  await comando.cmd(client, context, match)
 }
 /**
  * @description Manejador de eventos de mensajes
@@ -52,7 +52,8 @@ export async function handler (client: Whatsapp, content: {
     try {
       const msg = new Message(client, chat)
       const context: ContextMsg = { msg, wamsg: chat, ...getMessageBody }
-      messageDebounced({ client, context, comando, ExpReg })
+      await messageDebounced({ client, context, comando, ExpReg })
+      msg.react('✅')
     } catch (e) {
       console.log('Ha ocurrido un error al ejecutar el comando', { e })
       const from: string = chat.key.remoteJid as string
