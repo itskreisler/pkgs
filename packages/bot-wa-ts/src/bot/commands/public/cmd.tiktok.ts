@@ -88,12 +88,17 @@ export default {
           url: urlPLay('music')
         }
         ].map(({ title, url }) => MarkdownWsp.Quote(title.concat(': ', url))).join('\n')
-        // const playMB = Math.round((data.size as number) / 1024 / 1024)
+        const playMB = Math.round((data.size as number) / 1024 / 1024)
         const hdplayMB = Math.round((data.hd_size as number) / 1024 / 1024)
         let tempBuffer
-        if (hdplayMB < 49) {
-          tempBuffer = await nodeFetchBuffer(urlPLay('hdplay'))
-          console.log('Enviando video en hdplay')
+        if (hdplayMB < 49 || playMB < 49) {
+          const temp = hdplayMB < 49
+            ? urlPLay('hdplay')
+            : playMB < 49
+              ? urlPLay('play')
+              : urlPLay('cover')
+          tempBuffer = await nodeFetchBuffer(temp)
+          console.log('Enviando', temp)
           await client.sock.sendMessage(wamsg.key.remoteJid as string, {
             video: tempBuffer.buffer,
             mimetype: tempBuffer.fileType?.mime as string,
