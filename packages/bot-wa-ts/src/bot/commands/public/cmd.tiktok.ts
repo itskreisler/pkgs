@@ -132,6 +132,11 @@ export default {
               })
             })
           })
+        } else {
+          console.log('Tamaño de video muy grande')
+          await client.sock.sendMessage(wamsg.key.remoteJid as string, {
+            text: caption
+          })
         }
       }
     }
