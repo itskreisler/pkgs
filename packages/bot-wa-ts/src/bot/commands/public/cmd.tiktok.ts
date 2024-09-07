@@ -1,7 +1,7 @@
 // import { configEnv } from '@/bot/helpers/env'
 import { type ContextMsg } from '@/bot/interfaces/inter'
 import type Whatsapp from '@/bot/main'
-import { tikwm, TikTokStatusCodes } from '@/bot/services/tiktok.services'
+import { tikwm, TikTokStatusCodes, sizeMB } from '@/bot/services/tiktok.services'
 import { nodeFetchBuffer } from '@/bot/helpers/polyfill'
 import { MarkdownWsp } from '@kreisler/js-helpers'
 // const { BOT_USERNAME } = configEnv as { BOT_USERNAME: string }
@@ -70,24 +70,29 @@ export default {
         const urlPLay = (str: 'play' | 'hdplay' | 'wmplay' | 'cover' | 'music'): string => domain.concat(data[str])
         const caption = [{
           title: 'No Watermark',
-          url: urlPLay('play')
+          url: urlPLay('play'),
+          size: data.size
         }, {
           title: 'No Watermark(HD)',
-          url: urlPLay('hdplay')
+          url: urlPLay('hdplay'),
+          size: data.hd_size
         },
         {
           title: 'Watermark',
-          url: urlPLay('wmplay')
+          url: urlPLay('wmplay'),
+          size: data.wm_size
         },
         {
           title: 'Cover',
-          url: urlPLay('cover')
+          url: urlPLay('cover'),
+          size: null
         },
         {
           title: 'Music',
-          url: urlPLay('music')
+          url: urlPLay('music'),
+          size: null
         }
-        ].map(({ title, url }) => MarkdownWsp.Quote(title.concat(': ', url))).join('\n')
+        ].map(({ title, url, size }) => MarkdownWsp.Quote(title.concat('(', sizeMB(size), 'MB)', ': ', url))).join('\n')
         const playMB = Math.round((data.size as number) / 1024 / 1024)
         const hdplayMB = Math.round((data.hd_size as number) / 1024 / 1024)
         let tempBuffer
