@@ -19,6 +19,7 @@ import { configEnv } from '@/bot/helpers/env'
 const isDEV = configEnv.NODE_ENV === 'development'
 //
 class Whatsapp {
+  upTime: number = Date.now()
   BOT_USERNAME: string = 'botsito'
   logger: any
   sock: WASocket
@@ -371,6 +372,16 @@ class Whatsapp {
         }
       } catch (e) {
         console.log('Error al cargar el comando tiktok', { e })
+      }
+
+      //
+      try {
+        const CMD_UPTIME = await import('@/bot/commands/public/cmd.uptime')
+        if (this.hasOwnProp(CMD_UPTIME.default, 'active')) {
+          if (CMD_UPTIME.default.active === true) this.commands.set(CMD_UPTIME.default.ExpReg, CMD_UPTIME.default)
+        }
+      } catch (e) {
+        console.log('Error al cargar el comando uptime', { e })
       }
     } catch (e) {
       console.error({ e })

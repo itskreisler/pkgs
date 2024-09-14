@@ -18,8 +18,8 @@ const messageDebounced = debounce(messageHandler, 5000, {
     })
   },
   onComplete: (result: decounceMessage) => {
-    console.log(
-      'Se ha ejecutado el comando', result.ExpReg, result.context.body
+    console.info(
+      'Se ha ejecutado el comando', result.context.body, result.ExpReg
     )
   }
 })
