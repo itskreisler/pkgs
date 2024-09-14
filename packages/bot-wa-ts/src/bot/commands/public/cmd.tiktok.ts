@@ -2,8 +2,9 @@
 import { type ContextMsg } from '@/bot/interfaces/inter'
 import type Whatsapp from '@/bot/main'
 import { tikwm, TikTokStatusCodes, sizeMB } from '@/bot/services/tiktok.services'
-import { nodeFetchBuffer } from '@/bot/helpers/polyfill'
+import { nodeFetchBuffer, getStreamFromUrl } from '@/bot/helpers/polyfill'
 import { MarkdownWsp } from '@kreisler/js-helpers'
+
 // const { BOT_USERNAME } = configEnv as { BOT_USERNAME: string }
 //
 const ExpReg = /^\/tt(?:\s+(https?:\/\/((?:www\.)?|(?:vm\.)?|(?:m\.)?)tiktok\.com\/(?:@[a-zA-Z0-9_]+\/)?(?:video\/)?([a-zA-Z0-9]+)))?/ims
@@ -48,23 +49,22 @@ export default {
       if (typeof data.images !== 'undefined') {
         const promises = []
         for (const img of data.images) {
-          const tempBuffer = await nodeFetchBuffer(img)
+          const kche = await nodeFetchBuffer(img)
           promises.push(
             client.sock.sendMessage(wamsg.key.remoteJid as string, {
-              image: tempBuffer.buffer,
-              mimetype: tempBuffer.fileType?.mime as string,
-              fileName: Date.now().toString().concat('.', tempBuffer.fileType?.ext as string)
+              image: kche.buffer,
+              mimetype: kche.fileType?.mime as string,
+              fileName: Date.now().toString().concat('.', kche.fileType?.ext as string)
             })
           )
         }
-        console.log('Enviando imagenes')
         await Promise.all(promises)
           .then(() => {
             msg.reply({ text: 'Cantidad de imagenes enviadas: '.concat(String(data.images?.length)) })
           })
           .catch((e) => {
-            console.log('Ha ocurrido un error al enviar las imagenes', { e })
-            msg.reply({ text: 'Ha ocurrido un error al enviar las imagenes' })
+            console.error('Ha ocurrido un error al enviar las imagenes', { e })
+            msg.reply({ text: 'Ha ocurrido un error al enviar las imagenes\n'.concat(MarkdownWsp.InlineCode(JSON.stringify(e, null, 2))) })
           })
       } else {
         const urlPLay = (str: 'play' | 'hdplay' | 'wmplay' | 'cover' | 'music'): string => domain.concat(data[str])
@@ -92,65 +92,27 @@ export default {
           url: urlPLay('music'),
           size: null
         }
-        ].map(({ title, url, size }) => MarkdownWsp.Quote(title.concat('(', sizeMB(size), 'MB)', ': ', url))).join('\n')
-        const playMB = Math.round((data.size as number) / 1024 / 1024)
-        const hdplayMB = Math.round((data.hd_size as number) / 1024 / 1024)
-        let tempBuffer
-        if (hdplayMB < 49 || playMB < 49) {
-          const temp = hdplayMB < 49
-            ? urlPLay('hdplay')
-            : playMB < 49
-              ? urlPLay('play')
-              : urlPLay('cover')
-          tempBuffer = await nodeFetchBuffer(temp)
-          console.log('Enviando', temp)
-          await client.sock.sendMessage(wamsg.key.remoteJid as string, {
-            video: tempBuffer.buffer,
-            mimetype: tempBuffer.fileType?.mime as string,
-            fileName: Date.now().toString().concat('.', tempBuffer.fileType?.ext as string),
+        ].map(({ title, url, size }) => MarkdownWsp.Quote(
+          title.concat(
+            size !== null ? ' ('.concat(sizeMB(size), 'MB)') : ''
+          ).concat(': ', url)
+        )).join('\n')
+        client.sock.sendMessage(wamsg.key.remoteJid as string, {
+          video: {
+            stream: await getStreamFromUrl(urlPLay('play'))
+          },
+          caption
+        }).catch(async (e) => {
+          console.error('Ha ocurrido un error al enviar el video', { e })
+          msg.reply({ text: 'Ha ocurrido un error al enviar el video\n'.concat(MarkdownWsp.InlineCode(JSON.stringify(e, null, 2))) })
+          //
+          const kcheCover = await nodeFetchBuffer(urlPLay('cover'))
+          client.sock.sendMessage(wamsg.key.remoteJid as string, {
+            image: kcheCover.buffer,
+            mimetype: kcheCover.fileType?.mime as string,
             caption
-          }).catch(async (e1) => {
-            console.log('Ha ocurrido un error al enviar el video en hd', { e1 })
-            msg.reply({ text: 'Ha ocurrido un error al enviar el video en hd' })
-            //
-            tempBuffer = await nodeFetchBuffer(urlPLay('play'))
-            console.log('Enviando video en play')
-            await client.sock.sendMessage(wamsg.key.remoteJid as string, {
-              video: tempBuffer.buffer,
-              mimetype: tempBuffer.fileType?.mime as string,
-              fileName: Date.now().toString().concat('.', tempBuffer.fileType?.ext as string),
-              caption
-            }).catch(async (e2) => {
-              console.log('Ha ocurrido un error al enviar el video en play', { e2 })
-              msg.reply({ text: 'Ha ocurrido un error al enviar el video en play' })
-              // send cover
-              tempBuffer = await nodeFetchBuffer(urlPLay('cover'))
-              console.log('Enviando cover')
-              await client.sock.sendMessage(wamsg.key.remoteJid as string, {
-                image: tempBuffer.buffer,
-                mimetype: tempBuffer.fileType?.mime as string,
-                fileName: Date.now().toString().concat('.', tempBuffer.fileType?.ext as string),
-                caption
-              }).catch((e3) => {
-                console.log('Ha ocurrido un error al enviar el cover', { e3 })
-                msg.reply({ text: 'Ha ocurrido un error al enviar el cover' })
-              })
-            })
           })
-        } else {
-          console.log('Tamaño de video muy grande')
-          // send document
-          tempBuffer = await nodeFetchBuffer(urlPLay('hdplay'))
-          console.log('Enviando video documento en hd')
-          await client.sock.sendMessage(wamsg.key.remoteJid as string, {
-            document: tempBuffer.buffer,
-            mimetype: tempBuffer.fileType?.mime as string,
-            fileName: Date.now().toString().concat('.', tempBuffer.fileType?.ext as string)
-          })
-          await client.sock.sendMessage(wamsg.key.remoteJid as string, {
-            text: caption
-          })
-        }
+        })
       }
     }
   }

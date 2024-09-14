@@ -1,4 +1,5 @@
 import https from 'https'
+import { Readable } from 'stream'
 import fs, { type PathOrFileDescriptor } from 'fs'
 import { type FileExtension, type MimeType, type FileTypeResult } from 'file-type'
 //
@@ -64,6 +65,22 @@ export const formatter = (size: number, { unit = 'kilobyte' }: {
     maximumFractionDigits: 2
   }).format(FileSizeUnit.kilobyte === unit ? (size / 1024) : (size / 1024 / 1024))
 }
+
+//
+export async function getStreamFromUrl(url: string) {
+  const response = await globalThis.fetch(url)
+
+  if (!response.ok) {
+    throw new Error(`Error al obtener la URL: ${response.statusText}`)
+  }
+
+  // Convertimos el ReadableStream de la respuesta a un Readable de Node.js
+  const nodeReadableStream = (response.body != null) ? Readable.from(response.body) : null
+
+  return nodeReadableStream as Readable
+}
+
+//
 export const sleep = async (ms: number) => await new Promise((resolve) => setTimeout(resolve, ms))
 /*
 globalThis.fetch('https://www.tikwm.com/video/media/play/7407636590996114693.mp4')

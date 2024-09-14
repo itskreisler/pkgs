@@ -7,6 +7,7 @@ import {
   type AnyMessageContent,
   type MiscMessageGenerationOptions,
   type DownloadableMessage,
+  type MediaDownloadOptions,
   proto
 } from '@whiskeysockets/baileys'
 import pino from 'pino'
@@ -14,7 +15,8 @@ import { createSticker, type IStickerOptions, StickerTypes } from 'wa-sticker-fo
 import { CommandImport, WaMessageTypes, type MessageBody, type BodyMsg } from '@/bot/interfaces/inter'
 import { Media } from '@/bot/interfaces/media'
 import { Message } from './interfaces/message'
-
+import { configEnv } from '@/bot/helpers/env'
+const isDEV = configEnv.NODE_ENV === 'development'
 //
 class Whatsapp {
   BOT_USERNAME: string = 'botsito'
@@ -35,6 +37,16 @@ class Whatsapp {
     this.qr = null
     this.saveCreds = null as unknown as () => Promise<void>
     this.commands = new Map()
+  }
+
+  clg(...args: any[]) {
+    if (isDEV) {
+      console.log(...args)
+    }
+  }
+
+  async getMeInfo() {
+    return this.sock.user
   }
 
   //
@@ -121,6 +133,7 @@ class Whatsapp {
     return { typeMessage }
   }
 
+  //
   getMessageBody(c: proto.IMessage | null | undefined): MessageBody {
     const hasQuotedMessage = this.hasOwnProp(c, 'extendedTextMessage.contextInfo.quotedMessage')
     let quotedBody: BodyMsg | undefined
@@ -133,7 +146,9 @@ class Whatsapp {
     return { ...body, quotedBody }
   }
 
-  //
+  /**
+   * @deprecated
+   */
   async saveFile(file: import('fs').PathOrFileDescriptor, content: string) {
     const fs = await import('fs')
     // archivo no existe crearlo
@@ -172,8 +187,8 @@ class Whatsapp {
 
   async stickerGenerator (mediaData: string | Buffer): Promise<Buffer> {
     const stickerOption: IStickerOptions = {
-      pack: 'KafkaSticker',
-      author: 'Kreisler',
+      pack: 'KleyStickers',
+      author: 'Kley',
       type: StickerTypes.FULL,
       quality: 100
     }
@@ -181,8 +196,15 @@ class Whatsapp {
     return generateSticker
   }
 
-  async getMedia (msg: DownloadableMessage, type: MediaType): Promise<Buffer> {
-    const stream = await downloadContentFromMessage(msg, type)
+  /**
+   * @description Descargar un archivo multimedia de un mensaje
+   * @param msg
+   * @param type
+   * @param opt
+   * @returns {Promise<Buffer>}
+   */
+  async getMedia (msg: DownloadableMessage, type: MediaType, opt?: MediaDownloadOptions): Promise<Buffer> {
+    const stream = await downloadContentFromMessage(msg, type, opt)
     let buffer = Buffer.from([])
     for await (const chunk of stream) {
       buffer = Buffer.concat([buffer, chunk])
@@ -268,18 +290,21 @@ class Whatsapp {
     await this.loadCommands()
   }
 
+  //
   async loadHandlers() {
-    console.log('(%) Cargando handlers')
+    console.log('(⏳) Cargando handlers')
 
     try {
+      // antiCrash
       (await import('@/bot/handlers/antiCrash')).default.bind(this)()
+      console.log('(✅) Handlers cargados correctamente')
     } catch (e) {
-      console.log('ERROR AL CARGAR EL HANDLER')
+      console.log('(❌) ERROR AL CARGAR EL HANDLER')
     }
   }
 
   async loadEvents() {
-    console.log('(%) Cargando eventos')
+    console.log('(⏳) Cargando eventos')
 
     this.sock.ev.removeAllListeners('messages.upsert')
 
@@ -295,16 +320,18 @@ class Whatsapp {
       this.sock.ev.on('messages.upsert', msgUpsert.bind(null, this))
       //
 
-      console.log('(✅) Eventos cargaods correctamente')
+      console.log('(✅) Eventos cargados correctamente')
     } catch (e) {
-      console.error('(X) Errror al cargar eventos', e)
+      console.error('(❌) Errror al cargar eventos', e)
     }
   }
 
+  //
   getCommands(): Array<[RegExp, CommandImport]> {
     return Array.from(this.commands)
   }
 
+  //
   findCommand(str: string): [boolean, [RegExp, CommandImport] | []] {
     const cmd = this.getCommands().find(([expreg]) => expreg.test(str))
     if (typeof cmd === 'undefined') {
@@ -313,8 +340,9 @@ class Whatsapp {
     return [true, cmd]
   }
 
+  //
   async loadCommands() {
-    console.log('(%) Cargando comandos')
+    console.log('(⏳) Cargando comandos')
     this.commands.clear()
     try {
       //

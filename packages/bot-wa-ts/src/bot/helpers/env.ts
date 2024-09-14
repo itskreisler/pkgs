@@ -10,5 +10,7 @@ export interface TprocessEnv extends NodeJS.ProcessEnv {
   readonly BOT_USERNAME?: string
   /** default: / */
   readonly BOT_PREFIX?: string
+  /** default: development */
+  readonly NODE_ENV?: 'development' | 'production'
 }
 export const configEnv: TprocessEnv = { ...process.env }

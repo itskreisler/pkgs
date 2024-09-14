@@ -40,13 +40,12 @@ export async function handler (client: Whatsapp, content: {
   const chat = content.messages[0]
   const getMessageBody = client.getMessageBody(chat.message)
   const { body, typeMessage, quotedBody } = getMessageBody
-  // console.log({ body, typeMessage, quotedBody })
   // client.saveFile('./dist/chat.json', JSON.stringify([chat], null, 2))
   // if (chat?.key?.remoteJid === 'status@broadcast' || ((chat?.message) == null) || chat.key.fromMe === true || body.length === 0) return
   if (chat.key.fromMe === true || typeof body === 'undefined' || body === null) return
   const hasPrefix: boolean = body.startsWith(BOT_PREFIX)
   if (!hasPrefix) return
-  console.log({ body, typeMessage, quotedBody })
+  client.clg({ body, typeMessage, quotedBody })
   const [existe, [ExpReg, comando]] = client.findCommand(body)
   if (existe === true) {
     try {
@@ -55,7 +54,7 @@ export async function handler (client: Whatsapp, content: {
       await messageDebounced({ client, context, comando, ExpReg })
       msg.react('✅')
     } catch (e) {
-      console.log('Ha ocurrido un error al ejecutar el comando', { e })
+      console.error('Ha ocurrido un error al ejecutar el comando', { e })
       const from: string = chat.key.remoteJid as string
       client.sendText(
         from,

@@ -17,14 +17,14 @@ export default {
      * @param {RegExpMatchArray | null} match
      */
   async cmd(client: Whatsapp, { wamsg, msg }: ContextMsg, match: RegExpMatchArray): Promise<void> {
-    const [, accion, q] = match as [string, 's' | 'search' | 'id' | 'byid' | 'r' | 'random', string]
-    console.log({ accion, q }) // kimi to boku\nNo\nSaigo
-    switch (accion.toLowerCase()) {
+    const [, accion, q] = match as [string, 's' | 'search' | 'id' | 'byid' | 'r' | 'random' | undefined, string | undefined]
+    client.clg({ accion, q }) // kimi to boku\nNo\nSaigo
+    switch (accion?.toLowerCase()) {
       case 's':
       case 'search': {
         if (typeof q === 'undefined') {
           msg.reply(
-            { text: `Debes escribir el nombre del anime a buscar.\nEjemplo:\n/anime_search ${MarkdownWsp.Bold('konosuba')}` }
+            { text: `Debes escribir el nombre del anime a buscar.\nEjemplo:\n/mal_search ${MarkdownWsp.Bold('konosuba')}` }
           )
           return
         }
@@ -65,7 +65,7 @@ ${resultado.join('\n')}
       case 'byid': {
         if (typeof q === 'undefined') {
           msg.reply(
-            { text: `Debes escribir el id del anime a buscar.\nEjemplo:\n/anime_byid ${MarkdownWsp.Bold('6789')}` }
+            { text: `Debes escribir el id del anime a buscar.\nEjemplo:\n/mal_byid ${MarkdownWsp.Bold('6789')}` }
           )
           return
         }
@@ -150,9 +150,9 @@ ${resultado.join('\n')}
       default: {
         const text = `
 ${MarkdownWsp.Italic('Comandos disponibles:')}
-${MarkdownWsp.Monospace('/anime_search TITLE')} - Busca un anime por su nombre
-${MarkdownWsp.Monospace('/anime_byid MAL_ID')} - Busca un anime por su id
-${MarkdownWsp.Monospace('/anime_random')} - Busca un anime aleatorio
+${MarkdownWsp.Monospace('/mal_search TITLE')} - Busca un anime por su nombre
+${MarkdownWsp.Monospace('/mal_byid MAL_ID')} - Busca un anime por su id
+${MarkdownWsp.Monospace('/mal_random')} - Busca un anime aleatorio
                     `
         msg.reply({ text })
         break
