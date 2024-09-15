@@ -12,7 +12,7 @@ import {
 } from '@whiskeysockets/baileys'
 import pino from 'pino'
 import { createSticker, type IStickerOptions, StickerTypes } from 'wa-sticker-formatter'
-import { CommandImport, WaMessageTypes, type MessageBody, type BodyMsg } from '@/bot/interfaces/inter'
+import { CommandImport, WaMessageTypes, type MessageBody, type BodyMsg, CONSOLE_COLORS } from '@/bot/interfaces/inter'
 import { Media } from '@/bot/interfaces/media'
 import { Message } from './interfaces/message'
 import { configEnv } from '@/bot/helpers/env'
@@ -44,6 +44,12 @@ class Whatsapp {
     if (isDEV) {
       console.log(...args)
     }
+  }
+
+  printLog (message: any, type: keyof typeof CONSOLE_COLORS = 'white') {
+    // if (isDEV) {
+    console.log(CONSOLE_COLORS[type].concat('%s\x1b[0m'), message)
+    // }
   }
 
   async getMeInfo() {

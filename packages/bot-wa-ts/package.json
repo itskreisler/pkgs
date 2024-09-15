@@ -16,7 +16,7 @@
     "build:index": "tsup src/index.ts --format esm,cjs --onSuccess \"cp -r dist/* tmpbot\"",
     "build:bot": "rm -rf dist/* tmpbot/* && tsup --entry.example src/example.ts --format esm --onSuccess \"mv dist/* tmpbot\"",
     "watch": "rm -rf dist/* && tsup src/index.ts --watch --onSuccess \"node dist/index.js\"",
-    "watch:test": "tsup --entry.test src/test/index.test.ts --format esm --watch --onSuccess \"node dist/test.js\"",
+    "watch:test": "rm -rf dist/* && tsup --entry.test test/index.test.ts --format esm --watch --onSuccess \"node dist/test.js\"",
     "watch:server": "tsup src/api/server.ts --watch --onSuccess \"node dist/server.js\"",
     "test": "echo \"Testing ui package\"",
     "test:cjs": "cross-env NODE_ENV=test node --test test/test.spec.cjs",
