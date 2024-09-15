@@ -10,7 +10,8 @@
     "co": "sui-mono commit",
     "test": "pnpm --filter './packages/debounce' run test:mjs",
     "test2": "pnpm install pkg -D -w",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test3": "npm install -g npm@latest"
   },
   "repository": {
     "type": "git",

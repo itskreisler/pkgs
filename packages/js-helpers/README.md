@@ -111,3 +111,7 @@ console.log({ output })
 | `b64Toutf8` `utf8Tob64`   | Utility function to convert UTF8 to base64 and base64 to UTF8|
 | `normalize`     | Utility function to normalize a string.|
 | `trimText`  | Utility function to trim text|
+| `MarkdownWsp` | Utility function to convert markdown to wsp.|
+| `titleSimilarity` | Utility function to calculate text similarity.|
+| `levenshteinDistance` | Utility function to calculate the levenshtein distance between two strings.|
+

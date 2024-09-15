@@ -1,6 +1,6 @@
 {
   "name": "@kreisler/js-helpers",
-  "version": "4.6.1",
+  "version": "4.6.2",
   "description": "Is a Javascript library for dealing with code repetition",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
