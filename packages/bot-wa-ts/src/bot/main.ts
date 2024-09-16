@@ -127,6 +127,10 @@ class Whatsapp {
         typeMessage
       }
     }
+    const hasViewOnceMessageV2: boolean = this.hasOwnProp(c, WaMessageTypes.viewOnceMessageV2)
+    if (hasViewOnceMessageV2) {
+      return this.getTextMessage(c?.viewOnceMessageV2?.message)
+    }
     return { typeMessage }
   }
 

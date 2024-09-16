@@ -45,7 +45,7 @@ export async function handler (client: Whatsapp, content: {
   if (chat.key.fromMe === true || typeof body === 'undefined' || body === null) return
   const hasPrefix: boolean = body.startsWith(BOT_PREFIX)
   if (!hasPrefix) return
-  client.printLog({ body, typeMessage, quotedBody }, 'cyan')
+  client.printLog(JSON.stringify({ body, typeMessage, quotedBody }, null, 2), 'cyan')
   const [existe, [ExpReg, comando]] = client.findCommand(body)
   if (existe === true) {
     try {

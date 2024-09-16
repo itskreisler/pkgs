@@ -1,9 +1,11 @@
-import { AnyMessageContent, downloadMediaMessage, GroupMetadata, MiscMessageGenerationOptions, proto, WABusinessProfile } from '@whiskeysockets/baileys'
+import { AnyMessageContent, downloadMediaMessage, downloadContentFromMessage, GroupMetadata, MiscMessageGenerationOptions, proto, WABusinessProfile, DownloadableMessage } from '@whiskeysockets/baileys'
 import { Media } from './media'
 import P from 'pino'
-import { WaMessageTypes } from './inter'
+import { SelectTypesDL, WaMessageTypes } from './inter'
+import { FetchBuffer, fileTypeFromBuffer } from '@/bot/helpers/polyfill'
 export class Message {
-  protected _data: import('@whiskeysockets/baileys').proto.IWebMessageInfo
+  protected _message: proto.IMessage
+  protected _data: proto.IWebMessageInfo
   id: string
   client: import('@/bot/main').Whatsapp
   author: User
@@ -11,10 +13,11 @@ export class Message {
   isReply: boolean
   fromMe: boolean
   hasMedia: boolean
-
-  constructor(client: import('@/bot/main').Whatsapp, data: import('@whiskeysockets/baileys').proto.IWebMessageInfo) {
+  type: WaMessageTypes
+  constructor(client: import('@/bot/main').Whatsapp, data: proto.IWebMessageInfo) {
     const { message, pushName, key: { remoteJid, participant, fromMe, id }, verifiedBizName } = data
 
+    this._message = message as proto.IMessage
     this.client = client
     this._data = data
     this.id = id as string
@@ -24,9 +27,9 @@ export class Message {
     this.fromMe = fromMe as boolean
     this.isReply = client.hasOwnProp(message, 'extendedTextMessage.contextInfo.quotedMessage')
     const type = Object.keys(data.message ?? {})[0] as WaMessageTypes
+    this.type = type
     const { body } = client.getMessageBody(data.message)
     this.content = typeof body === 'string' ? body : ''
-    // this.hasMedia = ['imageMessage', 'videoMessage', 'stickerMessage', 'audioMessage', 'documentMessage', 'documentWithCaptionMessage', 'viewOnceMessage'].includes(type)
     this.hasMedia = [
       WaMessageTypes.imageMessage,
       WaMessageTypes.videoMessage,
@@ -34,7 +37,8 @@ export class Message {
       WaMessageTypes.audioMessage,
       WaMessageTypes.documentMessage,
       WaMessageTypes.documentWithCaptionMessage,
-      WaMessageTypes.viewOnceMessage
+      WaMessageTypes.viewOnceMessage,
+      WaMessageTypes.viewOnceMessageV2
     ].includes(type)
     // console.log({ c: this.content })
   }
@@ -91,6 +95,37 @@ export class Message {
     })
   }
 
+  async downloadMediaV2(): Promise<FetchBuffer | undefined> {
+    console.log(this.type, this.hasMedia)
+    if (!this.hasMedia) return
+    let tempMessage: proto.IMessage
+    if (this.type === WaMessageTypes.viewOnceMessageV2) {
+      tempMessage = this._data.message?.viewOnceMessageV2?.message as proto.IMessage
+    } else if (this.type === WaMessageTypes.documentWithCaptionMessage) {
+      tempMessage = this._data.message?.documentWithCaptionMessage?.message as proto.IMessage
+    } else {
+      tempMessage = this._data.message as proto.IMessage
+    }
+    const sms = new Message(this.client, { key: this._data.key, message: tempMessage })
+    const selectTypesDL: SelectTypesDL = {
+      imageMessage: 'image',
+      videoMessage: 'video',
+      documentMessage: 'document',
+      documentWithCaptionMessage: 'document',
+      stickerMessage: 'sticker'
+    }
+    const type = selectTypesDL[sms.type as keyof typeof selectTypesDL]
+    if (typeof type === 'undefined') return
+    const dlMsg = sms._message[sms.type] as DownloadableMessage
+    const stream = await downloadContentFromMessage(dlMsg, type)
+    let buffer = Buffer.from([])
+    for await (const chunk of stream) {
+      buffer = Buffer.concat([buffer, chunk])
+    }
+    const fileType = await fileTypeFromBuffer(new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength))
+    return await Promise.resolve({ buffer, fileType })
+  }
+
   downloadMedia(): Promise<Media> | undefined {
     if (!this.hasMedia) return
     return new Promise((resolve) => {
@@ -118,7 +153,7 @@ export class Message {
 
     // @ts-expect-error
     const ctx: proto.IContextInfo = this._data.message[Object.keys(this._data.message)[0]]?.contextInfo
-
+    // console.log(JSON.stringify(ctx, null, 2))
     if (ctx === null) return
 
     return new Message(this.client, {

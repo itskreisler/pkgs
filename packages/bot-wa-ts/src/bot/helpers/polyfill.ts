@@ -3,11 +3,11 @@ import { Readable } from 'stream'
 import fs, { type PathOrFileDescriptor } from 'fs'
 import { type FileExtension, type MimeType, type FileTypeResult } from 'file-type'
 //
-const fileTypeFromBuffer = async (args: Uint8Array | ArrayBuffer) => await import('file-type').then(async ({ fileTypeFromBuffer }) => await fileTypeFromBuffer(args))
+export const fileTypeFromBuffer = async (args: Uint8Array | ArrayBuffer) => await import('file-type').then(async ({ fileTypeFromBuffer }) => await fileTypeFromBuffer(args))
 //
 export const saveFile = (filename: PathOrFileDescriptor, buffer: string | NodeJS.ArrayBufferView) => fs.writeFileSync(filename, buffer, { encoding: 'binary' })
 //
-type FetchBuffer = Promise<{
+export type FetchBuffer = Promise<{
   buffer: Buffer
   fileType: FileTypeResult | undefined
 }>

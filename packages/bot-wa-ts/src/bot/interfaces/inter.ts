@@ -15,11 +15,20 @@ export enum WaMessageTypes {
   audioMessage = 'audioMessage',
   documentMessage = 'documentMessage',
   documentWithCaptionMessage = 'documentWithCaptionMessage',
-  viewOnceMessage = 'viewOnceMessage',
   ephemeralMessage = 'ephemeralMessage',
-  conversation = 'conversation'
+  conversation = 'conversation',
+  viewOnceMessage = 'viewOnceMessage',
+  viewOnceMessageV2 = 'viewOnceMessageV2'
 }
 export type WAMessageTypesStr = keyof typeof WaMessageTypes
+
+export interface SelectTypesDL {
+  imageMessage?: 'image'
+  videoMessage?: 'video'
+  stickerMessage?: 'sticker'
+  documentMessage?: 'document'
+  documentWithCaptionMessage?: 'document'
+}
 export interface QuotedBodyMsg {
   quotedBody?: BodyMsg
 }
