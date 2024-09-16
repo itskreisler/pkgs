@@ -26,9 +26,19 @@ export default {
      * @param {ContextMsg}
      * @param {RegExpMatchArray | null} match
      */
-  async cmd(client: Whatsapp, { wamsg, msg }: ContextMsg, match: RegExpMatchArray): Promise<void> {
-    const [, accion, q] = match as [string, 's' | 'search' | 'id' | 'byid' | 'r' | 'random' | undefined, string | undefined]
-    client.printLog({ accion, q }, 'yellow') // kimi to boku\nNo\nSaigo
+  async cmd(client: Whatsapp, { wamsg, msg, quotedBody }: ContextMsg, match: RegExpMatchArray): Promise<void> {
+    const [, accion, _q] = match as [string, 's' | 'search' | 'id' | 'byid' | 'r' | 'random' | undefined, string | undefined]
+    let q: string | undefined
+    if (msg.isReply === true) {
+      const hasQuotedBody: boolean = client.hasOwnProp(quotedBody, 'body')
+      if (!hasQuotedBody) {
+        msg.reply({ text: 'Debes citar un mensaje que tenga texto' })
+        return
+      }
+      q = client.getNestedProp<string>(quotedBody, 'body')
+    } else {
+      q = _q
+    }
     switch (accion?.toLowerCase()) {
       case 's':
       case 'search': {
