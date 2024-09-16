@@ -2,9 +2,19 @@ import { configEnv } from '@/bot/helpers/env'
 import { type ContextMsg } from '@/bot/interfaces/inter'
 import type Whatsapp from '@/bot/main'
 import { MarkdownWsp } from '@kreisler/js-helpers'
-import { en2es, getAnimeById, getAnimeSearch, getRandom } from '@/bot/services/jikan.services'
+import { en2es, getAnimeById, getAnimeSearch, getRandom, groupAnimeByTitle } from '@/bot/services/jikan.services'
 const { BOT_USERNAME } = configEnv as { BOT_USERNAME: string }
 const DEFALT_TEXT = 'N/A'
+//
+interface AnimeSearch {
+  mal_id: number
+  title: string
+  title_japanese: string | null
+  year: number | null
+  type: string | null
+  episodes: number | null
+  url: string
+}
 //
 export default {
   active: true,
@@ -18,7 +28,7 @@ export default {
      */
   async cmd(client: Whatsapp, { wamsg, msg }: ContextMsg, match: RegExpMatchArray): Promise<void> {
     const [, accion, q] = match as [string, 's' | 'search' | 'id' | 'byid' | 'r' | 'random' | undefined, string | undefined]
-    client.clg({ accion, q }) // kimi to boku\nNo\nSaigo
+    client.printLog({ accion, q }, 'yellow') // kimi to boku\nNo\nSaigo
     switch (accion?.toLowerCase()) {
       case 's':
       case 'search': {
@@ -35,29 +45,26 @@ export default {
           })
           return
         }
-        const resultado: string[] = data.map(({ mal_id: malId, title, title_japanese: titleJapanese, year, type, episodes, status, url, synopsis, genres, themes }: {
-          mal_id: number
-          title: string
-          title_japanese: string | null
-          year: number | null
-          type: string | null
-          episodes: number | null
-          status: string
-          url: string
-          synopsis: string | null
-          genres: Array<{ name: string }>
-          themes: Array<{ name: string }>
-        }) => MarkdownWsp.Monospace(
-`🆔 MAL_ID: ${malId}
+        const groups = groupAnimeByTitle(data).map(group => group.sort((a, b) => a.title.localeCompare(b.title)))
+        console.log(
+          JSON.stringify(groups.map(g => g.map(a => a.title)), null, 2)
+        )
+        const resultado = groups.map(group => {
+          // Mapear cada anime dentro del grupo en el formato compacto
+          const groupResults = group.map(({ mal_id: malId, title, title_japanese: titleJapanese, year, type, episodes }: AnimeSearch) =>
+            MarkdownWsp.Quote(`🔥 ${title} — 🆔(${malId}) 📅(${year ?? DEFALT_TEXT}) 🎞️(${type ?? DEFALT_TEXT}) 📺(${episodes ?? DEFALT_TEXT})`)
+          )
+
+          // Unimos los resultados del grupo con saltos de línea
+          return groupResults.join('\n')
+        })
+        /*        const _resultado: string[] = data.map(({ mal_id: malId, title, title_japanese: titleJapanese, year, type, episodes, status, url, synopsis, genres, themes }: AnimeSearch) => MarkdownWsp.Monospace(`🆔 MAL_ID: ${malId}
 🔥 TITLE: ${title} (${titleJapanese ?? DEFALT_TEXT})
 ✔️ Episodios: ${episodes ?? DEFALT_TEXT}
 ✔️ Año: ${year ?? DEFALT_TEXT}
-✔️ Format: ${type ?? DEFALT_TEXT}
-`).concat('\n', MarkdownWsp.Quote(url)))
-        const message = `
-Resultado de la busqueda: _${q}_\n
-${resultado.join('\n')}
-          `
+✔️ Format: ${type ?? DEFALT_TEXT}`).concat('\n', MarkdownWsp.Quote(url)))
+*/
+        const message = `Resultado de la búsqueda: _${q}_\n\n`.concat(resultado.join('\n\n————————————————\n\n'))
         client.sock.sendMessage(wamsg.key.remoteJid as string, { text: message })
         break
       }

@@ -114,4 +114,3 @@ console.log({ output })
 | `MarkdownWsp` | Utility function to convert markdown to wsp.|
 | `titleSimilarity` | Utility function to calculate text similarity.|
 | `levenshteinDistance` | Utility function to calculate the levenshtein distance between two strings.|
-

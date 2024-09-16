@@ -39,6 +39,22 @@ export class Message {
     // console.log({ c: this.content })
   }
 
+  /**
+   * @description Send a message to the chat where the message was sent
+   * @param {AnyMessageContent} content
+   * @param {MiscMessageGenerationOptions} opts
+   * @returns
+   */
+  async send(content: AnyMessageContent, opts?: MiscMessageGenerationOptions) {
+    return await Promise.resolve(this.client.sock.sendMessage(this._data.key.remoteJid as string, content, { ...opts }))
+  }
+
+  /**
+   * @description Reply to the message
+   * @param {AnyMessageContent} content
+   * @param {MiscMessageGenerationOptions} opts
+   * @returns
+   */
   async reply(content: AnyMessageContent, opts?: MiscMessageGenerationOptions) {
     return await new Promise((resolve) => {
       (async () => {

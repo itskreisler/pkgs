@@ -1,4 +1,5 @@
 import { createApi } from '@kreisler/createapi'
+import { titleSimilarity } from '@kreisler/js-helpers'
 import JsGoogleTranslateFree from '@kreisler/js-google-translate-free'
 export const en2es = async (text: string) => {
   let translation
@@ -104,19 +105,46 @@ export const getAnimeById = async (id: number) => await jikanMoeApi.anime(id)
 export const getAnimeFullById = async (id: number) => await jikanMoeApi.anime(id.toString().concat('/full'))
 export const getRandom = async (type: JikanApiRandomStr = 'anime') => await jikanMoeApi.random(type)
 //
+export function groupAnimeByTitle(animes: JikanData[]): JikanData[][] {
+  const groups: JikanData[][] = []
+  const seasonRegex = /\s+(?:season|s|movie)\s*(\d+|[IVXLCDM]+)|\s+(\d+|[IVXLCDM]+)(?:st|nd|rd|th)\s+season|\s+Movie|\s+part\s+(\d+|[IVXLCDM]+)|\b[IVXLCDM]+\b/i
+  // /\s+(?:season|s)\s*\d+|\s+\d+(?:st|nd|rd|th)\s+season|\s+part\s+\d+/i
+
+  animes.forEach(anime => {
+    const baseTitle = (anime.title_english ?? anime.title).replace(seasonRegex, '').trim()
+    let foundGroup = false
+
+    for (const group of groups) {
+      const groupBaseTitle = (group[0].title_english ?? group[0].title).replace(seasonRegex, '').trim()
+
+      if (titleSimilarity(baseTitle, groupBaseTitle) > 0.8) {
+        group.push(anime)
+        foundGroup = true
+        break
+      }
+    }
+
+    if (!foundGroup) {
+      groups.push([anime])
+    }
+  })
+
+  return groups
+}
+//
 export interface JikanResponseById {
-  data: Daum
+  data: JikanData
   status?: 404
   type?: 'BadResponseException'
   message?: 'Resource does not exist'
   error?: '404 on https://myanimelist.net/anime/12324/'
 }
 export interface JikanResponse {
-  data: Daum[]
+  data: JikanData[]
   pagination: Pagination
 }
 
-export interface Daum {
+export interface JikanData {
   mal_id: number
   url: string
   images: Images
@@ -124,7 +152,7 @@ export interface Daum {
   approved: boolean
   titles: Title[]
   title: string
-  title_english: string
+  title_english: string | null
   title_japanese: string
   title_synonyms: string[]
   type: string
