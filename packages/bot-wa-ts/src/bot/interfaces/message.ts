@@ -13,6 +13,7 @@ export class Message {
   isReply: boolean
   fromMe: boolean
   hasMedia: boolean
+  isViewOnce: boolean
   type: WaMessageTypes
   constructor(client: import('@/bot/main').Whatsapp, data: proto.IWebMessageInfo) {
     const { message, pushName, key: { remoteJid, participant, fromMe, id }, verifiedBizName } = data
@@ -26,6 +27,7 @@ export class Message {
       : new GroupUser(client, (remoteJid ?? ''), pushName ?? verifiedBizName ?? '', (participant ?? '').split('@')[0], (participant ?? ''))
     this.fromMe = fromMe as boolean
     this.isReply = client.hasOwnProp(message, 'extendedTextMessage.contextInfo.quotedMessage')
+    this.isViewOnce = client.hasOwnProp(message, WaMessageTypes.viewOnceMessageV2)
     const type = Object.keys(data.message ?? {})[0] as WaMessageTypes
     this.type = type
     const { body } = client.getMessageBody(data.message)
@@ -96,7 +98,6 @@ export class Message {
   }
 
   async downloadMediaV2(): Promise<FetchBuffer | undefined> {
-    console.log(this.type, this.hasMedia)
     if (!this.hasMedia) return
     let tempMessage: proto.IMessage
     if (this.type === WaMessageTypes.viewOnceMessageV2) {

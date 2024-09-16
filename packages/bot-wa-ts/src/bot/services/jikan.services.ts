@@ -111,11 +111,11 @@ export function groupAnimeByTitle(animes: JikanData[]): JikanData[][] {
   // /\s+(?:season|s)\s*\d+|\s+\d+(?:st|nd|rd|th)\s+season|\s+part\s+\d+/i
 
   animes.forEach(anime => {
-    const baseTitle = (anime.title_english ?? anime.title).replace(seasonRegex, '').trim()
+    const baseTitle = (anime.title ?? anime.title_english).replace(seasonRegex, '').trim()
     let foundGroup = false
 
     for (const group of groups) {
-      const groupBaseTitle = (group[0].title_english ?? group[0].title).replace(seasonRegex, '').trim()
+      const groupBaseTitle = (group[0].title ?? group[0].title_english).replace(seasonRegex, '').trim()
 
       if (titleSimilarity(baseTitle, groupBaseTitle) > 0.8) {
         group.push(anime)

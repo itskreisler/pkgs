@@ -46,9 +46,7 @@ export default {
           return
         }
         const groups = groupAnimeByTitle(data).map(group => group.sort((a, b) => a.title.localeCompare(b.title)))
-        console.log(
-          JSON.stringify(groups.map(g => g.map(a => a.title)), null, 2)
-        )
+        // console.log(JSON.stringify(groups.map(g => g.map(a => a.title)), null, 2))
         const resultado = groups.map(group => {
           // Mapear cada anime dentro del grupo en el formato compacto
           const groupResults = group.map(({ mal_id: malId, title, title_japanese: titleJapanese, year, type, episodes }: AnimeSearch) =>

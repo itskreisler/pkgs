@@ -1,5 +1,6 @@
 import { configEnv } from '@/bot/helpers/env'
 import { type ContextMsg } from '@/bot/interfaces/inter'
+import { type Message } from '@/bot/interfaces/message'
 import type Whatsapp from '@/bot/main'
 const { BOT_USERNAME } = configEnv as { BOT_USERNAME: string }
 //
@@ -15,14 +16,14 @@ export default {
    */
   async cmd(client: Whatsapp, { wamsg, msg }: ContextMsg, match: RegExpMatchArray): Promise<void> {
     if (msg.isReply === false) {
-      await msg.send({
+      await msg.reply({
         text: 'P-perdona, necesitas ejecutar el comando junto a la multimedia que deseas desbloquear.'
       })
       return
     }
-    const quote = msg.getQuotedMsg()
-    if (typeof quote === 'undefined') {
-      client.printLog('❌ quote is undefined', 'redBlock')
+    const quote = msg.getQuotedMsg() as Message
+    if (quote.hasMedia === false || quote.isViewOnce === false) {
+      await msg.reply({ text: 'El contenido del mensaje no es multimedia o no es un mensaje de una sola ves' })
       return
     }
     const media = await quote.downloadMediaV2()
@@ -30,15 +31,15 @@ export default {
       msg.reply({ text: 'No se pudo desbloquear.' })
       return
     }
-    const kche = media.fileType?.mime.startsWith('image') === true
-      ? {
-          image: media.buffer
-        }
+    const multimedia = media.fileType?.mime.startsWith('image') === true
+      ? { image: media.buffer }
       : media.fileType?.mime.startsWith('video') === true
-        ? {
-            video: media.buffer
+        ? { video: media.buffer }
+        : {
+            document: media.buffer,
+            mimetype: media.fileType?.mime as string,
+            fileName: Date.now().toString().concat('.', media.fileType?.ext as string)
           }
-        : { text: 'Error' }
-    await msg.send(kche)
+    await msg.send(multimedia)
   }
 }

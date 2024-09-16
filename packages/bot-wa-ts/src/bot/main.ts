@@ -383,6 +383,16 @@ class Whatsapp {
       } catch (e) {
         console.log('Error al cargar el comando uptime', { e })
       }
+
+      //
+      try {
+        const CMD_UNLOCK = await import('@/bot/commands/public/cmd.unlock')
+        if (this.hasOwnProp(CMD_UNLOCK.default, 'active')) {
+          if (CMD_UNLOCK.default.active === true) this.commands.set(CMD_UNLOCK.default.ExpReg, CMD_UNLOCK.default)
+        }
+      } catch (e) {
+        console.log('Error al cargar el comando unlock', { e })
+      }
     } catch (e) {
       console.error({ e })
     } finally {
