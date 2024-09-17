@@ -61,11 +61,13 @@ export default {
           const kcheBuffer = await convertStreamToBuffer(stream)
           console.log('Archivo descargado')
           const kche = await fileTypeFromBuffer(kcheBuffer)
-          console.log('Leyendo archivo...')
+          console.log('Leyendo archivo...', kche?.mime)
+          const caption = tag.concat('\n', random.file_url)
+          const viewOnce = true
           const multimedia = kche?.mime.startsWith('image') === true
-            ? { image: { stream }, caption: tag.concat('\n', random.file_url), viewOnce: true }
+            ? { image: { stream }, caption, viewOnce }
             : kche?.mime.startsWith('video') === true
-              ? { video: { stream }, caption: tag.concat('\n', random.file_url), viewOnce: true }
+              ? { video: { stream }, caption, viewOnce }
               : { text: 'No se pudo obtener el archivo' }
           await msg.send(multimedia)
         }
