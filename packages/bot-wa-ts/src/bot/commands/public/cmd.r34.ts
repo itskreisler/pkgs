@@ -53,10 +53,19 @@ export default {
           const minMaxInt = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min
           const pid = minMaxInt(0, pages - 1)
           console.log({ totalRegistros, limit, pid, pages })
-          const result = await r34API([tag], { limit, pid })
+          const result = await (async() => {
+            let res
+            try {
+              res = await r34API([tag], { limit, pid })
+            } catch (error) {
+              client.printLog(JSON.stringify(error, null, 2), 'redBlock')
+              res = await r34API([tag], { limit, pid: 0 })
+            }
+            return res
+          })()
           const random = r34RandomPic(result)
-          console.log(random.file_url)
           const stream = await getStreamFromUrl(random.file_url)
+          console.log(random.file_url)
           // console.log('Descargando archivo...')
           // const kcheBuffer = await convertStreamToBuffer(stream)
           // console.log('Archivo descargado')
