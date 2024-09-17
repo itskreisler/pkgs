@@ -1,12 +1,16 @@
 import { configEnv } from '@/bot/helpers/env'
+import { getStreamFromUrl, convertStreamToBuffer, fileTypeFromBuffer } from '@/bot/helpers/polyfill'
 import { type ContextMsg } from '@/bot/interfaces/inter'
 import type Whatsapp from '@/bot/main'
-import { createApi } from '@kreisler/createapi'
+import { r34API, r34Tags, r34RandomPic } from '@/bot/services/r34.services'
+import { MarkdownWsp } from '@kreisler/js-helpers'
 const { BOT_USERNAME } = configEnv as { BOT_USERNAME: string }
+//
+
 //
 export default {
   active: true,
-  ExpReg: new RegExp(`^/ping(?:@${BOT_USERNAME})?$`, 'im'), // /^\/ping(?:@username)?$/im
+  ExpReg: new RegExp(`^/r(?:ule)?34(?:_(\\w+))?(?:@${BOT_USERNAME})?(?:\\s+(.+))?$`, 'ims'),
 
   /**
    * @description
@@ -15,44 +19,54 @@ export default {
    * @param {RegExpMatchArray} match
    */
   async cmd(client: Whatsapp, { wamsg, msg }: ContextMsg, match: RegExpMatchArray): Promise<void> {
-    async function r34API(tag: string[], limit: number): Promise<{ preview_url: string, sample_url: string, file_url: string } | 'no résult found'> {
-      const tags = tag.join(' ')
-      const r34: {
-        'index.php': (params: { tags: string, page: string, s: string, q: string, limit: number, pid: number, json: number }) => Promise<any>
-      } = createApi('https://api.rule34.xxx')
-      const data = await r34['index.php']({
-        tags,
-        page: 'dapi',
-        s: 'post',
-        q: 'index',
-        limit,
-        pid: 1,
-        json: 1
-      })
-      if (data.length < 1) return 'no résult found'
-      const n = Math.floor(Math.random() * data.length)
-      // if (n === 0) return await r34API(tag)
-      return data[n]
-    }
-    async function getPic() {
-      const image = await r34API(['hu_tao_(genshin_impact)'], 1000)
-      console.log(image)
-    }
-    // getPic()
+    const [, accion, q] = match as [string, 'r' | 'random' | undefined, string | undefined]
 
-    async function getTags(query: string) {
-      const r34: {
-        'autocomplete.php': (params: { q: string }) => Promise<Array<{ label: string, value: string }>>
-      } = createApi('https://ac.rule34.xxx')
-      const data = await r34['autocomplete.php']({ q: query })
-      return data
-    }
-    getTags('hu_tao').then(([{ label, value: tag }]) => {
-      const count = label.match(/([\d]+)/gm)
-      if (count != null) {
-        const limit = parseInt(count[0])
-        r34API([tag], limit).then(console.log)
+    switch (accion?.toLowerCase()) {
+      case 'r':
+      case 'random': {
+        break
       }
-    })
+      default:{
+        if (typeof q === 'undefined') {
+          msg.reply({ text: 'Debes escribir una etiqueta para buscar' })
+          return
+        }
+        const tags = await r34Tags(q)
+        if (tags.length === 0) {
+          msg.reply({
+            text: `No se encontraron resultados para ${MarkdownWsp.Bold(MarkdownWsp.Italic(q))}`
+          })
+          return
+        }
+        const [first] = tags
+        const { label, value: tag } = first
+        const count = label.match(/\((\d+)\)/g)?.pop()?.match(/([\d]+)/gm) as [string] | undefined
+        if (count != null && tag != null) {
+          const totalRegistros = Number(count[0])
+          const limit = totalRegistros > 1000 ? 500 : Number(count[0])
+          // Calculamos cuántas páginas completas hay
+          const paginasCompletas = Math.floor(totalRegistros / limit)
+          // Si hay algún registro sobrante, necesitamos una página extra
+          const paginasExtra = totalRegistros % limit > 0 ? 1 : 0
+          // El número total de páginas será la suma de las completas más las extras
+          const pages = paginasCompletas + paginasExtra
+          const minMaxInt = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min
+          const pid = minMaxInt(0, pages - 1)
+          console.log({ totalRegistros, limit, pid, pages })
+          const result = await r34API([tag], { limit, pid })
+          const random = r34RandomPic(result)
+          console.log(random.file_url)
+          const stream = await getStreamFromUrl(random.file_url)
+          const kcheBuffer = await convertStreamToBuffer(stream)
+          const kche = await fileTypeFromBuffer(kcheBuffer)
+          const multimedia = kche?.mime.startsWith('image') === true
+            ? { image: { stream } }
+            : kche?.mime.startsWith('video') === true
+              ? { video: { stream } }
+              : { text: 'No se pudo obtener el archivo' }
+          await msg.send({ ...multimedia, caption: tag.concat('\n', random.file_url), viewOnce: true })
+        }
+      }
+    }
   }
 }

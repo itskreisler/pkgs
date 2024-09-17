@@ -383,6 +383,15 @@ class Whatsapp {
       } catch (e) {
         console.log('Error al cargar el comando uptime', { e })
       }
+      //
+      try {
+        const CMD_R34 = await import('@/bot/commands/public/cmd.r34')
+        if (this.hasOwnProp(CMD_R34.default, 'active')) {
+          if (CMD_R34.default.active === true) this.commands.set(CMD_R34.default.ExpReg, CMD_R34.default)
+        }
+      } catch (e) {
+        console.log('Error al cargar el comando r34', { e })
+      }
 
       //
       try {
@@ -393,10 +402,20 @@ class Whatsapp {
       } catch (e) {
         console.log('Error al cargar el comando unlock', { e })
       }
+
+      //
+      try {
+        const CMD_DLURL = await import('@/bot/commands/public/cmd.dlurl')
+        if (this.hasOwnProp(CMD_DLURL.default, 'active')) {
+          if (CMD_DLURL.default.active === true) this.commands.set(CMD_DLURL.default.ExpReg, CMD_DLURL.default)
+        }
+      } catch (e) {
+        console.log('Error al cargar el comando dlurl', { e })
+      }
     } catch (e) {
       console.error({ e })
     } finally {
-      console.log('(✅) Comandos cargados correctamente')
+      console.log('(✅) Comandos cargados correctamente', this.getCommands().length)
     }
   }
 

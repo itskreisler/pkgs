@@ -12,6 +12,9 @@ export type FetchBuffer = Promise<{
   fileType: FileTypeResult | undefined
 }>
 //
+export function bufferToUint8Array(buffer: Buffer): Uint8Array {
+  return new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength)
+}
 export async function fetchBuffer(url: https.RequestOptions | string | URL): FetchBuffer {
   return await new Promise((resolve, reject) => {
     https.get(url, (res) => {
@@ -43,7 +46,6 @@ export const nodeFetchBuffer = async (url: URL | RequestInfo): FetchBuffer => {
   const buffer = Buffer.from(arrayBuffer)
   if (fileType === undefined) {
     const mimeType = response.headers.get('Content-Type') ?? 'application/octet-stream'
-    console.log({ mimeType })
     const mime = mimeType.split(';') as ['text/html', 'charset=UTF-8']
     const [, subtype] = mime[0].split('/') as ['text', 'html']
     return await Promise.resolve({ buffer, fileType: { ext: subtype as FileExtension, mime: mime[0] as MimeType } })
@@ -78,6 +80,21 @@ export async function getStreamFromUrl(url: string) {
   const nodeReadableStream = (response.body != null) ? Readable.from(response.body) : null
 
   return nodeReadableStream as Readable
+}
+export async function convertStreamToBuffer(stream: Readable): Promise<Buffer> {
+  return await new Promise((resolve, reject) => {
+    const chunks: Uint8Array[] = []
+    stream.on('data', (chunk) => {
+      chunks.push(chunk)
+    })
+    stream.on('end', async () => {
+      const buffer = Buffer.concat(chunks)
+      return resolve(buffer)
+    })
+    stream.on('error', async (error) => {
+      return reject(error)
+    })
+  })
 }
 
 //
