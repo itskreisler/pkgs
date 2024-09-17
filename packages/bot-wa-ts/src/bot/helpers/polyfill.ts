@@ -96,6 +96,16 @@ export async function convertStreamToBuffer(stream: Readable): Promise<Buffer> {
     })
   })
 }
+//
+export class Cadena extends String {
+  endsWithV2(searchString: string[]) {
+    return searchString.some((search) => this.endsWith(search))
+  }
+
+  startsWithV2(searchString: string[]) {
+    return searchString.some((search) => this.startsWith(search))
+  }
+}
 
 //
 export const sleep = async (ms: number) => await new Promise((resolve) => setTimeout(resolve, ms))

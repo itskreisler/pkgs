@@ -1,5 +1,5 @@
 import { configEnv } from '@/bot/helpers/env'
-import { getStreamFromUrl, convertStreamToBuffer, fileTypeFromBuffer } from '@/bot/helpers/polyfill'
+import { getStreamFromUrl, Cadena } from '@/bot/helpers/polyfill'
 import { type ContextMsg } from '@/bot/interfaces/inter'
 import type Whatsapp from '@/bot/main'
 import { r34API, r34Tags, r34RandomPic } from '@/bot/services/r34.services'
@@ -57,18 +57,18 @@ export default {
           const random = r34RandomPic(result)
           console.log(random.file_url)
           const stream = await getStreamFromUrl(random.file_url)
-          console.log('Descargando archivo...')
-          const kcheBuffer = await convertStreamToBuffer(stream)
-          console.log('Archivo descargado')
-          const kche = await fileTypeFromBuffer(kcheBuffer)
-          console.log('Leyendo archivo...', kche?.mime)
+          // console.log('Descargando archivo...')
+          // const kcheBuffer = await convertStreamToBuffer(stream)
+          // console.log('Archivo descargado')
+          // const kche = await fileTypeFromBuffer(kcheBuffer)
+          // console.log('Leyendo archivo...', kche?.mime)
           const caption = tag.concat('\n', random.file_url)
           const viewOnce = true
-          const multimedia = kche?.mime.startsWith('image') === true
-            ? { image: { stream }, caption, viewOnce }
-            : kche?.mime.startsWith('video') === true
-              ? { video: { stream }, caption, viewOnce }
-              : { text: 'No se pudo obtener el archivo' }
+          const multimedia = random.file_url.endsWith('.mp4') === true
+            ? { video: { stream }, caption, viewOnce }
+            : (new Cadena(random.file_url)).endsWithV2(['.png', '.jpg', '.jpeg']) === true
+                ? { image: { stream }, caption, viewOnce }
+                : { text: 'No se pudo obtener el archivo, pero aqui tienes el link.'.concat('\n', MarkdownWsp.Quote(random.file_url)) }
           await msg.send(multimedia)
         }
       }
