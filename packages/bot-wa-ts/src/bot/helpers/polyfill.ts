@@ -89,10 +89,10 @@ export async function convertStreamToBuffer(stream: Readable): Promise<Buffer> {
     })
     stream.on('end', async () => {
       const buffer = Buffer.concat(chunks)
-      return resolve(buffer)
+      resolve(buffer)
     })
     stream.on('error', async (error) => {
-      return reject(error)
+      reject(error)
     })
   })
 }

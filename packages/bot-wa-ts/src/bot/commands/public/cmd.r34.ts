@@ -57,14 +57,17 @@ export default {
           const random = r34RandomPic(result)
           console.log(random.file_url)
           const stream = await getStreamFromUrl(random.file_url)
+          console.log('Descargando archivo...')
           const kcheBuffer = await convertStreamToBuffer(stream)
+          console.log('Archivo descargado')
           const kche = await fileTypeFromBuffer(kcheBuffer)
+          console.log('Leyendo archivo...')
           const multimedia = kche?.mime.startsWith('image') === true
-            ? { image: { stream } }
+            ? { image: { stream }, caption: tag.concat('\n', random.file_url), viewOnce: true }
             : kche?.mime.startsWith('video') === true
-              ? { video: { stream } }
+              ? { video: { stream }, caption: tag.concat('\n', random.file_url), viewOnce: true }
               : { text: 'No se pudo obtener el archivo' }
-          await msg.send({ ...multimedia, caption: tag.concat('\n', random.file_url), viewOnce: true })
+          await msg.send(multimedia)
         }
       }
     }
