@@ -19,7 +19,7 @@ const messageDebounced = debounce(messageHandler, 5000, {
   },
   onComplete: (result: decounceMessage) => {
     console.info(
-      'Se ha ejecutado el comando', result.context.body, result.ExpReg
+      'Se ha completado el comando', result.context.body, result.ExpReg
     )
   }
 })
@@ -52,7 +52,7 @@ export async function handler (client: Whatsapp, content: {
       const msg = new Message(client, chat)
       const context: ContextMsg = { msg, wamsg: chat, ...getMessageBody }
       await messageDebounced({ client, context, comando, ExpReg })
-      msg.react('✅')
+      await msg.react('✅')
     } catch (e) {
       console.error('Ha ocurrido un error al ejecutar el comando', { e })
       const from: string = chat.key.remoteJid as string

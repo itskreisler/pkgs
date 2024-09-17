@@ -59,6 +59,7 @@ export default {
             const pages = paginasCompletas + paginasExtra
             const minMaxInt = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min
             const pid = minMaxInt(0, pages - 1)
+            client.printLog({ totalRegistros, pid, pages }, 'yellow')
             result = await (async() => {
               let res
               try {

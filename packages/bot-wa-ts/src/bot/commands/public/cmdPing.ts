@@ -16,6 +16,5 @@ export default {
   async cmd(client: Whatsapp, { wamsg, msg }: ContextMsg, match: RegExpMatchArray): Promise<void> {
     const from: string = wamsg.key.remoteJid as string
     client.sendText(from, { text: '🏓 Pong!' }, { quoted: wamsg })
-    msg.react('🏓')
   }
 }

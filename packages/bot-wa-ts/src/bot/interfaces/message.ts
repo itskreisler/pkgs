@@ -11,6 +11,7 @@ export class Message {
   author: User
   content: string
   isReply: boolean
+  isGroup: boolean
   fromMe: boolean
   hasMedia: boolean
   isViewOnce: boolean
@@ -22,6 +23,7 @@ export class Message {
     this.client = client
     this._data = data
     this.id = id as string
+    this.isGroup = !(remoteJid ?? '').endsWith('@s.whatsapp.net')
     this.author = (remoteJid ?? '').endsWith('@s.whatsapp.net')
       ? new User(client, pushName ?? verifiedBizName ?? '', (remoteJid ?? '').split('@')[0], (remoteJid ?? ''))
       : new GroupUser(client, (remoteJid ?? ''), pushName ?? verifiedBizName ?? '', (participant ?? '').split('@')[0], (participant ?? ''))
@@ -55,6 +57,14 @@ export class Message {
     return await Promise.resolve(this.client.sock.sendMessage(this._data.key.remoteJid as string, content, { ...opts }))
   }
 
+  getData(): proto.IWebMessageInfo {
+    return this._data
+  }
+
+  getMessage(): proto.IMessage {
+    return this._message
+  }
+
   /**
    * @description Reply to the message
    * @param {AnyMessageContent} content
@@ -70,22 +80,13 @@ export class Message {
   }
 
   async react(reaction: string): Promise<proto.WebMessageInfo | undefined> {
-    return await new Promise((resolve) => {
-      (async () => {
-        await this.client.sock.readMessages([this._data.key])
-        resolve(await this.client.sock.sendMessage(this._data.key.remoteJid as string, {
-          react: { text: reaction, key: this._data.key }
-        }))
-      })()
-    })
+    return await Promise.resolve(await this.client.sock.sendMessage(this._data.key.remoteJid as string, {
+      react: { text: reaction, key: this._data.key }
+    }))
   }
 
   async delete(): Promise<Message> {
-    return await new Promise((resolve) => {
-      (async () => {
-        resolve(await this.client.send(this._data.key.remoteJid as string, { delete: this._data.key }))
-      })()
-    })
+    return await Promise.resolve(await this.client.send(this._data.key.remoteJid as string, { delete: this._data.key }))
   }
 
   async getChat(): Promise<Chat> {
@@ -149,17 +150,18 @@ export class Message {
     })
   }
 
+  async readMessage() {
+    await this.client.sock.readMessages([this._data.key])
+  }
+
   getQuotedMsg(): Message | undefined {
     if (!this.isReply) return
-
     // @ts-expect-error
     const ctx: proto.IContextInfo = this._data.message[Object.keys(this._data.message)[0]]?.contextInfo
-    // console.log(JSON.stringify(ctx, null, 2))
     if (ctx === null) return
-
     return new Message(this.client, {
       key: {
-        fromMe: (ctx.participant ?? ctx.remoteJid) === this.author.id,
+        fromMe: (ctx.participant ?? ctx.remoteJid) !== this.author.id,
         participant: ctx.participant,
         remoteJid: ctx.remoteJid ?? this._data.key.remoteJid,
         id: ctx.stanzaId

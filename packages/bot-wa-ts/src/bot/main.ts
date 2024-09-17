@@ -412,6 +412,16 @@ class Whatsapp {
       } catch (e) {
         console.log('Error al cargar el comando dlurl', { e })
       }
+
+      //
+      try {
+        const CMD_DELETE = await import('@/bot/commands/public/cmd.delete')
+        if (this.hasOwnProp(CMD_DELETE.default, 'active')) {
+          if (CMD_DELETE.default.active === true) this.commands.set(CMD_DELETE.default.ExpReg, CMD_DELETE.default)
+        }
+      } catch (e) {
+        console.log('Error al cargar el comando delete', { e })
+      }
     } catch (e) {
       console.error({ e })
     } finally {
