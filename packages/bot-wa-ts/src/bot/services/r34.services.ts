@@ -11,20 +11,24 @@ interface R34APIParams {
   q?: 'index'
   limit?: number
   pid?: number
-  json?: number
+  json?: 1 | 0
 }
-export async function r34API(tag: string[], options: R34APIParams): Promise<R34Response[]> {
+export async function r34API(tag: string[], options: R34APIParams = {
+  page: 'dapi',
+  s: 'post',
+  q: 'index'
+}): Promise<R34Response[]> {
   const {
     page = 'dapi',
     s = 'post',
     q = 'index',
-    limit = 1000,
-    pid = 0,
     json = 1
+    // limit = 1000,
+    // pid = 0,
   } = options
   const tags = tag.join(' ')
   const r34: R34API = createApi(R34Const.API)
-  const data = await r34['index.php']({ tags, page, s, q, limit, pid, json })
+  const data = await r34['index.php']({ tags, page, s, q, json, ...options })
   if (data.length < 1) return []
   return data
 }
@@ -34,6 +38,7 @@ export function r34RandomPic(pics: R34Response[]): R34Response {
 }
 
 export async function r34Tags(query: string) {
+  if (query.length === 0) return []
   const r34: R34AC = createApi(R34Const.AUTOCOMPLETE)
   const data = await r34['autocomplete.php']({ q: query })
   return data
@@ -79,8 +84,9 @@ export interface R34Response {
 }
 
 interface R34API {
-  'index.php': (params: { tags: string, page: string, s: string, q: string, limit: number, pid: number, json: number }) => Promise<R34Response[]>
+  'index.php': (params: { tags: string, page: string, s: string, q: string, limit?: number, pid?: number, json: number }) => Promise<R34Response[]>
 }
+export interface R34Tags { label: string, value: string, type: string }
 interface R34AC {
-  'autocomplete.php': (params: { q: string }) => Promise<Array<{ label: string, value: string, type: string }>>
+  'autocomplete.php': (params: { q: string }) => Promise<R34Tags[]>
 }
