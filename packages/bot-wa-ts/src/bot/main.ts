@@ -422,6 +422,16 @@ class Whatsapp {
       } catch (e) {
         console.log('Error al cargar el comando delete', { e })
       }
+
+      //
+      try {
+        const CMD_CONFIG = await import('@/bot/commands/public/cmd.config')
+        if (this.hasOwnProp(CMD_CONFIG.default, 'active')) {
+          if (CMD_CONFIG.default.active === true) this.commands.set(CMD_CONFIG.default.ExpReg, CMD_CONFIG.default)
+        }
+      } catch (e) {
+        console.log('Error al cargar el comando config', { e })
+      }
     } catch (e) {
       console.error({ e })
     } finally {

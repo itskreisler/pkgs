@@ -38,6 +38,7 @@ export async function handler (client: Whatsapp, content: {
   type: MessageUpsertType
 }): Promise<void> {
   const chat = content.messages[0]
+  if (chat.message === null) return
   const getMessageBody = client.getMessageBody(chat.message)
   const { body, typeMessage, quotedBody } = getMessageBody
   // client.saveFile('./dist/chat.json', JSON.stringify([chat], null, 2))
@@ -47,7 +48,7 @@ export async function handler (client: Whatsapp, content: {
   if (!hasPrefix) return
   client.printLog(JSON.stringify({ body, typeMessage, quotedBody }, null, 2), 'cyan')
   const [existe, [ExpReg, comando]] = client.findCommand(body)
-  if (existe === true) {
+  if (existe === true && comando?.active === true) {
     try {
       const msg = new Message(client, chat)
       const context: ContextMsg = { msg, wamsg: chat, ...getMessageBody }
