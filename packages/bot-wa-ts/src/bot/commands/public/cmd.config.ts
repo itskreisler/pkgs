@@ -3,6 +3,8 @@ import { CommandImport, type ContextMsg } from '@/bot/interfaces/inter'
 import type Whatsapp from '@/bot/main'
 import { MarkdownWsp } from '@kreisler/js-helpers'
 const { BOT_USERNAME } = configEnv as { BOT_USERNAME: string }
+const NEW_ADMINS: string[] = []
+const PERMANENT_ADMINS = configEnv.AUTHORIZED_USERS?.split(',').map((e: string) => e.split(':').pop()) as string[]
 //
 export default {
   active: true,
@@ -15,16 +17,40 @@ export default {
    * @param {RegExpMatchArray} match
    */
   async cmd(client: Whatsapp, { wamsg, msg }: ContextMsg, match: RegExpMatchArray): Promise<void> {
-    const [, accion, search] = match as [string, 'on' | 'off' | undefined, string | undefined]
+    const [, accion, search] = match as [string, 'on' | 'off' | 'list' | 'msg' | 'admin' | undefined, string | undefined]
     const numberPhone: string = msg.author.number
-    const isAuthorized = configEnv.AUTHORIZED_USERS?.split(',')
-      .map((e: string) => e.split(':').pop())
-      .includes(numberPhone)
-    if (isAuthorized === false) {
+    const isAuthorized = (n: string) => NEW_ADMINS.concat(PERMANENT_ADMINS)
+      .includes(n)
+    if (!isAuthorized(numberPhone)) {
       await msg.reply({ text: 'No tienes permisos para realizar esta acción.' })
       return
     }
     switch (accion?.toLowerCase()) {
+      case 'admin':{
+        if (typeof search === 'undefined') {
+          await msg.reply({ text: 'Debes incluir un parametro' })
+          return
+        }
+        const users = await msg.getMentions()
+        if (users.length === 0) {
+          await msg.reply({ text: 'Debes mencionar a alguien' })
+          return
+        }
+        for (const { number } of users) {
+          // Si el usuario no está autorizado, lo agregamos
+          if (!isAuthorized(number)) {
+            NEW_ADMINS.push(number)
+          } else {
+            const indexAuthorized = NEW_ADMINS.indexOf(number)
+            if (indexAuthorized !== -1) {
+              NEW_ADMINS.splice(indexAuthorized, 1)
+            }
+          }
+        }
+
+        console.log(NEW_ADMINS.concat(PERMANENT_ADMINS))
+        break
+      }
       case 'on':{
         if (typeof search === 'undefined') {
           await msg.reply({ text: 'Debes incluir un parametro de busqueda' })
