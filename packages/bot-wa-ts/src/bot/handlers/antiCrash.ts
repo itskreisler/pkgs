@@ -1,4 +1,4 @@
-export default () => {
+export default (): void => {
   process.removeAllListeners()
 
   process.on('unhandledRejection', (reason, p) => {

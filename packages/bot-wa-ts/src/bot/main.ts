@@ -47,9 +47,10 @@ class Whatsapp {
   }
 
   //
-  async sendMediaGroup (jid: string, media: AnyMessageContent[], options = {}, step: number = 10) {
-    const promises = []
-    for (const chunk of media) {
+  async sendMsgGroup (jid: string, media: AnyMessageContent[] | Promise<AnyMessageContent[]>, options?: MiscMessageGenerationOptions): Promise<Array<proto.WebMessageInfo | undefined>> {
+    const promises: Array<Promise<proto.WebMessageInfo | undefined>> = []
+    const resolvedMedia = await Promise.resolve(media)
+    for (const chunk of resolvedMedia) {
       promises.push(this.sock.sendMessage(jid, chunk, options))
     }
     return await Promise.all(promises)
@@ -431,6 +432,16 @@ class Whatsapp {
         }
       } catch (e) {
         console.log('Error al cargar el comando config', { e })
+      }
+
+      //
+      try {
+        const CMD_IG = await import('@/bot/commands/public/cmd.ig')
+        if (this.hasOwnProp(CMD_IG.default, 'active')) {
+          if (CMD_IG.default.active === true) this.commands.set(CMD_IG.default.ExpReg, CMD_IG.default)
+        }
+      } catch (e) {
+        console.log('Error al cargar el comando ig', { e })
       }
     } catch (e) {
       console.error({ e })

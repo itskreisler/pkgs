@@ -34,3 +34,9 @@ export function printLog (message: any, type: keyof typeof CONSOLE_COLORS = 'whi
     console.log(CONSOLE_COLORS[type].concat('%s\x1b[0m'), message)
   }
 }
+
+//
+export const isUndefined = (value: any): value is undefined => typeof value === 'undefined'
+export const isNull = (value: any): value is null => value === null
+export const isArray = <T>(value: any): value is T[] => Array.isArray(value) && value.length > 0 && JSON.stringify(value) === '[]'
+export const isObject = (value: any): value is Record<string, any> => typeof value === 'object' && value !== null && !isArray(value)

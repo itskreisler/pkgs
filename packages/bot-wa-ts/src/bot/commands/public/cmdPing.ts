@@ -13,7 +13,7 @@ export default {
    * @param {ContextMsg}
    * @param {RegExpMatchArray} match
    */
-  async cmd(client: Whatsapp, { wamsg, msg }: ContextMsg, match: RegExpMatchArray): Promise<void> {
+  async cmd (client: Whatsapp, { wamsg, msg }: ContextMsg, match: RegExpMatchArray): Promise<void> {
     const from: string = wamsg.key.remoteJid as string
     client.sendText(from, { text: '🏓 Pong!' }, { quoted: wamsg })
   }

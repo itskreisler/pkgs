@@ -16,10 +16,10 @@ export default {
    * @param {ContextMsg}
    * @param {RegExpMatchArray} match
    */
-  async cmd(client: Whatsapp, { wamsg, msg }: ContextMsg, match: RegExpMatchArray): Promise<void> {
+  async cmd (client: Whatsapp, { wamsg, msg }: ContextMsg, match: RegExpMatchArray): Promise<void> {
     const [, accion, search] = match as [string, 'on' | 'off' | 'list' | 'msg' | 'admin' | undefined, string | undefined]
     const numberPhone: string = msg.author.number
-    const isAuthorized = (n: string) => NEW_ADMINS.concat(PERMANENT_ADMINS)
+    const isAuthorized = (n: string): boolean => NEW_ADMINS.concat(PERMANENT_ADMINS)
       .includes(n)
     if (!isAuthorized(numberPhone)) {
       await msg.reply({ text: 'No tienes permisos para realizar esta acción.' })

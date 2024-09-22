@@ -14,7 +14,7 @@ export default {
    * @param {ContextMsg}
    * @param {RegExpMatchArray} match
    */
-  async cmd(client: Whatsapp, { wamsg, msg }: ContextMsg, match: RegExpMatchArray): Promise<void> {
+  async cmd (client: Whatsapp, { wamsg, msg }: ContextMsg, match: RegExpMatchArray): Promise<void> {
     if (msg.isReply === false) {
       await msg.reply({
         text: 'P-perdona, necesitas ejecutar el comando junto a la multimedia que deseas desbloquear.'

@@ -18,7 +18,7 @@ export default {
    * @param {ContextMsg}
    * @param {RegExpMatchArray} match
    */
-  async cmd(client: Whatsapp, { wamsg, msg }: ContextMsg, match: RegExpMatchArray): Promise<void> {
+  async cmd (client: Whatsapp, { wamsg, msg }: ContextMsg, match: RegExpMatchArray): Promise<void> {
     const [, accion, q] = match as [string, 'r' | 'random' | undefined, string | undefined]
 
     switch (accion?.toLowerCase()) {
@@ -57,10 +57,10 @@ export default {
             const paginasExtra = totalRegistros % limit > 0 ? 1 : 0
             // El número total de páginas será la suma de las completas más las extras
             const pages = paginasCompletas + paginasExtra
-            const minMaxInt = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min
+            const minMaxInt = (min: number, max: number): number => Math.floor(Math.random() * (max - min + 1)) + min
             const pid = minMaxInt(0, pages - 1)
             client.printLog({ totalRegistros, pid, pages }, 'yellow')
-            result = await (async() => {
+            result = await (async () => {
               let res
               try {
                 res = await r34API([tag], { limit, pid })

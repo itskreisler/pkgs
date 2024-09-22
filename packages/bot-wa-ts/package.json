@@ -58,6 +58,7 @@
   ],
   "license": "MIT",
   "devDependencies": {
+    "@types/crypto-js": "^4.2.2",
     "typedoc": "^0.26.6"
   },
   "dependencies": {
@@ -67,6 +68,7 @@
     "@kreisler/js-google-translate-free": "^4.0.2",
     "@kreisler/js-helpers": "^4.6.2",
     "@whiskeysockets/baileys": "^6.7.7",
+    "crypto-js": "^4.2.0",
     "dotenv": "^16.4.5",
     "file-type": "^19.4.1",
     "pino": "^9.3.2",

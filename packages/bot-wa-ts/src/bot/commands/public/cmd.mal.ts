@@ -26,7 +26,7 @@ export default {
      * @param {ContextMsg}
      * @param {RegExpMatchArray | null} match
      */
-  async cmd(client: Whatsapp, { wamsg, msg, quotedBody }: ContextMsg, match: RegExpMatchArray): Promise<void> {
+  async cmd (client: Whatsapp, { wamsg, msg, quotedBody }: ContextMsg, match: RegExpMatchArray): Promise<void> {
     const [, accion, _q] = match as [string, 's' | 'search' | 'id' | 'byid' | 'r' | 'random' | undefined, string | undefined]
     let q: string | undefined
     if (msg.isReply === true) {

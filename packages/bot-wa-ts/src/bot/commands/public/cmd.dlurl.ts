@@ -12,14 +12,14 @@ export default {
    * @param {ContextMsg}
    * @param {RegExpMatchArray} match
    */
-  async cmd(client: Whatsapp, { wamsg, msg }: ContextMsg, match: RegExpMatchArray): Promise<void> {
+  async cmd (client: Whatsapp, { wamsg, msg }: ContextMsg, match: RegExpMatchArray): Promise<void> {
     const [, url] = match as [string, string | null]
     if (url === null) {
       msg.reply({ text: 'Proporciona un enlace para descargar(imagen o video)' })
       return
     }
     if (url.startsWith('http')) {
-      const kche = await (async() => {
+      const kche = await (async () => {
         try {
           return await Promise.resolve(await nodeFetchBuffer(url))
         } catch {

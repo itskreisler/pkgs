@@ -23,7 +23,7 @@ const messageDebounced = debounce(messageHandler, 5000, {
     )
   }
 })
-async function messageHandler ({ client, context, comando, ExpReg }: decounceMessage) {
+async function messageHandler ({ client, context, comando, ExpReg }: decounceMessage): Promise<void> {
   // @ts-expect-error
   const match = context.body.match(ExpReg) as RegExpMatchArray
   await comando.cmd(client, context, match)

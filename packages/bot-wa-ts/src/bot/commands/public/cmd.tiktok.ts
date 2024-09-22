@@ -1,11 +1,9 @@
-// import { configEnv } from '@/bot/helpers/env'
 import { type ContextMsg } from '@/bot/interfaces/inter'
 import type Whatsapp from '@/bot/main'
 import { tikwm, TikTokStatusCodes, sizeMB } from '@/bot/services/tiktok.services'
 import { nodeFetchBuffer, getStreamFromUrl } from '@/bot/helpers/polyfill'
 import { MarkdownWsp } from '@kreisler/js-helpers'
-
-// const { BOT_USERNAME } = configEnv as { BOT_USERNAME: string }
+import { proto } from '@whiskeysockets/baileys'
 //
 const ExpReg = /^\/tt(?:\s+(https?:\/\/((?:www\.)?|(?:vm\.)?|(?:m\.)?)tiktok\.com\/(?:@[a-zA-Z0-9_]+\/)?(?:video\/)?([a-zA-Z0-9]+)))?/ims
 function validateDomainTikTok (url: string): boolean {
@@ -23,7 +21,7 @@ export default {
    * @param {ContextMsg}
    * @param {RegExpMatchArray} match
    */
-  async cmd(client: Whatsapp, { wamsg, msg, quotedBody }: ContextMsg, match: RegExpMatchArray): Promise<void> {
+  async cmd (client: Whatsapp, { wamsg, msg, quotedBody }: ContextMsg, match: RegExpMatchArray): Promise<void> {
     const [, _url] = match as [string, string | undefined]
     let url = _url
     if (typeof quotedBody?.body !== 'undefined') {
@@ -47,7 +45,7 @@ export default {
       }
       // si hay imagenes
       if (typeof data.images !== 'undefined') {
-        const promises = []
+        const promises: Array<Promise<proto.WebMessageInfo | undefined>> = []
         for (const img of data.images) {
           const kche = await nodeFetchBuffer(img)
           promises.push(
@@ -59,8 +57,11 @@ export default {
           )
         }
         await Promise.all(promises)
-          .then(() => {
-            msg.reply({ text: 'Cantidad de imagenes enviadas: '.concat(String(data.images?.length)) })
+          .then((Wmsginfo) => {
+            client.sock.sendMessage(wamsg.key.remoteJid as string, {
+              text: 'Cantidad de imagenes enviadas: '.concat(String(Wmsginfo.length))
+            }, { quoted: Wmsginfo.pop() })
+            // msg.reply({ text: 'Cantidad de imagenes enviadas: '.concat(String(data.images?.length)) })
           })
           .catch((e) => {
             console.error('Ha ocurrido un error al enviar las imagenes', { e })
