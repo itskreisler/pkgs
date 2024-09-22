@@ -21,12 +21,16 @@ export interface InstaVideoData {
   n?: boolean
   snapsave: boolean
 }
+export type InstaVideoList = Array<{ url: string, type: keyof typeof InstaVideoTypes }>
 export interface InstaVideoResult {
   resultsNumber: number
-  urlList: string[]
-  type: InstaVideoTypes
+  urlList: InstaVideoList
 }
-export type InstaVideoTypes = 'video' | 'thumbnail' | 'image'
+export enum InstaVideoTypes {
+  video = 'video',
+  image = 'image',
+  thumbnail = 'thumbnail'
+}
 export async function instagramGetUrl (urlMedia: string): Promise<InstaVideoResult> {
   // eslint-disable-next-line no-async-promise-executor
   return await new Promise(async (resolve, reject) => {
@@ -51,28 +55,25 @@ export async function instagramGetUrl (urlMedia: string): Promise<InstaVideoResu
         reject(new Error('No se pudo obtener la información'))
         return
       }
-      const urlList: string[] = []
-      let type: InstaVideoTypes = 'video'
+      const urlList: InstaVideoList = []
+
       if ('video' in data && data.video !== null) {
         data.video.forEach((infovideo: { video: string, thumbnail: string }) => {
           if (infovideo.video != null) {
-            urlList.push(infovideo.video)
-            type = 'video'
+            urlList.push({ url: infovideo.video, type: InstaVideoTypes.video })
           } else {
-            urlList.push(infovideo.thumbnail)
-            type = 'thumbnail'
+            urlList.push({ url: infovideo.thumbnail, type: InstaVideoTypes.image })
           }
         })
       }
 
       if ('image' in data && data.image !== null) {
         data.image.forEach((image: string) => {
-          urlList.push(image)
+          urlList.push({ url: image, type: InstaVideoTypes.image })
         })
-        type = 'image'
       }
 
-      resolve({ resultsNumber: urlList.length, urlList, type })
+      resolve({ resultsNumber: urlList.length, urlList })
     } catch (err) {
       reject(err)
     }
