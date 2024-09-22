@@ -1,10 +1,9 @@
-import { configEnv } from '@/bot/helpers/env'
+import { configEnv, NEW_ADMINS, PERMANENT_ADMINS, isAuthorized } from '@/bot/helpers/env'
 import { CommandImport, type ContextMsg } from '@/bot/interfaces/inter'
 import type Whatsapp from '@/bot/main'
 import { MarkdownWsp } from '@kreisler/js-helpers'
 const { BOT_USERNAME } = configEnv as { BOT_USERNAME: string }
-const NEW_ADMINS: string[] = []
-const PERMANENT_ADMINS = configEnv.AUTHORIZED_USERS?.split(',').map((e: string) => e.split(':').pop()) as string[]
+
 //
 export default {
   active: true,
@@ -19,9 +18,8 @@ export default {
   async cmd (client: Whatsapp, { wamsg, msg }: ContextMsg, match: RegExpMatchArray): Promise<void> {
     const [, accion, search] = match as [string, 'on' | 'off' | 'list' | 'msg' | 'admin' | undefined, string | undefined]
     const numberPhone: string = msg.author.number
-    const isAuthorized = (n: string): boolean => NEW_ADMINS.concat(PERMANENT_ADMINS)
-      .includes(n)
-    if (!isAuthorized(numberPhone)) {
+
+    if (isAuthorized(numberPhone) === false) {
       await msg.reply({ text: 'No tienes permisos para realizar esta acción.' })
       return
     }
@@ -38,7 +36,7 @@ export default {
         }
         for (const { number } of users) {
           // Si el usuario no está autorizado, lo agregamos
-          if (!isAuthorized(number)) {
+          if (isAuthorized(number) === false) {
             NEW_ADMINS.push(number)
           } else {
             const indexAuthorized = NEW_ADMINS.indexOf(number)

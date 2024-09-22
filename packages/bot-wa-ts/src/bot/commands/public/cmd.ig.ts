@@ -26,7 +26,6 @@ export default {
       await msg.reply({ text: 'No se ha encontrado el enlace de instagram (reel o album)' })
       return
     }
-    console.log({ url })
     const [hasError, data] = await (async() => {
       let data
       let error
@@ -35,7 +34,6 @@ export default {
       } catch (e) {
         error = JSON.stringify(e)
       }
-      console.log({ object: { data, error } })
       return [error, data] as [string | undefined, InstaVideoResult]
     })()
     if (typeof hasError !== 'undefined') {

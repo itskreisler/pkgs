@@ -16,3 +16,6 @@ export interface TprocessEnv extends NodeJS.ProcessEnv {
   AUTHORIZED_USERS?: string
 }
 export const configEnv: TprocessEnv = { ...process.env }
+export const NEW_ADMINS: string[] = []
+export const PERMANENT_ADMINS = configEnv.AUTHORIZED_USERS?.split(',').map((e: string) => e.split(':').pop()) as string[]
+export const isAuthorized = (n: string): boolean => NEW_ADMINS.concat(PERMANENT_ADMINS).includes(n)
