@@ -8,9 +8,9 @@
  * // Return a default value or re-throw the exception.
  * }
  * );
- * @param {Function} tryFunction 
- * @param {Function} catchFunction 
- * @returns 
+ * @param {Function} tryFunction
+ * @param {Function} catchFunction
+ * @returns
  */
 
 const tryToCatch = function <TTryResult, TCatchResult>(
@@ -18,10 +18,10 @@ const tryToCatch = function <TTryResult, TCatchResult>(
   catchFunction: (ex: unknown) => TCatchResult
 ): TTryResult | TCatchResult {
   try {
-    return tryFunction();
+    return tryFunction()
   } catch (ex: unknown) {
-    return catchFunction(ex);
+    return catchFunction(ex)
   }
-};
+}
 
-export { tryToCatch };
+export { tryToCatch }

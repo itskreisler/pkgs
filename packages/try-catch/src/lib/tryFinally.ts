@@ -8,23 +8,23 @@
  * // Clean up.
  * }
  * );
- * @param tryFunction 
- * @param finallyFunction 
- * @returns 
+ * @param tryFunction
+ * @param finallyFunction
+ * @returns
  */
 const tryFinally = function <TTryResult>(
   tryFunction: () => TTryResult,
   finallyFunction: () => void
 ): TTryResult | undefined {
-  let result;
+  let result
 
   try {
-    result = tryFunction();
+    result = tryFunction()
   } finally {
-    finallyFunction();
+    finallyFunction()
   }
 
-  return result;
-};
+  return result
+}
 
-export { tryFinally };
+export { tryFinally }

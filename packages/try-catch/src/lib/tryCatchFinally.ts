@@ -11,27 +11,27 @@
  * // Clean up.
  * }
  * );
- * @param {Function} tryFunction 
- * @param {Function} catchFunction 
- * @param {Function} finallyFunction 
- * @returns 
+ * @param {Function} tryFunction
+ * @param {Function} catchFunction
+ * @param {Function} finallyFunction
+ * @returns
  */
 const tryCatchFinally = function <TTryResult, TCatchResult>(
   tryFunction: () => TTryResult,
   catchFunction: (ex: unknown) => TCatchResult,
   finallyFunction: () => void
 ): TTryResult | TCatchResult {
-  let result;
+  let result
 
   try {
-    result = tryFunction();
+    result = tryFunction()
   } catch (ex: unknown) {
-    result = catchFunction(ex);
+    result = catchFunction(ex)
   } finally {
-    finallyFunction();
+    finallyFunction()
   }
 
-  return result;
-};
+  return result
+}
 
-export { tryCatchFinally };
+export { tryCatchFinally }

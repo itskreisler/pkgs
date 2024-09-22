@@ -1,4 +1,4 @@
-import { type T, type Tfn, type TtryCatch, type TtryCatchPromise } from './types'
+import { type Tfn } from './types'
 function check(fn: Tfn) {
   if (typeof fn !== 'function') { throw Error('fn should be a function!') }
 }
@@ -7,15 +7,24 @@ function check(fn: Tfn) {
  * const [error, result] = await tryCatchPromise(globalThis.fetch, 'https://jsonplaceholder.typicode.com/todos/1');
  * if (error) console.error(error.message);
  * else console.log(result.json());
- * @param {Function} fn function to be executed
- * @param {...any} args arguments to be passed to the function
- * @returns {Promise<[Error | null, any]>} [error: Error, result?: any]
+ * @template D - Tipo del valor de retorno de la función `fn`.
+ * @template P - Tipos de los parámetros que acepta la función `fn`.
+ *
+ * @param {(...args: P) => Promise<D> | D} fn - La función a ejecutar, que puede ser asíncrona o síncrona.
+ * @param {...P} args - Los parámetros que se pasarán a la función `fn`.
+ *
+ * @returns {Promise<[null, D] | [Error]>} Una promesa que resuelve a un array con dos posibles valores:
+ * - `[null, D]` si la función se ejecuta con éxito, donde `D` es el resultado de la función `fn`.
+ * - `[Error]` si ocurre un error, donde el primer elemento es el error capturado.
  */
-export const tryCatchPromise = async (fn: Tfn, ...args: T[]): TtryCatchPromise => {
+export async function tryCatchPromise<D, P extends any[]>(
+  fn: (...args: P) => Promise<D> | D, // fn acepta cualquier función que reciba los mismos args y retorne D o una promesa de D
+  ...args: P
+): Promise<[null, D] | [Error]> {
   check(fn)
-
   try {
-    return [null, await fn(...args)]
+    const temp = await fn(...args)
+    return [null, temp]
   } catch (e) {
     return [e as Error]
   }
@@ -29,17 +38,25 @@ export const tryCatchPromise = async (fn: Tfn, ...args: T[]): TtryCatchPromise =
  * const [error, result] = tryCatch(() => { return 'result' });
  * if (error) console.error(error.message);
  * else console.log(result);
- * @param {Function} fn function to be executed
- * @param {...any} args arguments to be passed to the function
- * @returns {[Error | null, any]} [error: Error, result?: any]
- * @throws {Error} if fn is not a function
+ * @template D - Tipo del valor de retorno de la función `fn`.
+ * @template P - Tipos de los parámetros que acepta la función `fn`.
+ *
+ * @param {(...args: P) => Promise<D> | D} fn - La función a ejecutar, que puede ser asíncrona o síncrona.
+ * @param {...P} args - Los parámetros que se pasarán a la función `fn`.
+ *
+ * @returns {Promise<[null, D] | [Error]>} Una promesa que resuelve a un array con dos posibles valores:
+ * - `[null, D]` si la función se ejecuta con éxito, donde `D` es el resultado de la función `fn`.
+ * - `[Error]` si ocurre un error, donde el primer elemento es el error capturado.
  */
-export const tryCatch = (fn: Tfn, ...args: T[]): TtryCatch => {
+export function tryCatch<D, P extends any[]>(
+  fn: (...args: P) => D,
+  ...args: P
+): [null, D] | [Error] {
   check(fn)
-
   try {
-    return [null, fn(...args)]
-  } catch (e) {
-    return [e]
+    const temp = fn(...args)
+    return [null, temp]
+  } catch (error) {
+    return [error as Error]
   }
 }
