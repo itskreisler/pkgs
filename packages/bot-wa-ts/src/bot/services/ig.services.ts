@@ -44,15 +44,16 @@ export async function instagramGetUrl (urlMedia: string): Promise<InstaVideoResu
         headers
       })
 
-      let data: InstaVideoData | null
-      try {
-        data = await response.json()
-      } catch (err) {
-        data = null
-      }
+      const [e, data] = await (async () => {
+        try {
+          return [null, await response.json()] as [null, InstaVideoData]
+        } catch (err) {
+          return [err] as [Error]
+        }
+      })()
 
-      if (data === null) {
-        reject(new Error('No se pudo obtener la información'))
+      if (typeof data === 'undefined') {
+        reject(new Error(JSON.stringify(e)))
         return
       }
       const urlList: InstaVideoList = []
