@@ -17,11 +17,15 @@ describe('TESTING', async () => {
   it('Comprobando si crea un tarea correctamente', async () => {
     const cron = new JsCron()
     const newTask = cron.createTask('tarea', '*/1 * * * * *', () => 'Hello World!')
+    assert.strictEqual(cron.getNodeTasks().size, 1)
     assert.strictEqual(newTask.success, true)
     assert.strictEqual(newTask.message, 'Tarea "tarea" creada con éxito.')
     setTimeout(() => {
       cron.destroyTask('tarea')
     }, 1000)
+    setTimeout(() => {
+      assert.strictEqual(cron.getNodeTasks().size, 0)
+    }, 2000)
   })
   it('Comprobando para ver si la tarea ya existe', () => {
     const cron = new JsCron()

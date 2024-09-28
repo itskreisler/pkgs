@@ -1,6 +1,10 @@
 /**
  * @class JsCron
  * @description Clase para crear tareas programadas usando node-cron
+ * @example
+ * // Crear una tarea que se ejecute cada 10 segundos
+ * const cron = new JsCron({ timezone: 'America/Bogota' })
+ * cron.createTask('tarea', '*\/10 * * * * *', () => console.log('Hola'))
  */
 import cron, { type ScheduleOptions, type ScheduledTask } from 'node-cron'
 const FALSE = false
@@ -26,7 +30,7 @@ class JsCron {
   /**
        * @description Función para crear una tarea
        * @param {string} taskName Nombre de la tarea
-       * @param {string} schedule Expresión de cron
+       * @param {string} cronExpression Expresión de cron
        * @param {Function} callback Función a ejecutar
        * @returns {Object<{success: boolean, message: string}>}
        * @example
@@ -36,10 +40,10 @@ class JsCron {
        * // Ejecutar cada 15 minutos entre las 6:00 y las 23:00
        * createTask('tarea', '0 *\/15 6-23 * * * *', () => console.log('Hola'))
        */
-  createTask(taskName: string, schedule: string, callback: () => void): { success: boolean, message: string } {
+  createTask(taskName: string, cronExpression: string, callback: () => void): { success: boolean, message: string } {
     // Verificar si la expresión de cron es válida
-    if (cron.validate(schedule) === FALSE) {
-      const message = `La expresión "${schedule}" no es válida.`
+    if (cron.validate(cronExpression) === FALSE) {
+      const message = `La expresión "${cronExpression}" no es válida.`
       return { success: FALSE, message }
     }
     // Verificar si ya existe una tarea con ese nombre
@@ -48,7 +52,7 @@ class JsCron {
       return { success: FALSE, message }
     }
     // Crear la tarea usando node-cron
-    const task = cron.schedule(schedule, callback, { name: taskName, ...this.config })
+    const task = cron.schedule(cronExpression, callback, { name: taskName, ...this.config })
 
     // Almacenar la tarea en el objeto de tareas
     this.tasks.set(taskName, task)
@@ -65,7 +69,7 @@ class JsCron {
        */
   destroyTask(taskName: string): { success: boolean, message: string } {
     // Verificar si la tarea existe
-    const hasTask = this.tasks.has(taskName)
+    const hasTask: boolean = this.tasks.has(taskName)
     if (!hasTask) {
       const message = `La tarea "${taskName}" no existe.`
       return { success: FALSE, message }
@@ -73,14 +77,54 @@ class JsCron {
 
     // Detener y eliminar la tarea
     this.tasks.get(taskName)?.stop()
+    // Eliminar la tarea de node-cron
+    const hasDelete: boolean = cron.getTasks().delete(taskName)
     // delete this.tasks[taskName]
-    this.tasks.delete(taskName)
+    // Eliminar la tarea del objeto de tareas
+    if (hasDelete) this.tasks.delete(taskName)
     const message = `Tarea "${taskName}" destruida con éxito.`
     return { success: TRUE, message }
   }
 
-  getTasks() {
+  pauseTask(taskName: string): { success: boolean, message: string } {
+    const task = this.tasks.get(taskName)
+    if (task == null) return { success: FALSE, message: `La tarea "${taskName}" no existe.` }
+
+    task.stop()
+    return { success: TRUE, message: `Tarea "${taskName}" pausada.` }
+  }
+
+  resumeTask(taskName: string): { success: boolean, message: string } {
+    const task = this.tasks.get(taskName)
+    if (task == null) return { success: FALSE, message: `La tarea "${taskName}" no existe.` }
+
+    task.start()
+    return { success: TRUE, message: `Tarea "${taskName}" reanudada.` }
+  }
+
+  /**
+   *
+   * @returns {Map<string, cron.ScheduledTask>}
+   */
+  getTasks(): Map<string, cron.ScheduledTask> {
     return this.tasks
+  }
+
+  getNodeTasks(): Map<string, cron.ScheduledTask> {
+    return cron.getTasks()
+  }
+
+  /**
+   *
+   * @param {string} taskName
+   * @returns {cron.ScheduledTask | undefined}
+   */
+  getTask(taskName: string): cron.ScheduledTask | undefined {
+    return this.tasks.get(taskName)
+  }
+
+  getNodeTask(taskName: string): cron.ScheduledTask | undefined {
+    return cron.getTasks().get(taskName)
   }
 }
 export {
