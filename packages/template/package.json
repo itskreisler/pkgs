@@ -14,9 +14,8 @@
     "build:all": "tsup src/index.ts --format esm,cjs --dts",
     "build:entry": "tsup src/index.ts --format esm,cjs --onSuccess \"cp -r dist/* tmpbot\"",
     "watch": "tsup src/index.ts --watch --onSuccess \"node dist/index.js\"",
-    "test": "pnpm run build:all && tsup test/test.spec.ts --format esm --onSuccess \"cross-env NODE_ENV=test node --test dist/test.spec.mjs\"",
-    "test:cjs": "cross-env NODE_ENV=test node --test test/test.spec.cjs",
-    "test:mjs": "cross-env NODE_ENV=test node --test test/test.spec.mjs",
+    "watch:test": "rm -rf dist/* && tsup --entry.test test/index.test.ts --format esm --watch --onSuccess \"node dist/test.mjs\"",
+    "test": "rm -rf dist/* &&  pnpm run build:all && tsup test/test.spec.ts --format esm --onSuccess \"cross-env NODE_ENV=test node --test dist/test.spec.mjs\"",
     "docs": "typedoc --out docs src/index.ts",
     "serve": "pnpx serve -p 1234 ./docs",
     "pp": "pnpm run build:all && pnpm run test:mjs && pnpm run test:cjs && pnpm run docs && npm publish --access public"

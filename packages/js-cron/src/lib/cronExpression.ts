@@ -26,6 +26,8 @@ interface CronFields {
   year?: YearType
 }
 /**
+ * @link https://cronjob.xyz/
+ * @link https://crontab.guru/
  * @description
  * ┌───────────── second (0 - 59)
  * │ ┌───────────── minute (0 - 59)
@@ -55,6 +57,7 @@ function buildCronExpression(cronFields: CronFields): string {
 }
 
 // Ejemplo de uso con autocompletado.
-const cronObject: CronFields = { second: '0', minute: '59', hour: '6-23', month: '12', dayOfWeek: '1', year: '2024-2031' }
-const cronExpression = buildCronExpression(cronObject)
-console.log(cronExpression) // Output: '0 */15 6-23 * * * *'
+// const cronObject: CronFields = { second: '0', minute: '59', hour: '6-23', month: '12', dayOfWeek: '1', year: '2024-2031' }
+// const cronExpression = buildCronExpression(cronObject)
+// console.log(cronExpression) // Output: '0 */15 6-23 * * * *'
+export { buildCronExpression }

@@ -10,13 +10,12 @@
     "dist/**"
   ],
   "scripts": {
-    "build": "tsup",
-    "build:all": "tsup src/index.ts --format esm,cjs --dts",
-    "build:entry": "tsup --entry.index src/index.ts --entry.fn src/lib/fn.ts --format esm,cjs --dts",
-    "watch:index": "tsup src/index.ts --watch --onSuccess \"node dist/index.js\"",
-    "test": "echo \"Testing ui package\"",
-    "test:cjs": "cross-env NODE_ENV=test node --test test/test.spec.cjs",
-    "test:mjs": "cross-env NODE_ENV=test node --test test/test.spec.mjs",
+    "build": "rm -rf dist/* && tsup",
+    "build:all": "rm -rf dist/* && tsup src/index.ts --format esm,cjs --dts",
+    "build:entry": "rm -rf dist/* && tsup --entry.index src/index.ts --entry.fn src/lib/fn.ts --format esm,cjs --dts",
+    "watch:index": "rm -rf dist/* && tsup src/index.ts --watch --onSuccess \"node dist/index.js\"",
+    "watch:test": "rm -rf dist/* && tsup --entry.test test/index.test.ts --format esm --watch --onSuccess \"node dist/test.mjs\"",
+    "test": "rm -rf dist/* && tsup src/index.ts --format esm && tsup test/test.spec.ts --format esm --onSuccess \"cross-env NODE_ENV=test node --test dist/test.spec.mjs\"",
     "docs": "typedoc --out docs src/index.ts",
     "serve": "pnpx serve -p 1234 ./docs",
     "publish:public": "npm publish --access public"
