@@ -71,7 +71,7 @@ class JsCron {
 
       // Eliminar la tarea del objeto de tareas
       if (hasDelete) return { success: hasDelete, message: `Tarea "${taskName}" destruida con éxito.` }
-      return { success: hasDelete, message: `Error al destruir la tarea "${taskName}".` }
+      return { success: false, message: `Error al destruir la tarea "${taskName}".` }
     } catch (error) {
       // Retornar un mensaje de error
       return { success: false, message: `Error al destruir la tarea "${taskName}": ${(error as Error).message}` }
