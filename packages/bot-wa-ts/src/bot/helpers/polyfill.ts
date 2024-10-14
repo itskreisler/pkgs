@@ -69,7 +69,7 @@ export const formatter = (size: number, { unit = 'kilobyte' }: {
 }
 
 //
-export async function getStreamFromUrl (url: string) {
+export async function getStreamFromUrl (url: string): Promise<Readable> {
   const response = await globalThis.fetch(url)
 
   if (!response.ok) {

@@ -443,6 +443,16 @@ class Whatsapp {
       } catch (e) {
         console.log('Error al cargar el comando ig', { e })
       }
+
+      //
+      try {
+        const CMD_KUDASAI = await import('@/bot/commands/public/cmd.kudasai')
+        if (this.hasOwnProp(CMD_KUDASAI.default, 'active')) {
+          if (CMD_KUDASAI.default.active === true) this.commands.set(CMD_KUDASAI.default.ExpReg, CMD_KUDASAI.default)
+        }
+      } catch (e) {
+        console.log('Error al cargar el comando kudasai', { e })
+      }
     } catch (e) {
       console.error({ e })
     } finally {
