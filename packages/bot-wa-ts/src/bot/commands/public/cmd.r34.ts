@@ -2,8 +2,9 @@ import { configEnv } from '@/bot/helpers/env'
 import { getStreamFromUrl, Cadena } from '@/bot/helpers/polyfill'
 import { type ContextMsg } from '@/bot/interfaces/inter'
 import type Whatsapp from '@/bot/main'
-import { r34API, r34Tags, r34RandomPic, type R34Tags, R34Response } from '@/bot/services/r34.services'
+import { r34API, r34Tags, r34RandomPic, type R34Tags, R34Const, R34Response } from '@/bot/services/r34.services'
 import { MarkdownWsp } from '@kreisler/js-helpers'
+import { createApi } from '@kreisler/createapi'
 const { BOT_USERNAME } = configEnv as { BOT_USERNAME: string }
 //
 
@@ -84,7 +85,10 @@ export default {
         client.printLog({ tag, cantidad: result.length }, 'purple')
         const random = r34RandomPic(result)
         client.printLog(random.file_url, 'purpleBlock')
-        const caption = tag.concat('\n', random.file_url)
+        const posturl = await createApi<{
+          'index.php': (id: { page: 'post', s: 'view', id: number }) => Promise<{ path: string }>
+        }>(R34Const.BASE, { debug: true })['index.php']({ page: 'post', s: 'view', id: random.id })
+        const caption = tag.concat('\nArchivo: ', random.file_url, '\nPost: ', posturl.path)
         const stream = await getStreamFromUrl(random.file_url)
         const multimedia = random.file_url.endsWith('.mp4') === true
           ? { video: { stream }, caption, viewOnce }

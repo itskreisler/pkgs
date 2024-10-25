@@ -1,34 +1,45 @@
 import { createApi } from '@kreisler/createapi'
 //
 export enum R34Const {
+  BASE = 'https://rule34.xxx',
   API = 'https://api.rule34.xxx',
   AUTOCOMPLETE = 'https://ac.rule34.xxx'
 }
+export interface R34APIValues {
+  DAPI: 'dapi'
+  POST: 'post'
+  VIEW: 'view'
+  COMMENT: 'comment'
+  TAG: 'tag'
+  LiST: 'list'
+  INDEX: 'index'
+}
 interface R34APIParams {
   tags?: string
-  page?: 'dapi'
-  s?: 'post'
-  q?: 'index'
+  page?: Extract<R34APIValues[keyof R34APIValues], R34APIValues['DAPI'] | R34APIValues['POST']>
+  s?: Extract<R34APIValues[keyof R34APIValues], R34APIValues['POST'] | R34APIValues['VIEW'] | R34APIValues['COMMENT'] | R34APIValues['LiST']>
+  q?: Extract<R34APIValues[keyof R34APIValues], R34APIValues['INDEX']>
+  /** 1000 */
   limit?: number
+  /** 0,1,2,3... */
   pid?: number
   json?: 1 | 0
+  id?: number
+  deleted?: 'show'
 }
-export async function r34API(tag: string[], options: R34APIParams = {
+// Constante con valores predeterminados
+const DEFAULT_R34_OPTIONS: R34APIParams = {
   page: 'dapi',
   s: 'post',
-  q: 'index'
-}): Promise<R34Response[]> {
-  const {
-    page = 'dapi',
-    s = 'post',
-    q = 'index',
-    json = 1
-    // limit = 1000,
-    // pid = 0,
-  } = options
+  q: 'index',
+  json: 1
+}
+export async function r34API(tag: string[], options: R34APIParams = {}): Promise<R34Response[]> {
+  const { page, s, q, json, limit, pid } = { ...DEFAULT_R34_OPTIONS, ...options }
+
   const tags = tag.join(' ')
   const r34: R34API = createApi(R34Const.API)
-  const data = await r34['index.php']({ tags, page, s, q, json, ...options })
+  const data = await r34['index.php']({ tags, page, s, q, json, limit, pid })
   if (data.length < 1) return []
   return data
 }
@@ -84,7 +95,7 @@ export interface R34Response {
 }
 
 interface R34API {
-  'index.php': (params: { tags: string, page: string, s: string, q: string, limit?: number, pid?: number, json: number }) => Promise<R34Response[]>
+  'index.php': (params: R34APIParams) => Promise<R34Response[]>
 }
 export interface R34Tags { label: string, value: string, type: string }
 interface R34AC {
