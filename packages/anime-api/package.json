@@ -1,5 +1,5 @@
 {
-  "name": "@kreisler/createapi",
+  "name": "@kreisler/anime-api",
   "version": "2.0.0",
   "description": "Un forma diferente de hacer peticiones a una API",
   "type": "module",

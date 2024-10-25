@@ -30,14 +30,14 @@ describe('createApi', () => {
     assert.strictEqual(response.constructor.name, 'Promise')
   })
   it('should return Debug mode', async () => {
-    const api = createApi('https://postman-echo.com', { debug: true })
+    const api = createApi('https://postman-echo.com', { x_debug: true })
     /**
      * {
         prop: 'get',
         path: 'https://postman-echo.com/get?foo=bar',
         id: { foo: 'bar' },
         params: undefined,
-        args: { debug: true },
+        args: { x_debug: true },
         target: {},
         receiver: {}
       }
@@ -46,9 +46,9 @@ describe('createApi', () => {
      * @typedef {Object} DebugMode
      * @property {string} prop
      * @property {string} path
-     * @property {Record<string, any>} id
+     * @property {{foo: 'bar'}} id
      * @property {Record<string, any>} params
-     * @property {Record<string, any>} args
+     * @property {{x_debug: boolean}} args
      * @property {Record<string, any>} target
      * @property {Record<string, any>} receiver
      */
@@ -60,7 +60,7 @@ describe('createApi', () => {
     assert.strictEqual(response.path, 'https://postman-echo.com/get?foo=bar')
     assert.strictEqual(response.id.foo, 'bar')
     assert.strictEqual(response.params, undefined)
-    assert.strictEqual(response.args.debug, true)
+    assert.strictEqual(response.args.x_debug, true)
     assert.strictEqual(typeof response.target, 'object')
     assert.strictEqual(typeof response.receiver, 'object')
   })
@@ -84,6 +84,6 @@ describe('createApi', () => {
       headers: { 'Content-Type': 'application/json' }
 
     })
-    assert.strictEqual(response.url, 'http://postman-echo.com/post')
+    assert.strictEqual(response.url, 'https://postman-echo.com/post')
   })
 })

@@ -38,7 +38,7 @@ describe('createApi', () => {
         path: 'https://postman-echo.com/get?foo=bar',
         id: { foo: 'bar' },
         params: undefined,
-        args: { debug: true },
+        args: { x_debug: true },
         target: {},
         receiver: {}
       }

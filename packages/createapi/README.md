@@ -90,7 +90,7 @@ interface NekoBot {
   }>
 }
 const neko = async () => {
-  const api: NekoBot = createApi('https://nekobot.xyz/api', { debug: true })
+  const api: NekoBot = createApi('https://nekobot.xyz/api')
   const res = await api.image({ type: 'neko' })
   console.log(res)
   /* {

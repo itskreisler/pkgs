@@ -87,7 +87,7 @@ export default {
         client.printLog(random.file_url, 'purpleBlock')
         const posturl = await createApi<{
           'index.php': (id: { page: 'post', s: 'view', id: number }) => Promise<{ path: string }>
-        }>(R34Const.BASE, { debug: true })['index.php']({ page: 'post', s: 'view', id: random.id })
+        }>(R34Const.BASE, { x_debug: true })['index.php']({ page: 'post', s: 'view', id: random.id })
         const caption = tag.concat('\nArchivo: ', random.file_url, '\nPost: ', posturl.path)
         const stream = await getStreamFromUrl(random.file_url)
         const multimedia = random.file_url.endsWith('.mp4') === true

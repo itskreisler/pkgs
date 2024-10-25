@@ -31,14 +31,14 @@ describe('createApi', () => {
     assert.strictEqual(response.constructor.name, 'Promise')
   })
   it('should return Debug mode', async () => {
-    const api = createApi('https://postman-echo.com', { debug: true })
+    const api = createApi('https://postman-echo.com', { x_debug: true })
     /**
      * {
         prop: 'get',
         path: 'https://postman-echo.com/get?foo=bar',
         id: { foo: 'bar' },
         params: undefined,
-        args: { debug: true },
+        args: { x_debug: true },
         target: {},
         receiver: {}
       }
