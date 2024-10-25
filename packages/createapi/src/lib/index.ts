@@ -4,14 +4,24 @@
  */
 export interface TypesArgs extends RequestInit {
   /** debug mode */
-  debug?: boolean | undefined
-  /** force json() text() response */
-  force?: boolean | undefined
-  /** globalThis.encodeURIComponent */
-  encodeURI?: Function | undefined
-  /** globalThis.decodeURIComponent */
-  decodeURI?: Function | undefined
+  x_debug?: boolean | undefined
+  /** force json() response */
+  x_json?: boolean | undefined
+  /** force text() response */
+  x_text?: boolean | undefined
+  /** force response */
+  x_response?: boolean | undefined
 }
+export interface DebugResponse {
+  prop: string
+  path: string
+  id: string | number | object | undefined | null
+  params: string | string[][] | undefined
+  args: TypesArgs
+  target: object
+  receiver: object
+}
+
 export enum DemoUrlsEnum {
   NEKOBOT = 'https://nekobot.xyz/api',
   POKEAPI = 'https://pokeapi.co/api/v2',
@@ -24,75 +34,82 @@ export enum DemoUrlsEnum {
 // Tipo que obtiene los valores de DemoUrls
 export type ExampleUrl = 'https://nekobot.xyz/api' | 'https://pokeapi.co/api/v2' | 'https://postman-echo.com' /* get,post */ | 'https://www3.animeflv.net' // kudasai.php
 const TRUE: boolean = true as const
-const FALSE: boolean = false as const
 
 /**
+ * @example
+ * interface PostMan {
+ *  get: (id?: string | number | object | undefined | null, params?: object, extraparams?: RequestInit) => Promise<{args: object, headers: object, url: string}>
+ *  post: (id?: string | number | object | undefined | null, params?: object, extraparams?: RequestInit) => Promise<{args: object, headers: object, url: string}>
+ * }
+ * const postMan: PostMan = createApi(DemoUrlsEnum.POSTMAN)
+ * const get = await postMan.get()
+ * const post = await postMan.post()
+ * console.log(get, post)
  * @name createApi
  * @description Create an API instance for the specified URL
  * @param {ExampleUrl | URL | String} url - API URL
  * @param {TypesArgs | RequestInit} args - RequestInit
- * @returns {Object} API response
- * @example // Example usage of createApi
- * const nekobot = createApi('https://nekobot.xyz/api')
- * const response = await nekobot.image({ type: 'neko' })
- * console.log({ response }) // { "success": true, "message": "https://i0.nekobot.xyz/2/6/1/197f86b7789ad7db7ebbda6b3d7cf.jpg", "color": 15521502, "version": "2021070801" }
- *
- * @example
- * interface YameteResponse {
- * 'kudasai.php': () => Promise<Array<{
- *  title: string
- *  image: string
- *  slug: string
- *  date: string
- *  category: {
- *    name: string
- *    slug: string
- *   }
- *  }>>
- * }
- * const yamete: YameteResponse  = createApi('https://www3.animeflv.net')
- * yamete['kudasai.php']().then(data => console.log(data.map(x => x.title)))
  */
-export const createApi = <D>(url: Partial<ExampleUrl & Partial< URL | String | string>>, args?: Partial<TypesArgs>): D => {
+export const createApi = <I>(
+  url: Partial<ExampleUrl & Partial<URL | String | string>>,
+  args?: Partial<TypesArgs>
+): I => {
   return new Proxy({}, {
     get: function (target, prop: string, receiver) {
-      return async (id?: string | number | object | undefined | null, params?: string | string[][] | undefined, extraparams?: RequestInit): Promise<Response | string | any> => {
+      return async (id?: string | number | object | undefined | null, params?: string | string[][] | undefined, extraparams?: TypesArgs) => {
         let query: string[] | undefined
         let path = [url, prop].join('/')
         let queryParams: string = ''
         const typeOfId = typeof id
+
+        // si id es un objeto y no es nulo
         if (typeOfId === 'object' && id !== null) {
           queryParams = new URLSearchParams(id as URLSearchParams).toString()
-          if (typeof args?.decodeURI !== 'undefined') {
-            queryParams = args?.decodeURI(queryParams)
-          }
-          query = typeof typeOfId !== 'undefined' ? ['?', queryParams] : []
+          query = ['?', queryParams]
           path = path.concat(...query)
         }
+
         const hasParams = typeof params !== 'undefined' && params !== null
+        const hasParamsString = typeof params === 'string'
+        // si id es un string o un número o tiene parámetros
         if (['string', 'number'].some(tof => typeOfId === tof) || hasParams) {
           queryParams = new URLSearchParams(params).toString()
-          if (typeof args?.decodeURI !== 'undefined') {
-            queryParams = args?.decodeURI(queryParams)
-          }
-          query = typeof params !== 'undefined' ? ['?', queryParams] : []
+          query = hasParamsString ? ['/', params] : hasParams ? ['?', queryParams] : []
           path = [path, id].join('/').concat(...query)
         }
-        // debug mode
-        if ((args?.debug) === TRUE) return { prop, path, id, params, args: { ...args, ...extraparams }, target, receiver }
+
+        // modo debug
+        if (args?.x_debug === TRUE || extraparams?.x_debug === TRUE) {
+          // Retornar solo la información de depuración
+          return await Promise.resolve<DebugResponse>({
+            prop,
+            path,
+            id,
+            params,
+            args: { ...args, ...extraparams },
+            target,
+            receiver
+          })
+        }
+
+        // obtener respuesta
         const response = await globalThis.fetch(path, { ...args, ...extraparams })
-        // no force json() text() response
-        if ((args?.force) === FALSE) return response as D
+
+        if (!response.ok) {
+          throw new Error(`Request failed with status ${response.status}: ${response.statusText}`)
+        }
+
         try {
-          if (response.ok) return await response.json() as D
+          // no forzar json() o respuesta de texto
+          if (args?.x_response === TRUE || extraparams?.x_response === TRUE) return response
+
+          // forzar respuesta de texto
+          if (args?.x_text === TRUE || extraparams?.x_text === TRUE) return await response.text()
+          return await response.json()
         } catch (errorJson) {
-          try {
-            return await response.text() as D
-          } catch (errorText) {
-            throw new Error('Error parsing response')
-          }
+          throw new Error('Error parsing response')
         }
       }
     }
-  }) as D
+  }) as I
 }
