@@ -18,7 +18,7 @@
     "watch": "rm -rf dist/* && tsup src/index.ts --watch --onSuccess \"node dist/index.js\"",
     "watch:test": "rm -rf dist/* && tsup --entry.test test/index.test.ts --format esm --watch --onSuccess \"node dist/test.js\"",
     "watch:server": "tsup src/api/server.ts --watch --onSuccess \"node dist/server.js\"",
-    "test": "echo \"Testing ui package\"",
+    "test": "rm -rf dist/* && tsup src/bot/client.ts --watch --onSuccess \"node dist/client.js\"",
     "test:cjs": "cross-env NODE_ENV=test node --test test/test.spec.cjs",
     "test:mjs": "cross-env NODE_ENV=test node --test test/test.spec.mjs",
     "docs": "typedoc --out docs src/index.ts",
