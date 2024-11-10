@@ -15,7 +15,8 @@ export enum URIS {
   FLV_SEARCH_URL = 'https://animeflv.net/browse?q=',
   FLV_ANIME_VIDEO_URL = 'https://animeflv.net/ver/',
   FLV_BASE_EPISODE_IMG_URL = 'https://cdn.animeflv.net/screenshots/',
-  LAT_BASE_URL = 'https://latanime.org/'
+  LAT_BASE_URL = 'https://latanime.org/',
+  LAT_ANIME_VIDEO_URL = 'https://latanime.org/ver/',
 }
 
 const DEFAULT_HEADERS = {
@@ -31,7 +32,7 @@ export interface IEpisodeAdded {
   poster64?: `data:image/png;base64,${string}`
   poster: string
   episode: number
-  servers: IServer[]
+  servers: WatchDownload
 }
 export interface IServer {
   server: string
@@ -53,11 +54,15 @@ ScraperService.fetchData = async (options: OptionsWithUrl): Promise<string> => {
     return ''
   }
 }
+interface WatchDownload {
+  watchOnline: IServer[]
+  download: IServer[]
+}
 
 // Interfaz que debe implementar cada scraper
 interface ScraperInterface {
   latestEpisodesAdded?: () => Promise<IEpisodeAdded[]>
-  AnimeServers?: (id: string) => Promise<IServer[]>
+  AnimeServers?: (id: string) => Promise<WatchDownload>
   latestAnimeAdded?: () => Promise<any[]>
   // Otros métodos necesarios
 }
@@ -66,14 +71,49 @@ export class LatAnimeScraper implements ScraperInterface {
     const data = await ScraperService.fetchData({ uri: URIS.LAT_BASE_URL, headers: DEFAULT_HEADERS })
     const { $$ } = jQuery(data)
     const promises = [...$$('.col-6.col-md-6.col-lg-3.mb-3')].map(async ($element) => {
+      // const type = $element.querySelector('div.info_cap span')?.textContent?.trim() ?? ''
+      const id = $element.querySelector('a')?.getAttribute('href')?.split('/ver/').pop() ?? ''
       const title = $element.querySelector('h2')?.textContent?.split(' - ')[1] ?? ''
-
+      const episode = Number($element.querySelector('h2')?.textContent?.split(' - ')[0] ?? 0)
+      const poster = $element.querySelector('div.imgrec img')?.getAttribute('data-src') ?? ''
+      const servers = await this.AnimeServers(id)
       return {
-        title
+        id,
+        title,
+        poster,
+        episode,
+        servers
       }
     })
 
     return await Promise.all(promises)
+  }
+
+  AnimeServers = async (id: string) => {
+    const res = await cloudscraper(URIS.LAT_ANIME_VIDEO_URL.concat(id))
+    const { $$ } = jQuery(res)
+    // Link para ver online
+    const watchOnline = [...$$('.cap_repro.d-flex.flex-wrap .play-video')].reduce<IServer[]>((accumulatedServers, $element) => {
+      const base64 = $element.getAttribute('data-player') ?? ''
+      const title = $element.textContent?.trim() ?? ''
+      accumulatedServers.push({
+        title,
+        server: title,
+        code: globalThis.atob(base64)
+      })
+      return accumulatedServers
+    }, [])
+    // Links para descargar
+    const download = [...$$('.descarga2 div .direct-link')].reduce<IServer[]>((accumulatedServers, $element) => {
+      const code = $element.getAttribute('href')?.trim() ?? ''
+      const server = $element.querySelector('span')?.textContent?.trim() ?? ''
+      accumulatedServers.push({ code, server, title: server })
+      return accumulatedServers
+    }, [])
+    return {
+      watchOnline,
+      download
+    }
   }
 }
 export class AnimeFLVScraper implements ScraperInterface {
@@ -99,11 +139,12 @@ export class AnimeFLVScraper implements ScraperInterface {
     return await Promise.all(promises)
   }
 
-  async AnimeServers (id: string): Promise<IServer[]> {
+  AnimeServers: ((id: string) => Promise<WatchDownload>) = async (id: string) => {
     const res = await cloudscraper(URIS.FLV_ANIME_VIDEO_URL.concat(id))
     const { $$ } = jQuery(res)
     const $scripts = $$('script')
-    const servers: IServer[] = [...$scripts].reduce<IServer[]>((accumulatedServers, $script) => {
+    // Buscamos el script que contiene los servidores
+    const watchOnline: IServer[] = [...$scripts].reduce<IServer[]>((accumulatedServers, $script) => {
       const contents = $script.textContent ?? ''
       if (contents.includes('var videos = {') === true) {
         const videos = contents.split('var videos = ')[1].split(';')[0]
@@ -115,10 +156,16 @@ export class AnimeFLVScraper implements ScraperInterface {
       }
       return accumulatedServers // Si no tiene videos, mantenemos el acumulado
     }, [])
-    return servers
+
+    const download: IServer[] = [...$$('table.RTbl.Dwnl tbody tr')].reduce<IServer[]>((accumulatedServers, $element) => {
+      const server = $element.querySelector('td')?.textContent?.trim() ?? ''
+      const code = $element.querySelector('a')?.getAttribute('href')?.trim() ?? ''
+      accumulatedServers.push({ code, server, title: server })
+      return accumulatedServers
+    }, [])
+    return {
+      watchOnline,
+      download
+    }
   }
 }
-console.log('Hola mundo!!!!!!!!')
-new LatAnimeScraper().latestEpisodesAdded().then(data => {
-  console.log(JSON.stringify(data, null, 2))
-})

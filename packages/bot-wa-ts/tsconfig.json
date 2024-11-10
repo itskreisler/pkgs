@@ -28,7 +28,6 @@
     "dist",
     "build",
     "node_modules",
-    "test",
     "docs",
     "tmpbot"
   ]
