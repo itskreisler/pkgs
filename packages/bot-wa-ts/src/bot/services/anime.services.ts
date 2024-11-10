@@ -62,11 +62,18 @@ interface ScraperInterface {
   // Otros métodos necesarios
 }
 export class LatAnimeScraper implements ScraperInterface {
-  async latestEpisodesAdded(): Promise<any[]> {
+  async latestEpisodesAdded(): Promise<IEpisodeAdded[]> {
     const data = await ScraperService.fetchData({ uri: URIS.LAT_BASE_URL, headers: DEFAULT_HEADERS })
-    const { $ } = jQuery(data)
+    const { $$ } = jQuery(data)
+    const promises = [...$$('.col-6.col-md-6.col-lg-3.mb-3')].map(async ($element) => {
+      const title = $element.querySelector('h2')?.textContent?.split(' - ')[1] ?? ''
 
-    return [$('title')?.textContent]
+      return {
+        title
+      }
+    })
+
+    return await Promise.all(promises)
   }
 }
 export class AnimeFLVScraper implements ScraperInterface {
@@ -112,6 +119,6 @@ export class AnimeFLVScraper implements ScraperInterface {
   }
 }
 console.log('Hola mundo!!!!!!!!')
-new AnimeFLVScraper().latestEpisodesAdded().then(data => {
+new LatAnimeScraper().latestEpisodesAdded().then(data => {
   console.log(JSON.stringify(data, null, 2))
 })
