@@ -453,6 +453,16 @@ class Whatsapp {
       } catch (e) {
         console.log('Error al cargar el comando kudasai', { e })
       }
+
+      //
+      try {
+        const CMD_RANDOM = await import('@/bot/commands/public/cmd.random')
+        if (this.hasOwnProp(CMD_RANDOM.default, 'active')) {
+          if (CMD_RANDOM.default.active === true) this.commands.set(CMD_RANDOM.default.ExpReg, CMD_RANDOM.default)
+        }
+      } catch (e) {
+        console.log('Error al cargar el comando random', { e })
+      }
     } catch (e) {
       console.error({ e })
     } finally {
