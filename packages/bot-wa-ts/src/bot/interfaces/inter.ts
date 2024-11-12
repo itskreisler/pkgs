@@ -1,7 +1,8 @@
 import Whatsapp from '@/bot/main'
 import { WAMessage } from '@whiskeysockets/baileys'
 import { Message } from './message'
-
+import { type Readable } from 'stream'
+//
 export const WaConnectionState = {
   open: 'open',
   connecting: 'connecting',
@@ -51,4 +52,12 @@ export interface decounceMessage {
   context: ContextMsg
   comando: CommandImport
   ExpReg: RegExp
+}
+export interface IPostMedia {
+  image: { stream: Readable }
+  caption: string
+}
+export interface IPostMediaGroup {
+  multimedias: IPostMedia[]
+  from: string | string[]
 }

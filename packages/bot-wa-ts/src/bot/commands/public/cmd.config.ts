@@ -73,6 +73,7 @@ export default {
           await msg.reply({ text: 'Debes incluir un parametro de busqueda' })
           return
         }
+        if (search === 'cmd') return
         const [existe, [ExpReg, comando]] = client.findCommand(search) as [boolean, [RegExp, CommandImport]]
         if (!existe) {
           await msg.reply({ text: 'Este comando no existe' })
