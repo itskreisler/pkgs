@@ -47,12 +47,12 @@ class Whatsapp {
   }
 
   //
-  async sendMsgGroup (jid: string, media: AnyMessageContent[] | Promise<AnyMessageContent[]>, options?: MiscMessageGenerationOptions): Promise<Array<proto.WebMessageInfo | undefined>> {
+  async sendMsgGroup (jids: string | string[], media: AnyMessageContent[] | Promise<AnyMessageContent[]>, options?: MiscMessageGenerationOptions): Promise<Array<proto.WebMessageInfo | undefined>> {
     const promises: Array<Promise<proto.WebMessageInfo | undefined>> = []
     const resolvedMedia = await Promise.resolve(media)
-    for (const chunk of resolvedMedia) {
-      promises.push(this.sock.sendMessage(jid, chunk, options))
-    }
+    const hasArray = Array.isArray(jids) && jids.length > 0
+    if (hasArray) for (const jid of jids) for (const chunk of resolvedMedia) promises.push(this.sock.sendMessage(jid, chunk, options))
+    else if (typeof jids === 'string') for (const chunk of resolvedMedia) promises.push(this.sock.sendMessage(jids, chunk, options))
     return await Promise.all(promises)
   }
 
