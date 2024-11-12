@@ -61,3 +61,8 @@ export interface IPostMediaGroup {
   multimedias: IPostMedia[]
   from: string | string[]
 }
+export enum EConstCMD {
+  Kudasai = 'k',
+  Lat = 'lat',
+  Flv = 'flv'
+}

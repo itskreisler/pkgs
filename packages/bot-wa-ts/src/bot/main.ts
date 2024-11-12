@@ -303,6 +303,11 @@ class Whatsapp {
     } catch (e) {
       console.log('(❌) ERROR AL CARGAR EL HANDLER')
     }
+    try {
+      (await import('@/bot/handlers/devil')).devil.bind(this)(this)
+    } catch (e) {
+      console.log('(❌) ERROR AL CARGAR EL DEVIL')
+    }
   }
 
   async loadEvents() {

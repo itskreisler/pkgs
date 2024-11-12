@@ -13,7 +13,7 @@
       ]
     },
     "moduleResolution": "node",
-    "module": "ES2015",
+    "module": "ESNext",
     "target": "ESNext",
     "allowJs": true,
     "esModuleInterop": true,

@@ -1,16 +1,14 @@
-import { configEnv } from '@/bot/helpers/env'
 import { getStreamFromUrl } from '@/bot/helpers/polyfill'
-import { type ContextMsg, type IPostMedia } from '@/bot/interfaces/inter'
+import { EConstCMD, type ContextMsg, type IPostMedia } from '@/bot/interfaces/inter'
 import type Whatsapp from '@/bot/main'
 import { IKudasaiData, kudasaiApi } from '@/bot/services/apis.services'
 import { GlobalDB } from '@/bot/services/zustand.services'
 import { MarkdownWsp } from '@kreisler/js-helpers'
-const { BOT_USERNAME } = configEnv as { BOT_USERNAME: string }
 
 //
 export default {
   active: true,
-  ExpReg: new RegExp(`^/k(?:udasai)?(?:_(\\w+))?(?:@${BOT_USERNAME})?$`, 'im'),
+  ExpReg: /^\/k(?:udasai)?(?:_(\w+))?$/im,
 
   /**
    * @description
@@ -20,20 +18,82 @@ export default {
    */
   async cmd (client: Whatsapp, { wamsg, msg }: ContextMsg, match: RegExpMatchArray): Promise<void> {
     const from: string = wamsg.key.remoteJid as string
+    const [, accion] = match as [string, 'on' | 'off' | 'list' | 'start' | 'clear' | 'fetch' | undefined]
     const urlBase = 'https://somoskudasai.com/'
-    /*     const blogs = data.map(({ slug, category: { slug: cslug }, title, date }) => {
-      const linkPost = `${urlBase}${cslug}/${slug}/`
-      const linkCategory = `${urlBase}categoria/${cslug}/`
-      return MarkdownWsp.Quote(`🔥 ${title}
-📅 ${date}
-🔗 ${linkPost}
-🔗 ${linkCategory}`)
-    }) */
-    // await msg.send({ text: blogs })
-    // enviar posts con imagen
+
+    const isGroup: boolean = msg.isGroup
+    if (!isGroup) {
+      await msg.reply({ text: 'Este comando solo puede ser usado en grupos' })
+      return
+    }
+    GlobalDB.getState().startDbGroup({ from, cmd: EConstCMD.Kudasai })
+    switch (accion) {
+      case 'clear': {
+        const temp = GlobalDB.getState().groupDatabases[from][EConstCMD.Kudasai]
+        if (temp.data.size > 0) {
+          temp.data.clear()
+          await msg.reply({ text: 'Datos de Kudasai eliminados' })
+        } else {
+          await msg.reply({ text: 'No hay datos que eliminar' })
+        }
+        break
+      }
+      case 'fetch': {
+        const medias = fnMedia(fnApi)
+        await client.sendMsgGroup(from, medias)
+        break
+      }
+      case 'start': {
+        const data = await fnApi()
+        GlobalDB.getState().setData({
+          from, cmd: EConstCMD.Kudasai, data
+        })
+        await msg.reply({ text: 'Se han añadido las noticias actuales a la base de datos' })
+        console.log('Datos agregados')
+        break
+      }
+      case 'on': {
+        const isActive: boolean = GlobalDB.getState().getNotification({ from, cmd: EConstCMD.Kudasai })
+        if (isActive) {
+          await msg.reply({ text: 'Las notificaciones de Kudasai ya están activadas' })
+          return
+        }
+        GlobalDB.getState().setNotification({ from, cmd: EConstCMD.Kudasai, active: true })
+        await msg.reply({ text: 'Notificaciones de Kudasai activadas' })
+        // registrar input y output
+        GlobalDB.getState().setCmdAcctions(EConstCMD.Kudasai, fnApi, fnMedia)
+        break
+      }
+      case 'off': {
+        const isActive: boolean = GlobalDB.getState().getNotification({ from, cmd: EConstCMD.Kudasai })
+        if (!isActive) {
+          await msg.reply({ text: 'Las notificaciones de Kudasai ya están desactivadas' })
+          return
+        }
+        GlobalDB.getState().setNotification({ from, cmd: EConstCMD.Kudasai, active: false })
+        await msg.reply({ text: 'Notificaciones de Kudasai desactivadas' })
+        break
+      }
+      case 'list': {
+        const keys = Object.keys(Object.fromEntries(GlobalDB.getState().groupDatabases[from][EConstCMD.Kudasai].data))
+        const total = keys.length
+        const list = keys.sort((a, b) => a.localeCompare(b)).map((key) => {
+          const { title, category: { slug: cslug }, slug } = GlobalDB.getState().groupDatabases[from][EConstCMD.Kudasai].data.get(key) as unknown as { title: string, category: { slug: string }, slug: string }
+          return `${MarkdownWsp.Bold(title)} ${urlBase.concat(cslug, '/', slug, '/')}`
+        }).join('\n')
+        await msg.send({
+          text: `Noticias en la base de datos: ${total}\n${list}`
+        })
+        break
+      }
+      default: {
+        await msg.reply({ text: 'Ejemplo de uso:\n/k_on\n/off' })
+        break
+      }
+    }
 
     async function fnApi() {
-      return kudasaiApi()
+      return (await kudasaiApi()).map(item => ({ id: item.slug, ...item }))
     }
     async function fnMedia(fn: Function): Promise<IPostMedia[]> {
       const data: IKudasaiData[] = await fn()
@@ -48,13 +108,6 @@ export default {
       }
       return multimedias
     }
-    GlobalDB.getState().groupDatabases.set(from,
-      new Map().set('k',
-        new Map().set('data', [])
-      )
-    )
-    if (GlobalDB.getState().cmdAcctions.has('k') === false) GlobalDB.getState().setCmdAcctions('k', fnApi, fnMedia)
-    else console.log('ya existe', GlobalDB.getState().cmdAcctions.get('k'), GlobalDB.getState().groupDatabases[from].k.data)
     // await client.sendMsgGroup(from, multimedias)
   }
 }
