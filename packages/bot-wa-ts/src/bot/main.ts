@@ -58,7 +58,8 @@ class Whatsapp {
 
   //
   getTextMessage(c: proto.IMessage | null | undefined): BodyMsg {
-    let typeMessage = Object.keys(c as proto.IMessage)[0] as WaMessageTypes
+    let typeMessage = Object.keys(c as proto.IMessage ?? {})[0] as WaMessageTypes
+    if (typeof c === 'undefined') return { typeMessage }
     // logica en caso de que sea un mensaje de texto extendido
     const hasExtendedTextMessage = this.hasOwnProp(c, WaMessageTypes.extendedTextMessage)
     if (hasExtendedTextMessage) {
@@ -227,8 +228,8 @@ class Whatsapp {
     // Recorrer cada parte de la propiedad
     for (let i = 0; i < parts.length; i++) {
     // Verificar si el objeto tiene la propiedad en cuestión
-      if (obj === null) return false as boolean
-      if (parts[i] === null) return false as boolean
+      if (obj === null || typeof obj === 'undefined') return false as boolean
+      if (parts[i] === null || typeof parts[i] === 'undefined') return false as boolean
       if (!Object.prototype.hasOwnProperty.call(obj, parts[i])) {
         return false as boolean // Si no la tiene, devolver false
       }
@@ -272,6 +273,7 @@ class Whatsapp {
       auth: state,
       logger: this.logger,
       printQRInTerminal: true
+      // browser: ['KLEYBOT', '', '']
     })
     this.saveCreds = saveCreds
     this.start()
