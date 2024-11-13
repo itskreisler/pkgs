@@ -365,7 +365,8 @@ class Whatsapp {
         { moduleImport: await import('@/bot/commands/public/cmd.tiktok'), name: 'tiktok' },
         { moduleImport: await import('@/bot/commands/public/cmd.mal'), name: 'mal' },
         { moduleImport: await import('@/bot/commands/public/cmdPing'), name: 'ping' },
-        { moduleImport: await import('@/bot/commands/public/cmd.flv'), name: 'flv' }
+        { moduleImport: await import('@/bot/commands/public/cmd.flv'), name: 'flv' },
+        { moduleImport: await import('@/bot/commands/public/cmd.lat'), name: 'lat' }
       ]
 
       commands.forEach(async ({ moduleImport, name }) => {
