@@ -1,4 +1,4 @@
-import Whatsapp from '@/bot/main'
+import type Whatsapp from '@/bot/main'
 import {
   JsCron
   //, buildCronExpression

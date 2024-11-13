@@ -301,11 +301,13 @@ class Whatsapp {
       (await import('@/bot/handlers/antiCrash')).default.bind(this)()
       console.log('(✅) Handlers cargados correctamente')
     } catch (e) {
+      console.error({ e })
       console.log('(❌) ERROR AL CARGAR EL HANDLER')
     }
     try {
       (await import('@/bot/handlers/devil')).devil.bind(this)(this)
     } catch (e) {
+      console.error({ e })
       console.log('(❌) ERROR AL CARGAR EL DEVIL')
     }
   }
