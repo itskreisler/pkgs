@@ -28,7 +28,7 @@ const GlobalDB = createStore<GlobalState>((set, get) => ({
   },
   setCmdAcctions: (cmd: CMDS, input: Function, output: Function) => {
     const cmdAcctions = get().cmdAcctions
-    cmdAcctions.set(cmd, { input, output })
+    if (!cmdAcctions.has(cmd)) cmdAcctions.set(cmd, { input, output })
   },
   startDbGroup: ({ from, cmd }: TOptions) => {
     if (typeof get().groupDatabases[from] === 'undefined') set(({ groupDatabases: { [from]: {} } }))

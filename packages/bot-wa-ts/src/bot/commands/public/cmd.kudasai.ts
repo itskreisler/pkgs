@@ -59,9 +59,8 @@ export default {
           return
         }
         GlobalDB.getState().setNotification({ from, cmd: EConstCMD.Kudasai, active: true })
-        await msg.reply({ text: 'Notificaciones de Kudasai activadas' })
-        // registrar input y output
         GlobalDB.getState().setCmdAcctions(EConstCMD.Kudasai, fnApi, fnMedia)
+        await msg.reply({ text: 'Notificaciones de Kudasai activadas' })
         break
       }
       case 'off': {
@@ -87,7 +86,7 @@ export default {
         break
       }
       default: {
-        await msg.reply({ text: 'Ejemplo de uso:\n/k_on\n/off' })
+        await msg.reply({ text: 'Ejemplo de uso:\n/k_on\n/k_off' })
         break
       }
     }
