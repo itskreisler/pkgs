@@ -352,122 +352,32 @@ class Whatsapp {
     console.log('(⏳) Cargando comandos')
     this.commands.clear()
     try {
-      //
-      try {
-        const CMD_PING = await import('@/bot/commands/public/cmdPing')
-        if (this.hasOwnProp(CMD_PING.default, 'active')) {
-          if (CMD_PING.default.active === true) this.commands.set(CMD_PING.default.ExpReg, CMD_PING.default)
-        }
-      } catch (e) {
-        console.log('Error al cargar el comando ping', { e })
-      }
-      //
-      try {
-        const CMD_MAL = await import('@/bot/commands/public/cmd.mal')
-        if (this.hasOwnProp(CMD_MAL.default, 'active')) {
-          if (CMD_MAL.default.active === true) this.commands.set(CMD_MAL.default.ExpReg, CMD_MAL.default)
-        }
-      } catch (e) {
-        console.log('Error al cargar el comando mal', { e })
-      }
-      //
-      try {
-        const CMD_TIKTOK = await import('@/bot/commands/public/cmd.tiktok')
-        if (this.hasOwnProp(CMD_TIKTOK.default, 'active')) {
-          if (CMD_TIKTOK.default.active === true) this.commands.set(CMD_TIKTOK.default.ExpReg, CMD_TIKTOK.default)
-        }
-      } catch (e) {
-        console.log('Error al cargar el comando tiktok', { e })
-      }
+      const commands = [
+        { moduleImport: await import('@/bot/commands/public/cmd.random'), name: 'random' },
+        { moduleImport: await import('@/bot/commands/public/cmd.kudasai'), name: 'kudasai' },
+        { moduleImport: await import('@/bot/commands/public/cmd.ig'), name: 'ig' },
+        { moduleImport: await import('@/bot/commands/public/cmd.config'), name: 'config' },
+        { moduleImport: await import('@/bot/commands/public/cmd.delete'), name: 'delete' },
+        { moduleImport: await import('@/bot/commands/public/cmd.dlurl'), name: 'dlurl' },
+        { moduleImport: await import('@/bot/commands/public/cmd.unlock'), name: 'unlock' },
+        { moduleImport: await import('@/bot/commands/public/cmd.r34'), name: 'r34' },
+        { moduleImport: await import('@/bot/commands/public/cmd.uptime'), name: 'uptime' },
+        { moduleImport: await import('@/bot/commands/public/cmd.tiktok'), name: 'tiktok' },
+        { moduleImport: await import('@/bot/commands/public/cmd.mal'), name: 'mal' },
+        { moduleImport: await import('@/bot/commands/public/cmdPing'), name: 'ping' },
+        { moduleImport: await import('@/bot/commands/public/cmd.flv'), name: 'flv' }
+      ]
 
-      //
-      try {
-        const CMD_UPTIME = await import('@/bot/commands/public/cmd.uptime')
-        if (this.hasOwnProp(CMD_UPTIME.default, 'active')) {
-          if (CMD_UPTIME.default.active === true) this.commands.set(CMD_UPTIME.default.ExpReg, CMD_UPTIME.default)
+      commands.forEach(async ({ moduleImport, name }) => {
+        try {
+          if (this.hasOwnProp(moduleImport.default, 'active') && moduleImport.default.active === true) {
+            this.commands.set(moduleImport.default.ExpReg, moduleImport.default)
+            console.log(`(✅) Comando ${name} cargado correctamente`)
+          }
+        } catch (e) {
+          console.log(`(❌) Error al cargar el comando ${name}`, { e })
         }
-      } catch (e) {
-        console.log('Error al cargar el comando uptime', { e })
-      }
-      //
-      try {
-        const CMD_R34 = await import('@/bot/commands/public/cmd.r34')
-        if (this.hasOwnProp(CMD_R34.default, 'active')) {
-          if (CMD_R34.default.active === true) this.commands.set(CMD_R34.default.ExpReg, CMD_R34.default)
-        }
-      } catch (e) {
-        console.log('Error al cargar el comando r34', { e })
-      }
-
-      //
-      try {
-        const CMD_UNLOCK = await import('@/bot/commands/public/cmd.unlock')
-        if (this.hasOwnProp(CMD_UNLOCK.default, 'active')) {
-          if (CMD_UNLOCK.default.active === true) this.commands.set(CMD_UNLOCK.default.ExpReg, CMD_UNLOCK.default)
-        }
-      } catch (e) {
-        console.log('Error al cargar el comando unlock', { e })
-      }
-
-      //
-      try {
-        const CMD_DLURL = await import('@/bot/commands/public/cmd.dlurl')
-        if (this.hasOwnProp(CMD_DLURL.default, 'active')) {
-          if (CMD_DLURL.default.active === true) this.commands.set(CMD_DLURL.default.ExpReg, CMD_DLURL.default)
-        }
-      } catch (e) {
-        console.log('Error al cargar el comando dlurl', { e })
-      }
-
-      //
-      try {
-        const CMD_DELETE = await import('@/bot/commands/public/cmd.delete')
-        if (this.hasOwnProp(CMD_DELETE.default, 'active')) {
-          if (CMD_DELETE.default.active === true) this.commands.set(CMD_DELETE.default.ExpReg, CMD_DELETE.default)
-        }
-      } catch (e) {
-        console.log('Error al cargar el comando delete', { e })
-      }
-
-      //
-      try {
-        const CMD_CONFIG = await import('@/bot/commands/public/cmd.config')
-        if (this.hasOwnProp(CMD_CONFIG.default, 'active')) {
-          if (CMD_CONFIG.default.active === true) this.commands.set(CMD_CONFIG.default.ExpReg, CMD_CONFIG.default)
-        }
-      } catch (e) {
-        console.log('Error al cargar el comando config', { e })
-      }
-
-      //
-      try {
-        const CMD_IG = await import('@/bot/commands/public/cmd.ig')
-        if (this.hasOwnProp(CMD_IG.default, 'active')) {
-          if (CMD_IG.default.active === true) this.commands.set(CMD_IG.default.ExpReg, CMD_IG.default)
-        }
-      } catch (e) {
-        console.log('Error al cargar el comando ig', { e })
-      }
-
-      //
-      try {
-        const CMD_KUDASAI = await import('@/bot/commands/public/cmd.kudasai')
-        if (this.hasOwnProp(CMD_KUDASAI.default, 'active')) {
-          if (CMD_KUDASAI.default.active === true) this.commands.set(CMD_KUDASAI.default.ExpReg, CMD_KUDASAI.default)
-        }
-      } catch (e) {
-        console.log('Error al cargar el comando kudasai', { e })
-      }
-
-      //
-      try {
-        const CMD_RANDOM = await import('@/bot/commands/public/cmd.random')
-        if (this.hasOwnProp(CMD_RANDOM.default, 'active')) {
-          if (CMD_RANDOM.default.active === true) this.commands.set(CMD_RANDOM.default.ExpReg, CMD_RANDOM.default)
-        }
-      } catch (e) {
-        console.log('Error al cargar el comando random', { e })
-      }
+      })
     } catch (e) {
       console.error({ e })
     } finally {
