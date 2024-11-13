@@ -51,7 +51,9 @@ const GlobalDB = createStore<GlobalState>((set, get) => ({
   setNotification: ({ from, cmd, active }: { active: boolean } & TOptions) => {
     set(({
       groupDatabases: {
+        ...GlobalDB.getState().groupDatabases,
         [from]: {
+          ...GlobalDB.getState().groupDatabases[from],
           [cmd]: {
             ...GlobalDB.getState().groupDatabases[from][cmd],
             notifications: active

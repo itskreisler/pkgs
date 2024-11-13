@@ -47,13 +47,58 @@ class Whatsapp {
   }
 
   //
-  async sendMsgGroup (jids: string | string[], media: AnyMessageContent[] | Promise<AnyMessageContent[]>, options?: MiscMessageGenerationOptions): Promise<Array<proto.WebMessageInfo | undefined>> {
+  async sendMsgGroup (
+    jids: string | string[],
+    media: AnyMessageContent[] | Promise<AnyMessageContent[]>,
+    options?: MiscMessageGenerationOptions,
+    batchSize: number = 10 // Tamaño del lote, puedes ajustarlo según tus necesidades
+  ): Promise<Array<proto.WebMessageInfo | undefined>> {
     const promises: Array<Promise<proto.WebMessageInfo | undefined>> = []
     const resolvedMedia = await Promise.resolve(media)
+    if (resolvedMedia.length > batchSize) {
+      return await this.sendMsgGroupBatch(jids, resolvedMedia, options)
+    }
     const hasArray = Array.isArray(jids) && jids.length > 0
     if (hasArray) for (const jid of jids) for (const chunk of resolvedMedia) promises.push(this.sock.sendMessage(jid, chunk, options))
     else if (typeof jids === 'string') for (const chunk of resolvedMedia) promises.push(this.sock.sendMessage(jids, chunk, options))
     return await Promise.all(promises)
+  }
+
+  async sendMsgGroupBatch(
+    jids: string | string[], media: AnyMessageContent[] | Promise<AnyMessageContent[]>,
+    options?: MiscMessageGenerationOptions,
+    batchSize: number = 5 // Tamaño del lote, puedes ajustarlo según tus necesidades
+  ): Promise<Array<proto.WebMessageInfo | undefined>> {
+    const resolvedMedia = await Promise.resolve(media)
+    const jidArray = Array.isArray(jids) ? jids : [jids]
+    const results: Array<proto.WebMessageInfo | undefined> = []
+
+    // Helper para procesar un lote de promesas
+    const processBatch = async (batch: Array<Promise<proto.WebMessageInfo | undefined>>) => {
+      const batchResults = await Promise.all(batch)
+      results.push(...batchResults)
+    }
+
+    // Crear lotes
+    let batch: Array<Promise<proto.WebMessageInfo | undefined>> = []
+    for (const jid of jidArray) {
+      for (const chunk of resolvedMedia) {
+        batch.push(this.sock.sendMessage(jid, chunk, options))
+
+        // Si alcanzamos el tamaño del lote, procesarlo
+        if (batch.length >= batchSize) {
+          await processBatch(batch)
+          batch = [] // Vaciar el lote después de procesarlo
+        }
+      }
+    }
+
+    // Procesar el último lote si quedó algún mensaje sin enviar
+    if (batch.length > 0) {
+      await processBatch(batch)
+    }
+
+    return results
   }
 
   //
