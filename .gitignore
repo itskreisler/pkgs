@@ -34,3 +34,4 @@ creds/*
 **/creds/*
 **/tmpbot/*
 auth_*
+creds_*

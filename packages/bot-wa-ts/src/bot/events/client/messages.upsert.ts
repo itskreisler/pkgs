@@ -53,6 +53,7 @@ export async function handler (client: Whatsapp, content: {
       const msg = new Message(client, chat)
       const context: ContextMsg = { msg, wamsg: chat, ...getMessageBody }
       await messageDebounced({ client, context, comando, ExpReg })
+      // await comando.cmd(client, context, context?.body?.match(ExpReg as RegExp) as RegExpMatchArray)
       await msg.react('✅')
     } catch (e) {
       console.error('Ha ocurrido un error al ejecutar el comando', { e })
