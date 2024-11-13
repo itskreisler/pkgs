@@ -11,7 +11,7 @@ export async function devil (client: Whatsapp): Promise<void> {
   const deamon = new JsCron()
   const { getState } = GlobalDB
   deamon.createTask('suscripciones', CRON_JOB, async () => {
-    console.log('Ejecutando tarea', new Date().toLocaleString(), getState().groupDatabases, getState().cmdAcctions)
+    console.log('Ejecutando tarea', new Date().toLocaleString())
     const idsGroups = Object.keys(getState().groupDatabases)
 
     for (const idGroup of idsGroups) {
@@ -26,21 +26,21 @@ export async function devil (client: Whatsapp): Promise<void> {
         const latestData = await input() as Array<{ id: string }>
         const newData = latestData.filter(i => data.has(i.id) === false)
         if (newData.length === 0) {
-          console.log('No hay nuevos datos', cmd)
+          console.log('No hay nuevos datos', idGroup, cmd)
           continue
         }
-        console.log('Nuevos datos', newData.length, cmd)
+        console.log('Nuevos datos', newData.length, idGroup, cmd)
         // getState().setData({ from: idGroup, cmd, data: newData })
-        const media = output(input) as IPostMedia[]
+        const media = output(async function() {
+          return await Promise.resolve(newData)
+        }) as IPostMedia[]
         client.sendMsgGroup(idGroup, media).finally(() => {
           // registrar los nuevos datos
           const oldSize = data.size
           getState().setData({ from: idGroup, cmd, data: newData })
-          console.log('Tamano de datos: old=', oldSize, ' new=', data.size)
+          console.log('Tamano de datos: old=', oldSize, ' new=', data.size, ' cmd=', cmd)
         })
       }
     }
-
-    await client.sendMsgGroup('jid', [{ text: 'Hola Mundo' }])
   })
 }
