@@ -161,12 +161,12 @@ export class Message {
     if (ctx === null) return
     return new Message(this.client, {
       key: {
-        fromMe: (ctx.participant ?? ctx.remoteJid) !== this.author.id,
-        participant: ctx.participant,
-        remoteJid: ctx.remoteJid ?? this._data.key.remoteJid,
-        id: ctx.stanzaId
+        fromMe: (ctx?.participant ?? ctx?.remoteJid) !== this.author.id,
+        participant: ctx?.participant,
+        remoteJid: ctx?.remoteJid ?? this._data.key.remoteJid,
+        id: ctx?.stanzaId
       },
-      message: ctx.quotedMessage
+      message: ctx?.quotedMessage
     })
   }
 
