@@ -39,7 +39,7 @@ export default {
         const tags = resultsTags.map(r => r.value)
         let result: R34Response[] = []
         let tag: string = ''
-        const viewOnce = true
+        const viewOnce = false
         if (tags.length === 0) {
           msg.reply({
             text: `No se encontraron resultados para ${MarkdownWsp.InlineCode(q)}`
