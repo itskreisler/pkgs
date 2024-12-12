@@ -1,5 +1,5 @@
 import fs from 'fs'
-import { create } from 'zustand'
+import { create, type StateCreator } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 export function jsonStorage(filePath: string = './storage.json') {
   // Asegúrate de que el archivo exista
@@ -57,16 +57,31 @@ export function jsonStorage(filePath: string = './storage.json') {
   }
 }
 //
-export const useFishStore = create(
-  persist<{
-    fishes: number
-    addAFish: () => void
-  }>((set, get) => ({
-        fishes: 0,
-        addAFish: () => set({ fishes: get().fishes + 1 })
-      }),
-      {
-        name: 'news-storage',
-        storage: createJSONStorage(() => jsonStorage('./fishes.json'))
-      }
-      ))
+export const useStore = <S>(
+  config: {
+    nameStorage: string
+    initialState: StateCreator<S>
+  }
+) => create(
+    persist<S>(config.initialState, {
+      name: config.nameStorage,
+      storage: createJSONStorage(() => jsonStorage(config.nameStorage.endsWith('.json')
+        ? config.nameStorage
+        : config.nameStorage.concat('.json')))
+    })
+  )
+
+export const useCounterStore = useStore<{
+  count: number
+  increment: () => void
+  decrement: () => void
+  reset: () => void
+}>({
+      nameStorage: 'counter',
+      initialState: (set) => ({
+        count: 0,
+        increment: () => set((state) => ({ count: state.count + 1 })),
+        decrement: () => set((state) => ({ count: state.count - 1 })),
+        reset: () => set({ count: 0 })
+      })
+    })
