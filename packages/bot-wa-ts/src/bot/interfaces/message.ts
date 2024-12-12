@@ -98,6 +98,11 @@ export class Message {
     })
   }
 
+  /**
+   *
+   * @example as Uint8Array
+   * @returns
+   */
   async downloadMediaV2(): Promise<FetchBuffer | undefined> {
     if (!this.hasMedia) return
     let tempMessage: proto.IMessage
