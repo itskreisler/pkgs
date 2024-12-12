@@ -70,7 +70,7 @@ export const useStore = <S>(
         : config.nameStorage.concat('.json')))
     })
   )
-
+/*
 export const useCounterStore = useStore<{
   count: number
   increment: () => void
@@ -85,3 +85,4 @@ export const useCounterStore = useStore<{
         reset: () => set({ count: 0 })
       })
     })
+*/

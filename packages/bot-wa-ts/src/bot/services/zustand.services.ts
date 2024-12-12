@@ -1,77 +1,90 @@
-import { createStore } from 'zustand/vanilla'
-
+// import { createStore as useStore } from 'zustand/vanilla'
+import { useStore } from './jsonStorage.services'
 export type CMDS = 'k' | 'lat' | 'flv'
-interface TOptions { from: string, cmd: CMDS }
-interface GroupDatabase {
-  [groupId: string]: {
-    [command: string]: {
-      data: Map<string, { id: string }> // aquí guardas los datos temporales específicos
-      notifications: boolean
-    }
-  }
-}
-interface GlobalState {
-  groupDatabases: GroupDatabase
-  cmdAcctions: Map<CMDS, { input: Function, output: Function }>
-  setCmdAcctions: (cmd: CMDS, input: Function, output: Function) => void
-  getCmdAcctions: (cmd: CMDS) => { input: Function, output: Function } | undefined
-  startDbGroup: (options: TOptions) => void
-  getNotification: (options: TOptions) => boolean
-  setNotification: (options: { active: boolean } & TOptions) => void
-  setData: (options: { from: string, cmd: CMDS, data: Array<{ id: string }> }) => void
-}
-const GlobalDB = createStore<GlobalState>((set, get) => ({
-  groupDatabases: {},
-  cmdAcctions: new Map(),
-  getCmdAcctions: (cmd: CMDS) => {
-    return get().cmdAcctions.get(cmd)
-  },
-  setCmdAcctions: (cmd: CMDS, input: Function, output: Function) => {
-    const cmdAcctions = get().cmdAcctions
-    if (!cmdAcctions.has(cmd)) cmdAcctions.set(cmd, { input, output })
-  },
-  startDbGroup: ({ from, cmd }: TOptions) => {
-    if (typeof get().groupDatabases[from] === 'undefined') set(({ groupDatabases: { [from]: {} } }))
-    if (typeof get().groupDatabases[from][cmd] === 'undefined') {
-      set(({
-        groupDatabases: {
-          [from]: {
-            [cmd]: {
-              data: new Map(),
-              notifications: false
-            }
-          }
-        }
-      }))
-    }
-  },
-  getNotification: ({ from, cmd }: TOptions) => {
-    return get().groupDatabases[from][cmd].notifications
-  },
-  setNotification: ({ from, cmd, active }: { active: boolean } & TOptions) => {
-    set(({
-      groupDatabases: {
-        ...GlobalDB.getState().groupDatabases,
-        [from]: {
-          ...GlobalDB.getState().groupDatabases[from],
-          [cmd]: {
-            ...GlobalDB.getState().groupDatabases[from][cmd],
-            notifications: active
-          }
-        }
-      }
-    }))
-  },
-  setData: ({
-    from,
-    cmd,
-    data
-  }: { data: Array<{ id: string }> } & TOptions) => {
-    for (const item of data) {
-      get().groupDatabases[from][cmd]?.data?.set(item.id, item)
-    }
-  }
-}))
-// const { getState, setState, subscribe, getInitialState } = GlobalDB
 
-export { GlobalDB }
+interface GlobalState {
+  groupDatabases: {
+    [groupId: string]: {
+      [command: string]: {
+        data: Array<{ [key: string]: any }>
+        notifications: boolean
+      }
+    }
+  }
+  getNotifications: (groupId: string, cmd: CMDS) => boolean // Obtiene el estado de las notificaciones.
+  toggleNotifications: (groupId: string, cmd: CMDS, state: boolean) => void // Activa/Desactiva notificaciones.
+  addCommandData: (groupId: string, cmd: CMDS, newData: { [key: string]: any }) => void // Agrega datos.
+  getCommandData: (groupId: string, cmd: CMDS) => Array<{ [key: string]: any }> // Obtiene datos.
+}
+const GlobalDB = useStore<GlobalState>({
+  nameStorage: 'tmpbot/globalDB',
+  initialState: (set, get) => ({
+    groupDatabases: {},
+    getNotifications: (groupId: string, cmd: string) => {
+      const group = get().groupDatabases[groupId] ?? {}
+      return group[cmd]?.notifications ?? false
+    },
+    toggleNotifications: (groupId: string, cmd: string, active: boolean) => {
+      set((state) => {
+        const group = state.groupDatabases[groupId] ?? {}
+        const commandData = group[cmd] ?? { data: [], notifications: false }
+        commandData.notifications = active
+        return {
+          groupDatabases: {
+            ...state.groupDatabases,
+            [groupId]: { ...group, [cmd]: commandData }
+          }
+        }
+      })
+    },
+    addCommandData: (groupId: string, cmd: string, newData: any) => {
+      set((state) => {
+        const group = state.groupDatabases[groupId] ?? {}
+        const commandData = group[cmd] ?? { data: [], notifications: false }
+        const temp = Array.from(
+          new Map([...commandData.data, ...newData].map(obj => [obj.id, obj])).values()
+        )
+        commandData.data = temp
+        return {
+          groupDatabases: {
+            ...state.groupDatabases,
+            [groupId]: { ...group, [cmd]: commandData }
+          }
+        }
+      })
+    },
+    getCommandData: (groupId: string, cmd: string) => {
+      const group = get().groupDatabases[groupId] ?? {}
+      return group[cmd]?.data ?? []
+    }
+  })
+})
+class CommandActions {
+  private static instance: CommandActions // Instancia única
+  private readonly cmdActions: Map<CMDS, { input: Function, output: Function }>
+
+  private constructor() {
+    this.cmdActions = new Map()
+  }
+
+  // Método para obtener la instancia única
+  public static getInstance(): CommandActions {
+    if (typeof CommandActions.instance === 'undefined') {
+      CommandActions.instance = new CommandActions()
+    }
+    return CommandActions.instance
+  }
+
+  // Obtiene las acciones de un comando específico
+  public getCmdActions(cmd: CMDS) {
+    return this.cmdActions.get(cmd)
+  }
+
+  // Configura las acciones de un comando específico
+  public setCmdActions(cmd: CMDS, input: Function, output: Function) {
+    this.cmdActions.set(cmd, { input, output })
+  }
+}
+// const { getState, setState, subscribe, getInitialState } = GlobalDB
+const CmdActions = CommandActions.getInstance()
+export { GlobalDB, CmdActions }

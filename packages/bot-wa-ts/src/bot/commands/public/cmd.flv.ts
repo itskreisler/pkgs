@@ -2,12 +2,13 @@ import { EConstCMD, IPostMedia, type ContextMsg } from '@/bot/interfaces/inter'
 import type Whatsapp from '@/bot/main'
 import { MarkdownWsp } from '@kreisler/js-helpers'
 import { AnimeFLVScraper, IEpisodeAdded, URIS } from '@/bot/services/anime.services'
-import { GlobalDB } from '@/bot/services/zustand.services'
+import { GlobalDB, CmdActions } from '@/bot/services/zustand.services'
 import { getStreamFromUrl } from '@/bot/helpers/polyfill'
+import { tryCatchPromise } from '@kreisler/try-catch'
 //
 export default {
   active: true,
-  ExpReg: /^\/flv(?:_(\w+))?(?:@)?$/im,
+  ExpReg: /^\/flv(?:_(\w+))?(?:@username)?(?:\s+(.+))?$/im,
 
   /**
      * @description Comando para obtener los ultimos episodios de animeflv
@@ -18,13 +19,12 @@ export default {
      */
   async cmd(client: Whatsapp, { wamsg, msg }: ContextMsg, match: RegExpMatchArray): Promise<void> {
     const from: string = wamsg.key.remoteJid as string
-    const [, accion] = match as [string, 'on' | 'off' | 'start' | 'list' | 'fetch' | undefined]
+    const [, accion, query] = match as [string, 'on' | 'off' | 'start' | 'list' | 'fetch' | 'id' | undefined, string | undefined]
     const isGroup: boolean = msg.isGroup
     if (!isGroup) {
       await msg.reply({ text: 'Este comando solo puede ser usado en grupos' })
       return
     }
-    GlobalDB.getState().startDbGroup({ from, cmd: EConstCMD.Flv })
     const scraper = new AnimeFLVScraper()
 
     switch (accion) {
@@ -35,42 +35,63 @@ export default {
       }
       case 'start': {
         const data = await fnApi()
-        GlobalDB.getState().setData({
-          from, cmd: EConstCMD.Flv, data
-        })
+        GlobalDB.getState().addCommandData(from, EConstCMD.Flv, data)
         await msg.reply({ text: 'Se han añadido animes flv mas reciente' })
         console.log('Datos agregados')
         break
       }
       case 'on': {
-        const isActive: boolean = GlobalDB.getState().getNotification({ from, cmd: EConstCMD.Flv })
+        const isActive: boolean = GlobalDB.getState().getNotifications(from, EConstCMD.Flv)
         if (isActive) {
           await msg.reply({ text: 'Las notificaciones de AnimeFlv ya están activadas' })
           return
         }
-        GlobalDB.getState().setNotification({ from, cmd: EConstCMD.Flv, active: true })
-        GlobalDB.getState().setCmdAcctions(EConstCMD.Flv, fnApi, fnMedia)
+        GlobalDB.getState().toggleNotifications(from, EConstCMD.Flv, true)
+        CmdActions.setCmdActions(EConstCMD.Flv, fnApi, fnMedia)
         await msg.reply({ text: 'Notificaciones de AnimeFlv activadas' })
         break
       }
       case 'off': {
-        const isActive: boolean = GlobalDB.getState().getNotification({ from, cmd: EConstCMD.Flv })
+        const isActive: boolean = GlobalDB.getState().getNotifications(from, EConstCMD.Flv)
         if (!isActive) {
           await msg.reply({ text: 'Las notificaciones de AnimeFlv ya están desactivadas' })
           return
         }
-        GlobalDB.getState().setNotification({ from, cmd: EConstCMD.Flv, active: false })
+        GlobalDB.getState().toggleNotifications(from, EConstCMD.Flv, false)
         await msg.reply({ text: 'Notificaciones de AnimeFlv desactivadas' })
         break
       }
       case 'list': {
-        const keys = Object.keys(Object.fromEntries(GlobalDB.getState().groupDatabases[from][EConstCMD.Flv].data))
-        const total = keys.length
-        const list = keys.sort((a, b) => a.localeCompare(b)).map((key) => {
-          const { title, episode } = GlobalDB.getState().groupDatabases[from][EConstCMD.Flv].data.get(key) as unknown as { title: string, episode: number }
-          return `${MarkdownWsp.Bold(title)} #${String(episode)}`
+        const datos = GlobalDB.getState().getCommandData(from, EConstCMD.Flv) as IEpisodeAdded[]
+        const grouped = datos
+          .sort((a, b) => a.id.localeCompare(b.id))
+          .reduce<{ [key: string]: number[] }>((acc, item) => {
+          if (typeof acc[item.title] === 'undefined') {
+            acc[item.title] = []
+          }
+          acc[item.title].push(item.episode)
+          return acc
+        }, {})
+        const total = String(datos.length)
+        const list = Object.entries(grouped).map(([title, episodes]) => {
+          const episodeList = episodes.sort((a, b) => a - b).map(ep => `#${ep}`).join(', ')
+          return MarkdownWsp.Quote(`${title} (${episodeList})`)
         }).join('\n')
         await msg.reply({ text: `Total: ${total}\n${list}` })
+        break
+      }
+      case 'id':{
+        if (typeof query === 'undefined') {
+          await msg.reply({ text: 'Proporciona un id de anime' })
+          return
+        }
+        const [error, servers] = await tryCatchPromise(scraper.AnimeServers, query)
+        if (error != null) {
+          await msg.reply({ text: 'No se encontró el anime' })
+          return
+        }
+        const enlacesParaVer = servers.watchOnline.map(({ title, code }) => MarkdownWsp.Quote(MarkdownWsp.Bold(title).concat(': ', code))).join('\n')
+        await msg.reply({ text: enlacesParaVer })
         break
       }
       default: {

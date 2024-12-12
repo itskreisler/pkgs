@@ -2,7 +2,7 @@ import { getStreamFromUrl } from '@/bot/helpers/polyfill'
 import { EConstCMD, type ContextMsg, type IPostMedia } from '@/bot/interfaces/inter'
 import type Whatsapp from '@/bot/main'
 import { IKudasaiData, kudasaiApi } from '@/bot/services/apis.services'
-import { GlobalDB } from '@/bot/services/zustand.services'
+import { GlobalDB, CmdActions } from '@/bot/services/zustand.services'
 import { MarkdownWsp } from '@kreisler/js-helpers'
 
 //
@@ -26,16 +26,8 @@ export default {
       await msg.reply({ text: 'Este comando solo puede ser usado en grupos' })
       return
     }
-    GlobalDB.getState().startDbGroup({ from, cmd: EConstCMD.Kudasai })
     switch (accion) {
       case 'clear': {
-        const temp = GlobalDB.getState().groupDatabases[from][EConstCMD.Kudasai]
-        if (temp.data.size > 0) {
-          temp.data.clear()
-          await msg.reply({ text: 'Datos de Kudasai eliminados' })
-        } else {
-          await msg.reply({ text: 'No hay datos que eliminar' })
-        }
         break
       }
       case 'fetch': {
@@ -45,39 +37,37 @@ export default {
       }
       case 'start': {
         const data = await fnApi()
-        GlobalDB.getState().setData({
-          from, cmd: EConstCMD.Kudasai, data
-        })
+        GlobalDB.getState().addCommandData(from, EConstCMD.Kudasai, data)
         await msg.reply({ text: 'Se han añadido las noticias actuales a la base de datos' })
         console.log('Datos agregados')
         break
       }
       case 'on': {
-        const isActive: boolean = GlobalDB.getState().getNotification({ from, cmd: EConstCMD.Kudasai })
+        const isActive: boolean = GlobalDB.getState().getNotifications(from, EConstCMD.Kudasai)
         if (isActive) {
           await msg.reply({ text: 'Las notificaciones de Kudasai ya están activadas' })
           return
         }
-        GlobalDB.getState().setNotification({ from, cmd: EConstCMD.Kudasai, active: true })
-        GlobalDB.getState().setCmdAcctions(EConstCMD.Kudasai, fnApi, fnMedia)
+        GlobalDB.getState().toggleNotifications(from, EConstCMD.Kudasai, true)
+        CmdActions.setCmdActions(EConstCMD.Kudasai, fnApi, fnMedia)
         await msg.reply({ text: 'Notificaciones de Kudasai activadas' })
         break
       }
       case 'off': {
-        const isActive: boolean = GlobalDB.getState().getNotification({ from, cmd: EConstCMD.Kudasai })
+        const isActive: boolean = GlobalDB.getState().getNotifications(from, EConstCMD.Kudasai)
         if (!isActive) {
           await msg.reply({ text: 'Las notificaciones de Kudasai ya están desactivadas' })
           return
         }
-        GlobalDB.getState().setNotification({ from, cmd: EConstCMD.Kudasai, active: false })
+        GlobalDB.getState().toggleNotifications(from, EConstCMD.Kudasai, false)
         await msg.reply({ text: 'Notificaciones de Kudasai desactivadas' })
         break
       }
       case 'list': {
-        const keys = Object.keys(Object.fromEntries(GlobalDB.getState().groupDatabases[from][EConstCMD.Kudasai].data))
-        const total = keys.length
-        const list = keys.sort((a, b) => a.localeCompare(b)).map((key) => {
-          const { title, category: { slug: cslug }, slug } = GlobalDB.getState().groupDatabases[from][EConstCMD.Kudasai].data.get(key) as unknown as { title: string, category: { slug: string }, slug: string }
+        const datos = GlobalDB.getState().getCommandData(from, EConstCMD.Kudasai) as IKudasaiData[]
+        const total = datos.length
+        const list = datos.sort((a, b) => a.slug.localeCompare(b.slug)).map((key) => {
+          const { title, category: { slug: cslug }, slug } = key
           return `${MarkdownWsp.Bold(title)} ${urlBase.concat(cslug, '/', slug, '/')}`
         }).join('\n')
         await msg.send({
