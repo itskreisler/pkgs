@@ -66,6 +66,7 @@
     "@hapi/boom": "^10.0.1",
     "@kreisler/createapi": "^3.0.0",
     "@kreisler/debounce": "^1.0.1",
+    "@kreisler/exec-promise": "^1.0.0",
     "@kreisler/js-cron": "latest",
     "@kreisler/js-google-translate-free": "^4.0.2",
     "@kreisler/js-helpers": "^4.6.2",

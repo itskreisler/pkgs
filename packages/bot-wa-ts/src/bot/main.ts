@@ -11,7 +11,7 @@ import {
   proto
 } from '@whiskeysockets/baileys'
 import pino from 'pino'
-import { createSticker, type IStickerOptions, StickerTypes } from 'wa-sticker-formatter'
+import { Sticker, createSticker, type IStickerOptions, StickerTypes } from 'wa-sticker-formatter'
 import { CommandImport, WaMessageTypes, type MessageBody, type BodyMsg } from '@/bot/interfaces/inter'
 import { Media } from '@/bot/interfaces/media'
 import { Message } from './interfaces/message'
@@ -194,21 +194,6 @@ class Whatsapp {
     return { ...body, quotedBody }
   }
 
-  /**
-   * @deprecated
-   */
-  async saveFile(file: import('fs').PathOrFileDescriptor, content: string) {
-    const fs = await import('fs')
-    // archivo no existe crearlo
-    if (!fs.existsSync(file as import('fs').PathLike)) {
-      fs.writeFileSync(file, '[]', { encoding: 'utf-8' })
-    }
-    const temp = fs.readFileSync(file, { encoding: 'utf-8' })
-    const data: any[] = JSON.parse(temp)
-    data.push(JSON.parse(content)[0])
-    fs.writeFileSync(file, JSON.stringify(data, null, 2), { encoding: 'utf-8' })
-  }
-
   async getLogger() { return this.logger }
   async imageUrl2Base64 (url: string): Promise<[Buffer, string]> {
     const req = await globalThis.fetch(url, {
@@ -235,13 +220,23 @@ class Whatsapp {
 
   async stickerGenerator (mediaData: string | Buffer): Promise<Buffer> {
     const stickerOption: IStickerOptions = {
-      pack: 'KleyStickers',
-      author: 'Kley',
+      pack: 'sticker.ly/user/itskreisler',
+      author: 'itskreisler',
       type: StickerTypes.FULL,
       quality: 100
     }
     const generateSticker = await createSticker(mediaData, stickerOption)
     return generateSticker
+  }
+
+  async stickerGeneratorFromPath (image: string | Buffer) {
+    const sticker = new Sticker(image, {
+      pack: 'sticker.ly/user/itskreisler',
+      author: 'itskreisler',
+      type: StickerTypes.FULL,
+      quality: 100
+    })
+    return await sticker.toMessage()
   }
 
   /**
