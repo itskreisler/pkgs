@@ -4,7 +4,7 @@ import type Whatsapp from '@/bot/main'
 //
 export default {
   active: true,
-  ExpReg: /^\/dl(?:\s+(.+))?$/ims,
+  ExpReg: /^\/dl(?:_(\w+))?(?:\s+(.+))?$/ims,
 
   /**
    * @description
@@ -13,8 +13,8 @@ export default {
    * @param {RegExpMatchArray} match
    */
   async cmd (client: Whatsapp, { wamsg, msg }: ContextMsg, match: RegExpMatchArray): Promise<void> {
-    const [, url] = match as [string, string | null]
-    if (url === null) {
+    const [, opcion, url] = match as [string, string | undefined, string | undefined]
+    if (typeof url === 'undefined') {
       msg.reply({ text: 'Proporciona un enlace para descargar(imagen o video)' })
       return
     }
@@ -32,11 +32,14 @@ export default {
         return
       }
       const { fileType } = kche
-      const multimedia = fileType?.mime.startsWith('image') === true
-        ? { image: { stream: await getStreamFromUrl(url) } }
-        : fileType?.mime.startsWith('video') === true
-          ? { video: { stream: await getStreamFromUrl(url) } }
-          : { text: 'No es una imagen o video' }
+      const fileName = Date.now().toString().concat('.', fileType?.ext as string)
+      const multimedia = typeof opcion === 'string'
+        ? { document: { stream: await getStreamFromUrl(url) }, fileName, mimetype: fileType?.mime as string }
+        : fileType?.mime.startsWith('image') === true
+          ? { image: { stream: await getStreamFromUrl(url) } }
+          : fileType?.mime.startsWith('video') === true
+            ? { video: { stream: await getStreamFromUrl(url) } }
+            : { text: 'No es una imagen o video' }
       await msg.send(multimedia)
     }
   }

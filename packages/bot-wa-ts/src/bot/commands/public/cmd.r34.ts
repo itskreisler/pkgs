@@ -5,7 +5,7 @@ import type Whatsapp from '@/bot/main'
 import { r34API, r34Tags, r34RandomPic, type R34Tags, R34Const, R34Response } from '@/bot/services/r34.services'
 import { MarkdownWsp } from '@kreisler/js-helpers'
 import { createApi } from '@kreisler/createapi'
-const { BOT_USERNAME } = configEnv as { BOT_USERNAME: string }
+const { BOT_USERNAME } = configEnv() as { BOT_USERNAME: string }
 //
 
 //

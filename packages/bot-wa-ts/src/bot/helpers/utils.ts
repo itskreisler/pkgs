@@ -12,7 +12,7 @@
 // }
 // export { loadFiles }
 import { configEnv } from '@/bot/helpers/env'
-const isDEV = configEnv.NODE_ENV === 'development'
+const isDEV = configEnv().NODE_ENV === 'development'
 //
 export enum CONSOLE_COLORS {
   red = '\x1b[31m',

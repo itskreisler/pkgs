@@ -2,7 +2,7 @@ import { configEnv } from '@/bot/helpers/env'
 import { MarkdownWsp, trimText } from '@kreisler/js-helpers'
 import { type ContextMsg } from '@/bot/interfaces/inter'
 import type Whatsapp from '@/bot/main'
-const { BOT_USERNAME } = configEnv as { BOT_USERNAME: string }
+const { BOT_USERNAME } = configEnv() as { BOT_USERNAME: string }
 //
 export default {
   active: true,

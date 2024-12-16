@@ -1,13 +1,12 @@
-import { configEnv, NEW_ADMINS, PERMANENT_ADMINS, isAuthorized } from '@/bot/helpers/env'
+import { BOT_USERNAME, NEW_ADMINS, PERMANENT_ADMINS, isAuthorized } from '@/bot/helpers/env'
 import { CommandImport, type ContextMsg } from '@/bot/interfaces/inter'
 import type Whatsapp from '@/bot/main'
 import { MarkdownWsp } from '@kreisler/js-helpers'
-const { BOT_USERNAME } = configEnv as { BOT_USERNAME: string }
 
 //
 export default {
   active: true,
-  ExpReg: new RegExp(`^/cmd(?:_(\\w+))?(?:@${BOT_USERNAME})?(?:\\s+(.+))?$`, 'ims'),
+  ExpReg: new RegExp(`^/cmd(?:_(\\w+))?(?:@${BOT_USERNAME as string})?(?:\\s+(.+))?$`, 'ims'),
 
   /**
    * @description Configura los comandos, activa o desactiva comandos

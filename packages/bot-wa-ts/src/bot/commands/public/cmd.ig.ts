@@ -29,10 +29,11 @@ export default {
     }
     const [hasError, data] = await tryCatchPromise(instagramGetUrl, url)
     if (hasError !== null) {
+      console.error(hasError)
       await msg.reply({ text: 'No se pudo obtener la información' })
       return
     }
-    const media = await Promise.all(data.urlList.map(async ({ url, type }) => type === 'image' ? { image: { stream: await getStreamFromUrl(url) } } : { video: { stream: await getStreamFromUrl(url) } }))
+    const media = await Promise.all(data.mediaDetails.map(async ({ url, type }) => type === 'image' ? { image: { stream: await getStreamFromUrl(url) } } : { video: { stream: await getStreamFromUrl(url) } }))
     await client.sendMsgGroup(from, media).catch(() => {
       msg.reply({ text: 'No se pudo enviar el contenido, intente de nuevo' })
     })

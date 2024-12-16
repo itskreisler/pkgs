@@ -3,18 +3,17 @@ import {
   type MessageUpsertType
 } from '@whiskeysockets/baileys'
 import type Whatsapp from '@/bot/main'
-import { configEnv } from '@/bot/helpers/env'
+import { BOT_PREFIX } from '@/bot/helpers/env'
 import { type ContextMsg, type decounceMessage } from '@/bot/interfaces/inter'
 import { Message } from '@/bot/interfaces/message'
 import { debounce } from '@kreisler/debounce'
 //
-const { BOT_PREFIX } = configEnv as { BOT_PREFIX: string }
-const messageDebounced = debounce(messageHandler, 5000, {
+const messageDebounced = debounce(messageHandler, 2500, {
   immediate: true,
-  flood: 5,
+  flood: 10,
   onFlood: (result: decounceMessage) => {
     result.context.msg.reply({
-      text: '🚨 *Flood detectado*\n_Espera 5 segundos antes de volver a ejecutar un comando_'
+      text: '🚨 *Flood detectado*\n_Espera 2.5 segundos antes de volver a ejecutar un comando_'
     })
   },
   onComplete: (result: decounceMessage) => {
