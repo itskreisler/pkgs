@@ -5,10 +5,10 @@ import { nodeFetchBuffer, getStreamFromUrl } from '@/bot/helpers/polyfill'
 import { MarkdownWsp } from '@kreisler/js-helpers'
 import { proto } from '@whiskeysockets/baileys'
 //
-const ExpReg = /^\/tt(?:\s+(https?:\/\/((?:www\.)?|(?:vm\.)?|(?:m\.)?)tiktok\.com\/(?:@[a-zA-Z0-9_]+\/)?(?:video\/)?([a-zA-Z0-9]+)))?/ims
+const ExpReg = /^\/tt(?:\s+(https?:\/\/((?:www\.)?|(?:vm\.)?|(?:vt\.)?|(?:m\.)?)tiktok\.com\/(?:@[a-zA-Z0-9_]+\/)?(?:video\/)?([a-zA-Z0-9]+)))?/ims
 function validateDomainTikTok (url: string): boolean {
   const [, , domain] = url.split('/')
-  const array = ['www.tiktok.com', 'vm.tiktok.com']
+  const array = ['www.tiktok.com', 'vm.tiktok.com', 'vt.tiktok.com']
   return array.some((e) => e === domain)
 }
 export default {

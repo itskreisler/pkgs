@@ -308,6 +308,10 @@ class Whatsapp {
   }
 
   async WAConnect() {
+    if (this.sock !== null) {
+      console.log('Ya esta conectado')
+      this.sock = null as unknown as WASocket
+    }
     const { state, saveCreds } = await useMultiFileAuthState(this.folderCreds)
     this.sock = makeWASocket({
       auth: state,
@@ -316,7 +320,8 @@ class Whatsapp {
       // browser: ['KLEYBOT', '', '']
     })
     this.saveCreds = saveCreds
-    this.start()
+    // this.start()
+    this.loadEvents()
   }
 
   /**
@@ -356,7 +361,8 @@ class Whatsapp {
 
   async loadEvents() {
     console.log('(⏳) Cargando eventos')
-
+    this.sock.ev.removeAllListeners('creds.update')
+    this.sock.ev.removeAllListeners('connection.update')
     this.sock.ev.removeAllListeners('messages.upsert')
 
     try {
