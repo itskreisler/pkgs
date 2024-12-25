@@ -1,0 +1,76 @@
+{
+  "name": "@kreisler/bot-tl-ts",
+  "version": "1.0.0",
+  "description": "A simple Telegram bot using TypeScript",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "sideEffects": false,
+  "files": [
+    "dist/**"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "build:all": "tsup --entry.index src/index.ts --format esm,cjs --dts",
+    "build:index": "tsup src/index.ts --format esm,cjs --onSuccess \"cp -r dist/* tmpbot\"",
+    "build:bot": "rm -rf dist/* tmpbot/* && tsup --entry.example src/example.ts --format esm --onSuccess \"mv dist/* tmpbot\"",
+    "watch": "rm -rf dist/* && tsup && tsup src/index.ts --watch --onSuccess \"node dist/index.js\"",
+    "watch:test": "rm -rf dist/* && tsup --entry.test test/index.test.ts --format esm --watch --onSuccess \"node dist/test.js\"",
+    "watch:services": "rm -rf dist/* && npx tsup --entry.services src/bot/services/ig.services.ts --format esm --watch --onSuccess \"node dist/services.js\"",
+    "test": "rm -rf dist/* && tsup src/bot/client.ts --watch --onSuccess \"node dist/client.js\"",
+    "test:ts": "rm -rf dist/* && tsup test/test.spec.ts --format esm --onSuccess \"cross-env NODE_ENV=test node --test dist/test.spec.js\"",
+    "pp": "npm publish --access public"
+  },
+  "keywords": [
+    "fetch",
+    "api",
+    "request",
+    "http",
+    "https"
+  ],
+  "funding": {
+    "type": "buymeacoffee",
+    "url": "https://www.buymeacoffee.com/kreisler"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/itskreisler/pkgs.git"
+  },
+  "homepage": "https://github.com/itskreisler/pkgs/tree/master/packages/createapi#readme",
+  "bugs": {
+    "url": "https://github.com/itskreisler/pkgs/issues"
+  },
+  "author": {
+    "email": "cvkreisler@outlook.com",
+    "name": "Kreisler",
+    "url": "https://linktr.ee/itskreisler"
+  },
+  "contributors": [
+    {
+      "name": "Kreisler Ramirez Sierra",
+      "email": "cvkreisler@outlook.com",
+      "url": "https://linktr.ee/itskreisler"
+    }
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jsdom": "^21.1.7",
+    "@types/node-telegram-bot-api": "^0.64.7"
+  },
+  "dependencies": {
+    "@kreisler/createapi": "^3.0.0",
+    "@kreisler/debounce": "^1.0.1",
+    "@kreisler/exec-promise": "latest",
+    "@kreisler/js-cron": "latest",
+    "@kreisler/js-google-translate-free": "^4.0.2",
+    "@kreisler/js-helpers": "^4.6.2",
+    "@kreisler/try-catch": "^2.2.2",
+    "cloudscraper": "^4.6.0",
+    "file-type": "^19.6.0",
+    "jsdom": "^25.0.1",
+    "node-telegram-bot-api": "^0.66.0",
+    "tsup": "^8.3.5",
+    "zustand": "^5.0.2"
+  }
+}
