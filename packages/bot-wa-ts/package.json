@@ -18,7 +18,7 @@
     "watch": "rm -rf dist/* && tsup src/index.ts --watch --onSuccess \"node dist/index.js\"",
     "watch:test": "rm -rf dist/* && tsup --entry.test test/index.test.ts --format esm --watch --onSuccess \"node dist/test.js\"",
     "watch:server": "tsup src/api/server.ts --watch --onSuccess \"node dist/server.js\"",
-    "watch:services": "rm -rf dist/* && npx tsup --entry.services src/bot/services/ig.services.ts --format esm --watch --onSuccess \"node dist/services.js\"",
+    "watch:services": "rm -rf dist/* && npx tsup --entry.services src/bot/services/anime.services.ts --format esm --watch --onSuccess \"node dist/services.js\"",
     "test": "rm -rf dist/* && tsup src/bot/client.ts --watch --onSuccess \"node dist/client.js\"",
     "test:ts": "rm -rf dist/* && tsup test/test.spec.ts --format esm --onSuccess \"cross-env NODE_ENV=test node --test dist/test.spec.js\"",
     "docs": "typedoc --out docs src/index.ts",
