@@ -15,6 +15,7 @@ interface GlobalState {
   toggleNotifications: (groupId: string, cmd: CMDS, state: boolean) => void // Activa/Desactiva notificaciones.
   addCommandData: (groupId: string, cmd: CMDS, newData: { [key: string]: any }) => void // Agrega datos.
   getCommandData: (groupId: string, cmd: CMDS) => Array<{ [key: string]: any }> // Obtiene datos.
+  delAllCommandData: (groupId: string, cmd: CMDS, id: string) => void // Elimina datos.
 }
 const GlobalDB = useStore<GlobalState>({
   nameStorage: 'tmpbot/globalDB',
@@ -29,6 +30,19 @@ const GlobalDB = useStore<GlobalState>({
         const group = state.groupDatabases[groupId] ?? {}
         const commandData = group[cmd] ?? { data: [], notifications: false }
         commandData.notifications = active
+        return {
+          groupDatabases: {
+            ...state.groupDatabases,
+            [groupId]: { ...group, [cmd]: commandData }
+          }
+        }
+      })
+    },
+    delAllCommandData(groupId: string, cmd: string) {
+      set((state) => {
+        const group = state.groupDatabases[groupId] ?? {}
+        const commandData = group[cmd] ?? { data: [], notifications: false }
+        commandData.data = []
         return {
           groupDatabases: {
             ...state.groupDatabases,

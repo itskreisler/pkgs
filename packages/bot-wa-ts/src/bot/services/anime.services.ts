@@ -43,9 +43,9 @@ export interface IServer {
   code: string
 }
 export function ScraperService() {
-
+  return globalThis.fetch
 }
-ScraperService.fetchData = async (options: OptionsWithUrl): Promise<string> => {
+ScraperService.fetchData = async (options: OptionsWithUrl & RequestInit): Promise<string> => {
   try {
     const response = await cloudscraper(options)
     return response
@@ -68,7 +68,7 @@ interface ScraperInterface {
 }
 export class LatAnimeScraper implements ScraperInterface {
   async latestEpisodesAdded(): Promise<IEpisodeAdded[]> {
-    const data = await ScraperService.fetchData({ uri: URIS.LAT_BASE_URL, headers: DEFAULT_HEADERS })
+    const data = await ScraperService.fetchData({ url: URIS.LAT_BASE_URL, headers: DEFAULT_HEADERS })
     const { $$ } = jQuery(data)
     const promises = [...$$('.col-6.col-md-6.col-lg-3.mb-3')].map(async ($element) => {
       // const type = $element.querySelector('div.info_cap span')?.textContent?.trim() ?? ''
@@ -90,7 +90,7 @@ export class LatAnimeScraper implements ScraperInterface {
   }
 
   AnimeServers = async (id: string) => {
-    const res = await cloudscraper(URIS.LAT_ANIME_VIDEO_URL.concat(id))
+    const res = await ScraperService.fetchData({ url: URIS.LAT_ANIME_VIDEO_URL.concat(id) })
     const { $$ } = jQuery(res)
     // Link para ver online
     const watchOnline = [...$$('.cap_repro.d-flex.flex-wrap .play-video')].reduce<IServer[]>((accumulatedServers, $element) => {
@@ -118,7 +118,7 @@ export class LatAnimeScraper implements ScraperInterface {
 }
 export class AnimeFLVScraper implements ScraperInterface {
   async latestEpisodesAdded(): Promise<IEpisodeAdded[]> {
-    const data = await ScraperService.fetchData({ uri: URIS.FLV_BASE_URL, headers: DEFAULT_HEADERS })
+    const data = await ScraperService.fetchData({ url: URIS.FLV_BASE_URL, headers: DEFAULT_HEADERS })
     const { $$ } = jQuery(data)
     const promises = [...$$('div.Container ul.ListEpisodios li')].map(async ($element) => {
       const id = $element.querySelector('a')?.getAttribute('href')?.replace('/ver/', '').trim() ?? ''
@@ -140,7 +140,7 @@ export class AnimeFLVScraper implements ScraperInterface {
   }
 
   AnimeServers: ((id: string) => Promise<WatchDownload>) = async (id: string) => {
-    const res = await cloudscraper(URIS.FLV_ANIME_VIDEO_URL.concat(id))
+    const res = await ScraperService.fetchData({ url: URIS.FLV_ANIME_VIDEO_URL.concat(id) })
     const { $$ } = jQuery(res)
     const $scripts = $$('script')
     // Buscamos el script que contiene los servidores
@@ -169,3 +169,8 @@ export class AnimeFLVScraper implements ScraperInterface {
     }
   }
 }
+
+/* const x = [...document.querySelectorAll('.episodes .episode')].map((e: HTMLElement) => ({
+  episode: Number(e.innerText?.trim().match(/(\d+)$/).pop()),
+  title: e.innerText?.trim().replace(/(\d+)$/, '').trim()
+})) */
