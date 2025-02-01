@@ -79,7 +79,7 @@ export class LatAnimeScraper implements ScraperInterface {
       // const type = $element.querySelector('div.info_cap span')?.textContent?.trim() ?? ''
       const id = $element.querySelector('a')?.getAttribute('href')?.split('/ver/').pop() ?? ''
       const title = $element.querySelector('h2')?.textContent?.split(' - ')[1] ?? ''
-      const episode = Number($element.querySelector('h2')?.textContent?.split(' - ')[0] ?? 0)
+      const episode = Number($element.querySelector('h2')?.textContent?.split(' - ')[0]?.match(/\d+/)?.shift() ?? 0)
       const poster = $element.querySelector('div.imgrec img')?.getAttribute('data-src') ?? ''
       const servers = await this.AnimeServers(id)
       return {
