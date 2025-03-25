@@ -16,7 +16,7 @@ export default {
    * @param {ContextMsg}
    * @param {RegExpMatchArray} match
    */
-  async cmd (client: Whatsapp, { wamsg, msg }: ContextMsg, match: RegExpMatchArray): Promise<void> {
+  async cmd(client: Whatsapp, { wamsg, msg }: ContextMsg, match: RegExpMatchArray): Promise<void> {
     const from: string = wamsg.key.remoteJid as string
     const [, accion] = match as [string, 'on' | 'off' | 'list' | 'start' | 'clear' | 'fetch' | undefined]
     const urlBase = 'https://somoskudasai.com/'
@@ -28,6 +28,8 @@ export default {
     }
     switch (accion) {
       case 'clear': {
+        GlobalDB.getState().addCommandData(from, EConstCMD.Kudasai, [])
+        await msg.reply({ text: 'Datos eliminados' })
         break
       }
       case 'fetch': {

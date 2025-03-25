@@ -1,5 +1,5 @@
 import Whatsapp from '@/bot/main'
-import { WAMessage } from '@whiskeysockets/baileys'
+import { WAMessage } from 'baileys'
 import { Message } from './message'
 import { type Readable } from 'stream'
 //

@@ -9,7 +9,7 @@ import {
   type DownloadableMessage,
   type MediaDownloadOptions,
   proto
-} from '@whiskeysockets/baileys'
+} from 'baileys'
 import pino from 'pino'
 import { Sticker, createSticker, type IStickerOptions, StickerTypes } from 'wa-sticker-formatter'
 import { CommandImport, WaMessageTypes, type MessageBody, type BodyMsg } from '@/bot/interfaces/inter'
@@ -33,7 +33,7 @@ class Whatsapp {
   constructor() {
     this.logger = pino({ level: 'silent' })
     /**
-     * @type {import('@whiskeysockets/baileys').WASocket}
+     * @type {import('baileys').WASocket}
      */
     this.sock = null as unknown as WASocket
     this.status = 0
@@ -47,7 +47,7 @@ class Whatsapp {
   }
 
   //
-  async sendMsgGroup (
+  async sendMsgGroup(
     jids: string | string[],
     media: AnyMessageContent[] | Promise<AnyMessageContent[]>,
     options?: MiscMessageGenerationOptions,
@@ -195,7 +195,7 @@ class Whatsapp {
   }
 
   async getLogger() { return this.logger }
-  async imageUrl2Base64 (url: string): Promise<[Buffer, string]> {
+  async imageUrl2Base64(url: string): Promise<[Buffer, string]> {
     const req = await globalThis.fetch(url, {
       method: 'GET'
     })
@@ -213,12 +213,12 @@ class Whatsapp {
     return [Buffer.from(res), mimeType]
   }
 
-  buffer2base64 (buffer: Buffer, mimeType: `image/${string | 'png'}`) {
+  buffer2base64(buffer: Buffer, mimeType: `image/${string | 'png'}`) {
     const BASE_64 = 'base64'
     return `data:${mimeType};${BASE_64},`.concat(buffer.toString(BASE_64))
   }
 
-  async stickerGenerator (mediaData: string | Buffer): Promise<Buffer> {
+  async stickerGenerator(mediaData: string | Buffer): Promise<Buffer> {
     const stickerOption: IStickerOptions = {
       pack: 'sticker.ly/user/itskreisler',
       author: 'itskreisler',
@@ -229,7 +229,7 @@ class Whatsapp {
     return generateSticker
   }
 
-  async stickerGeneratorFromPath (image: string | Buffer) {
+  async stickerGeneratorFromPath(image: string | Buffer) {
     const sticker = new Sticker(image, {
       pack: 'sticker.ly/user/itskreisler',
       author: 'itskreisler',
@@ -246,7 +246,7 @@ class Whatsapp {
    * @param opt
    * @returns {Promise<Buffer>}
    */
-  async getMedia (msg: DownloadableMessage, type: MediaType, opt?: MediaDownloadOptions): Promise<Buffer> {
+  async getMedia(msg: DownloadableMessage, type: MediaType, opt?: MediaDownloadOptions): Promise<Buffer> {
     const stream = await downloadContentFromMessage(msg, type, opt)
     let buffer = Buffer.from([])
     for await (const chunk of stream) {
@@ -261,13 +261,13 @@ class Whatsapp {
    * @param {any} obj - Objeto en el que se buscará la propiedad
    * @returns {boolean}
    */
-  hasOwnProp (obj: any, prop: string): boolean {
+  hasOwnProp(obj: any, prop: string): boolean {
     // Dividir la propiedad en partes usando el punto como separador
     const parts = prop.split('.')
 
     // Recorrer cada parte de la propiedad
     for (let i = 0; i < parts.length; i++) {
-    // Verificar si el objeto tiene la propiedad en cuestión
+      // Verificar si el objeto tiene la propiedad en cuestión
       if (obj === null || typeof obj === 'undefined') return false as boolean
       if (parts[i] === null || typeof parts[i] === 'undefined') return false as boolean
       if (!Object.prototype.hasOwnProperty.call(obj, parts[i])) {
@@ -316,8 +316,8 @@ class Whatsapp {
     this.sock = makeWASocket({
       auth: state,
       logger: this.logger,
-      printQRInTerminal: true
-      // browser: ['KLEYBOT', '', '']
+      // printQRInTerminal: true,
+      browser: ['KLEYBOT_BUSINESS', '', '']
     })
     this.saveCreds = saveCreds
     // this.start()
@@ -326,8 +326,8 @@ class Whatsapp {
 
   /**
    * @param {string} jid
-   * @param {import('@whiskeysockets/baileys').AnyMessageContent} str
-   * @param {import('@whiskeysockets/baileys').MiscMessageGenerationOptions} [op={}]
+   * @param {import('baileys').AnyMessageContent} str
+   * @param {import('baileys').MiscMessageGenerationOptions} [op={}]
    */
   async sendText(jid: string, str: AnyMessageContent, op: MiscMessageGenerationOptions = {}) {
     await this.sock.sendMessage(jid, str, op)
@@ -361,9 +361,9 @@ class Whatsapp {
 
   async loadEvents() {
     console.log('(⏳) Cargando eventos')
-    this.sock.ev.removeAllListeners('creds.update')
-    this.sock.ev.removeAllListeners('connection.update')
-    this.sock.ev.removeAllListeners('messages.upsert')
+    //this.sock.ev.removeAllListeners('creds.update')
+    //this.sock.ev.removeAllListeners('connection.update')
+    //this.sock.ev.removeAllListeners('messages.upsert')
 
     try {
       // creds.update

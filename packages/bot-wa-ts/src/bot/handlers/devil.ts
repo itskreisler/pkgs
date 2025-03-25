@@ -4,10 +4,12 @@ import {
   //, buildCronExpression
 } from '@kreisler/js-cron'
 import { CMDS, GlobalDB, CmdActions } from '@/bot/services/zustand.services'
-import { IPostMedia } from '../interfaces/inter'
+import { type IPostMedia } from '../interfaces/inter'
+import { type IKudasaiData } from '@/bot/services/apis.services'
+import { type IEpisodeAdded } from '@/bot/services/anime.services'
 const CRON_JOB = '0 */15 6-23 * * * *'
 // const CRON_JOB = buildCronExpression({ second: '*/20' })
-export async function devil (client: Whatsapp): Promise<void> {
+export async function devil(client: Whatsapp): Promise<void> {
   const deamon = new JsCron()
   const { getState } = GlobalDB
   deamon.createTask('suscripciones', CRON_JOB, async () => {
@@ -28,7 +30,7 @@ export async function devil (client: Whatsapp): Promise<void> {
           console.log('No hay acciones para el comando', idGroup, cmd)
           continue
         }
-        const latestData = await input() as Array<{ id: string }>
+        const latestData = await input() as Array<IEpisodeAdded & IKudasaiData>
         const newData = latestData.filter(i => typeof data.find(o => o.id === i.id) === 'undefined')
         if (newData.length === 0) {
           console.log('No hay nuevos datos', idGroup, cmd)
@@ -36,15 +38,20 @@ export async function devil (client: Whatsapp): Promise<void> {
         }
         console.log('Nuevos datos', newData.length, idGroup, cmd)
 
-        const media = output(async function() {
+        const media = output(async function () {
           return await Promise.resolve(newData)
         }) as IPostMedia[]
-        client.sendMsgGroup(idGroup, media).finally(() => {
-          // registrar los nuevos datos
-          const oldSize = data.length
-          getState().addCommandData(idGroup, cmd, newData)
-          console.log('Tamano de datos: old=', oldSize, ' new=', data.length, ' cmd=', cmd, ' group=', idGroup)
-        })
+        client.sendMsgGroup(idGroup, media)
+          .then(() => {
+            // registrar los nuevos datos
+            const oldSize = data.length
+            getState().addCommandData(idGroup, cmd, newData)
+            console.log('Tamano de datos: old=', oldSize, ' new=', data.length, ' cmd=', cmd, ' group=', idGroup)
+          })
+          .catch(err => {
+            console.error('Error al enviar mensajes', err)
+            client.sendText(idGroup, { text: `❌Error al enviar ${data.length} mensajes` })
+          })
       }
     }
   })

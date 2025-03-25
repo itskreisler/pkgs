@@ -1,7 +1,7 @@
 import {
   type WAMessage,
   type MessageUpsertType
-} from '@whiskeysockets/baileys'
+} from 'baileys'
 import type Whatsapp from '@/bot/main'
 import { BOT_PREFIX } from '@/bot/helpers/env'
 import { type ContextMsg, type decounceMessage } from '@/bot/interfaces/inter'
@@ -22,7 +22,7 @@ const messageDebounced = debounce(messageHandler, 2500, {
     )
   }
 })
-async function messageHandler ({ client, context, comando, ExpReg }: decounceMessage): Promise<void> {
+async function messageHandler({ client, context, comando, ExpReg }: decounceMessage): Promise<void> {
   // @ts-expect-error
   const match = context.body.match(ExpReg) as RegExpMatchArray
   await comando.cmd(client, context, match)
@@ -30,9 +30,9 @@ async function messageHandler ({ client, context, comando, ExpReg }: decounceMes
 /**
  * @description Manejador de eventos de mensajes
  * @param {Whatsapp} client
- * @param {{ messages: import("@whiskeysockets/baileys").WAMessage[], type: import("@whiskeysockets/baileys").MessageUpsertType }} content
+ * @param {{ messages: import("baileys").WAMessage[], type: import("baileys").MessageUpsertType }} content
  */
-export async function handler (client: Whatsapp, content: {
+export async function handler(client: Whatsapp, content: {
   messages: WAMessage[]
   type: MessageUpsertType
 }): Promise<void> {

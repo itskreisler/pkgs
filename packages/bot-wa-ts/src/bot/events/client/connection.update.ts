@@ -1,11 +1,12 @@
-import { ConnectionState, DisconnectReason } from '@whiskeysockets/baileys'
+import { ConnectionState, DisconnectReason } from 'baileys'
 import { WaConnectionState } from '@/bot/interfaces/inter'
 import { Boom } from '@hapi/boom'
+import qrcode from 'qrcode-terminal'
 //
 
 //
-export async function handler (client: import('@/bot/main').Whatsapp, update: Partial<ConnectionState>): Promise<void> {
-  const { connection, lastDisconnect } = update
+export async function handler(client: import('@/bot/main').Whatsapp, update: Partial<ConnectionState>): Promise<void> {
+  const { connection, lastDisconnect, qr } = update
   if (connection === WaConnectionState.close) {
     console.log('BOT WHATSAPP ❌')
     /*
@@ -13,8 +14,9 @@ export async function handler (client: import('@/bot/main').Whatsapp, update: Pa
     fs.rmSync(client.folderCreds, { recursive: true })
     console.log('Credenciales eliminadas')
     */
-    const koneksiUlang = (lastDisconnect?.error as Boom)?.output.payload.statusCode !== DisconnectReason.loggedOut
-    if (koneksiUlang) {
+    const razon1 = (lastDisconnect?.error as Boom)?.output?.statusCode !== DisconnectReason.loggedOut
+    const razon2 = (lastDisconnect?.error as Boom)?.output.payload.statusCode !== DisconnectReason.loggedOut
+    if (razon1 || razon2) {
       console.log('BOT WHATSAPP ⏳')
       client.WAConnect()
     }
@@ -26,10 +28,8 @@ export async function handler (client: import('@/bot/main').Whatsapp, update: Pa
     client.qr = null
   } else {
     console.log('BOT WHATSAPP 👾')
-    const QR = !(update.qr == null)
-    // console.log({ QR })
-    if (QR) {
-      // qrcode.generate(QR, { small: true })
+    if (typeof qr === 'string') {
+      qrcode.generate(qr, { small: true })
       client.status = 1
       client.qr = update.qr
     } else {

@@ -57,7 +57,13 @@ const GlobalDB = useStore<GlobalState>({
         const commandData = group[cmd] ?? { data: [], notifications: false }
         const temp = Array.from(
           new Map([...commandData.data, ...newData].map(obj => [obj.id, obj])).values()
-        )
+        ).map(item => {
+          const { id, title, episode, category, slug } = item
+          if (slug) {
+            return { title, category, slug }
+          }
+          return { id, title, episode }
+        })
         commandData.data = temp
         return {
           groupDatabases: {

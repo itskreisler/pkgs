@@ -10,9 +10,10 @@ import {
   WAMessage,
   WASocket,
   type BaileysEventMap,
-  proto
-} from '@whiskeysockets/baileys'
-import pino from 'pino'
+  proto,
+  fetchLatestBaileysVersion
+} from 'baileys'
+import P, { type Logger } from 'pino'
 import { Boom } from '@hapi/boom'
 import { WaConnectionState } from '@/bot/interfaces/inter'
 //
@@ -21,26 +22,30 @@ export interface ClientOptions {
   shouldReconnect?: boolean
   baileysOpts?: Partial<SocketConfig>
 }
+
 export class ClientWsp extends EventEmitter {
   sock: WASocket | ReturnType<typeof makeWASocket>
   opts?: ClientOptions
-  logger: any
+  logger: Logger | undefined
   qr: string | null | undefined
   private saveCreds: () => Promise<void>
   constructor(options?: ClientOptions) {
     super()
-    this.logger = pino({ level: 'silent' })
+    this.logger = P({ timestamp: () => `,"time":"${new Date().toJSON()}"` }, P.destination('./wa-logs.txt'))
+    this.logger.level = 'trace'
     this.sock = null as unknown as WASocket
     this.qr = null
     this.saveCreds = null as unknown as () => Promise<void>
     this.opts = options
   }
 
-  async initialize () {
+  async initialize() {
     const { state, saveCreds } = await useMultiFileAuthState('auth_info/'.concat(this.opts?.id ?? 'default'))
+    const { version, isLatest } = await fetchLatestBaileysVersion()
     this.sock = makeWASocket({
       auth: state,
       logger: this.logger,
+      version,
       printQRInTerminal: false
     })
     this.saveCreds = saveCreds
@@ -51,16 +56,19 @@ export class ClientWsp extends EventEmitter {
 
   }
 
-  private setupEventsHandlers () {
+  private setupEventsHandlers() {
     this.sock.ev.on('creds.update', this.saveCreds)
     this.sock.ev.on('connection.update', (update: Partial<ConnectionState>) => {
       this.emit('connectionUpdate', update)
       const { connection, lastDisconnect, qr } = update
       if (connection === WaConnectionState.close) {
         this.emit('close', lastDisconnect)
-        const koneksiUlang = (lastDisconnect?.error as Boom)?.output.payload.statusCode !== DisconnectReason.loggedOut
-        if (koneksiUlang) {
+        const razon1 = (lastDisconnect?.error as Boom)?.output?.statusCode !== DisconnectReason.loggedOut
+        const razon2 = (lastDisconnect?.error as Boom)?.output.payload.statusCode !== DisconnectReason.loggedOut
+        if (razon1 || razon2) {
           this.initialize()
+        } else {
+          console.log('Connection closed. You are logged out.')
         }
         client.qr = null
       } else if (connection === WaConnectionState.open) {
@@ -93,10 +101,12 @@ export declare interface ClientWsp {
 
 interface ClientEvents extends BaileysEventMap {
   message: proto.IWebMessageInfo
-  wamessage: { content: {
-    messages: WAMessage[]
-    type: MessageUpsertType
-  } }
+  wamessage: {
+    content: {
+      messages: WAMessage[]
+      type: MessageUpsertType
+    }
+  }
   qr: string
   connectionUpdate: Partial<ConnectionState>
   username: string | undefined
@@ -113,11 +123,11 @@ const client = new ClientWsp()
 
 client.on('qr', (qr) => {
   // Generate and scan this code with your phone
-  console.log('QR RECEIVED', qr)
+  // console.log('QR RECEIVED', qr)
   qrcode.generate(qr, { small: true })
 })
 client.on('wamessage', (message) => {
-  console.log('MESSAGE RECEIVED', message)
+  console.dir('MESSAGE RECEIVED', JSON.stringify(message, null, 2))
 })
 
 client.initialize()

@@ -1,4 +1,4 @@
-import { AnyMessageContent, downloadMediaMessage, downloadContentFromMessage, GroupMetadata, MiscMessageGenerationOptions, proto, WABusinessProfile, DownloadableMessage } from '@whiskeysockets/baileys'
+import { AnyMessageContent, downloadMediaMessage, downloadContentFromMessage, GroupMetadata, MiscMessageGenerationOptions, proto, WABusinessProfile, DownloadableMessage } from 'baileys'
 import { Media } from './media'
 import P from 'pino'
 import { SelectTypesDL, WaMessageTypes } from './inter'

@@ -3,10 +3,10 @@ import type Whatsapp from '@/bot/main'
 import { tikwm, TikTokStatusCodes, sizeMB } from '@/bot/services/tiktok.services'
 import { nodeFetchBuffer, getStreamFromUrl } from '@/bot/helpers/polyfill'
 import { MarkdownWsp } from '@kreisler/js-helpers'
-import { proto } from '@whiskeysockets/baileys'
+import { proto } from 'baileys'
 //
 const ExpReg = /^\/tt(?:\s+(https?:\/\/((?:www\.)?|(?:vm\.)?|(?:vt\.)?|(?:m\.)?)tiktok\.com\/(?:@[a-zA-Z0-9_]+\/)?(?:video\/)?([a-zA-Z0-9]+)))?/ims
-function validateDomainTikTok (url: string): boolean {
+function validateDomainTikTok(url: string): boolean {
   const [, , domain] = url.split('/')
   const array = ['www.tiktok.com', 'vm.tiktok.com', 'vt.tiktok.com']
   return array.some((e) => e === domain)
@@ -21,7 +21,7 @@ export default {
    * @param {ContextMsg}
    * @param {RegExpMatchArray} match
    */
-  async cmd (client: Whatsapp, { wamsg, msg, quotedBody }: ContextMsg, match: RegExpMatchArray): Promise<void> {
+  async cmd(client: Whatsapp, { wamsg, msg, quotedBody }: ContextMsg, match: RegExpMatchArray): Promise<void> {
     const [, _url] = match as [string, string | undefined]
     let url = _url
     if (typeof quotedBody?.body !== 'undefined') {
