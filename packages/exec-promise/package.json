@@ -41,9 +41,5 @@
       "url": "https://linktr.ee/itskreisler"
     }
   ],
-  "license": "MIT",
-  "devDependencies": {
-    "typedoc": "^0.25.11"
-  },
-  "dependencies": {}
+  "license": "MIT"
 }

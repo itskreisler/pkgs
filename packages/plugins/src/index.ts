@@ -13,8 +13,8 @@ type GreetUser = (user: User) => string;
 
 // Example implementation of the GreetUser function
 const greetUser: GreetUser = (user) => {
-    return `Hello, ${user.name}! Your email is ${user.email}.`;
-};
+    return `Hello, ${user.name}! Your email is ${user.email}.`
+}
 
 // Example usage
 const exampleUser: User = {
@@ -22,6 +22,6 @@ const exampleUser: User = {
     name: 'John Doe',
     email: 'john.doe@example.com',
     isActive: true
-};
+}
 
-console.log(greetUser(exampleUser));
+console.log(greetUser(exampleUser))

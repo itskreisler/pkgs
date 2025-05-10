@@ -48,10 +48,5 @@
     }
   ],
   "license": "MIT",
-  "devDependencies": {
-    "typedoc": "^0.25.11",
-    "nx": "19.0.4"
-  },
-  "dependencies": {},
   "nx": {}
 }

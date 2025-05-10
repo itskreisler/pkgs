@@ -52,9 +52,6 @@
     }
   ],
   "license": "MIT",
-  "devDependencies": {
-    "typedoc": "^0.25.11"
-  },
   "dependencies": {
     "@types/node": "^20.11.25",
     "path": "^0.12.7",

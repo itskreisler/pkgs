@@ -61,8 +61,7 @@
   "devDependencies": {
     "@types/crypto-js": "^4.2.2",
     "@types/jsdom": "^21.1.7",
-    "@types/qrcode-terminal": "^0.12.2",
-    "typedoc": "^0.26.6"
+    "@types/qrcode-terminal": "^0.12.2"
   },
   "dependencies": {
     "@hapi/boom": "^10.0.1",
@@ -80,7 +79,6 @@
     "jsdom": "^25.0.1",
     "pino": "9.6.0",
     "qrcode-terminal": "^0.12.0",
-    "tsup": "^8.4.0",
     "wa-sticker-formatter": "^4.4.4",
     "zustand": "^5.0.1"
   }
