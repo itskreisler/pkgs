@@ -20,7 +20,9 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "dependencies": {},
+  "dependencies": {
+    "zustand": "^5.0.4"
+  },
   "devDependencies": {
     "@eslint/js": "latest",
     "@types/node": "latest",

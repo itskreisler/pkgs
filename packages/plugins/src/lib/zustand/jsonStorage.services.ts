@@ -1,8 +1,19 @@
 import fs from 'fs'
-import { create, type StateCreator } from 'zustand'
+import path from 'path'
+import { createStore, type StateCreator } from 'zustand/vanilla'
 import { createJSONStorage, persist } from 'zustand/middleware'
-export function jsonStorage(filePath: string = './storage.json') {
+
+/**
+ * 
+ * @param {string} file_path
+ * @returns 
+ */
+export function jsonStorage(file_path = './storage.json') {
   // Asegúrate de que el archivo exista
+  const filePath = file_path.endsWith('.json') ? file_path : file_path.concat('.json')
+  // Crear directorios de forma recursiva si se para un ./tmp/a/b/c.json
+  const dirPath = path.dirname(filePath)
+  fs.mkdirSync(dirPath, { recursive: true })
   if (!fs.existsSync(filePath)) {
     fs.writeFileSync(filePath, JSON.stringify({}))
   }
@@ -53,36 +64,44 @@ export function jsonStorage(filePath: string = './storage.json') {
       const storage = readStorage()
       storage[key] = value
       writeStorage(storage)
+    },
+    setItems(items: Record<string, string>) {
+      const storage = readStorage()
+      for (const key in items) {
+        storage[key] = items[key]
+      }
+      writeStorage(storage)
     }
+
   }
 }
-//
+
+/**
+ * 
+ * @example
+ * export const useCounterStore = useStore<{
+ * count: number
+ * increment: () => void
+ * decrement: () => void
+ * reset: () => void
+ * }>({
+ *    nameStorage: 'counter',
+ *    initialState: (set) => ({
+ *      count: 0,
+ *      increment: () => set((state) => ({ count: state.count + 1 })),
+ *      decrement: () => set((state) => ({ count: state.count - 1 })),
+ *      reset: () => set({ count: 0 })
+ *    })
+ *  })
+ */
 export const useStore = <S>(
   config: {
     nameStorage: string
     initialState: StateCreator<S>
   }
-) => create(
-    persist<S>(config.initialState, {
-      name: config.nameStorage,
-      storage: createJSONStorage(() => jsonStorage(config.nameStorage.endsWith('.json')
-        ? config.nameStorage
-        : config.nameStorage.concat('.json')))
-    })
-  )
-/*
-export const useCounterStore = useStore<{
-  count: number
-  increment: () => void
-  decrement: () => void
-  reset: () => void
-}>({
-      nameStorage: 'counter',
-      initialState: (set) => ({
-        count: 0,
-        increment: () => set((state) => ({ count: state.count + 1 })),
-        decrement: () => set((state) => ({ count: state.count - 1 })),
-        reset: () => set({ count: 0 })
-      })
-    })
-*/
+) => createStore(
+  persist<S>(config.initialState, {
+    name: config.nameStorage,
+    storage: createJSONStorage(() => jsonStorage(config.nameStorage))
+  })
+)
