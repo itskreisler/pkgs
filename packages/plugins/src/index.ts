@@ -12,12 +12,12 @@ interface User {
 type GreetUser = (user: User) => string;
 
 // Example implementation of the GreetUser function
-const greetUser: GreetUser = (user) => {
+export const greetUser: GreetUser = (user) => {
     return `Hello, ${user.name}! Your email is ${user.email}.`
 }
 
 // Example usage
-const exampleUser: User = {
+export const exampleUser: User = {
     id: 1,
     name: 'John Doe',
     email: 'john.doe@example.com',

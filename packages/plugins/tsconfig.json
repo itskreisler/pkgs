@@ -2,15 +2,14 @@
   "$schema": "https://json.schemastore.org/tsconfig",
   "display": "Default",
   "compilerOptions": {
-    "target": "ES2016",
-    "module": "CommonJS",
-    "outDir": "./dist",
-    "rootDir": "./src",
+    "target": "ES2024",
+    "module": "ES2022",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "declaration": true,
+    "moduleResolution": "node",
     "resolveJsonModule": true,
     "noUnusedLocals": false,
     "noImplicitThis": false,
@@ -23,11 +22,10 @@
     }
   },
   "include": [
-    "src/**/*"
+    "."
   ],
   "exclude": [
     "node_modules",
-    "**.spec.ts",
     "dist",
     "build",
     "docs"

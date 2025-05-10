@@ -12,23 +12,25 @@
   "scripts": {
     "start": "tsx src/index.ts",
     "xtart": "npx -y tsx src/index.ts",
-    "watch": "tsup --entry.index src/index.ts --format esm --watch --onSuccess \"node dist/index.js\"",
-    "build": "tsup --entry.index src/index.ts --format esm,cjs --dts",
-    "test:esm": "tsup --entry.test src/index.ts --format esm --watch --onSuccess \"node dist/test.js\"",
-    "test:spec": "tsup test/test.spec.ts --format esm --onSuccess \"cross-env NODE_ENV=test node --test dist/test.spec.js\""
+    "watch": "tsup --entry.index src/index.ts --format esm --clean --watch --onSuccess \"node dist/index.js\"",
+    "build": "tsup --entry.index src/index.ts --format esm,cjs --dts --clean",
+    "test:esm": "tsup --entry.test src/index.ts --format esm --clean --onSuccess \"node dist/test.js\"",
+    "test:spec": "tsup test/test.spec.ts --format esm --clean --onSuccess \"cross-env NODE_ENV=test node --test dist/test.spec.js\""
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "dependencies": {},
   "devDependencies": {
-    "@eslint/js": "^9.26.0",
-    "@types/node": "^22.15.17",
-    "eslint": "^9.26.0",
-    "nodemon": "^3.1.10",
-    "ts-node": "^10.9.2",
-    "tsup": "^8.4.0",
-    "tsx": "^4.19.4",
-    "typescript": "^5.8.3",
-    "typescript-eslint": "^8.32.0"
+    "@eslint/js": "latest",
+    "@types/node": "latest",
+    "cross-env": "latest",
+    "eslint": "latest",
+    "nodemon": "latest",
+    "ts-node": "latest",
+    "tsup": "latest",
+    "tsx": "latest",
+    "typescript": "latest",
+    "typescript-eslint": "latest"
   }
 }
