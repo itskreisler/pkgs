@@ -21,6 +21,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "node-cache": "^5.1.2",
     "zustand": "^5.0.4"
   },
   "devDependencies": {

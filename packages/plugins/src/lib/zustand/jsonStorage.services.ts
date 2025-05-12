@@ -1,8 +1,5 @@
 import fs from 'fs'
 import path from 'path'
-import { createStore, type StateCreator } from 'zustand/vanilla'
-// import { create, type StateCreator  } from 'zustand'
-import { createJSONStorage, persist } from 'zustand/middleware'
 
 /**
  * 
@@ -76,35 +73,3 @@ export function jsonStorage(file_path = './storage.json') {
 
   }
 }
-
-/**
- * 
- * @example
- * export const useCounterStore = useStore<{
- * count: number
- * increment: () => void
- * decrement: () => void
- * reset: () => void
- * updateField: (field: string, value: any) => void
- * }>({
- *    nameStorage: 'counter',
- *    initialState: (set) => ({
- *      count: 0,
- *      increment: () => set((state) => ({ count: state.count + 1 })),
- *      decrement: () => set((state) => ({ count: state.count - 1 })),
- *      reset: () => set({ count: 0 }),
- *      updateField: (field, value) => set({ [field]: value })
- *    })
- *  })
- */
-export const useStore = <S>(
-  config: {
-    nameStorage: string
-    initialState: StateCreator<S>
-  }
-) => createStore(
-  persist<S>(config.initialState, {
-    name: config.nameStorage,
-    storage: createJSONStorage(() => jsonStorage(config.nameStorage))
-  })
-)
