@@ -26,11 +26,15 @@ export const usePersist = <S>(
     config: {
         nameStorage: string
         initialState: StateCreator<S>
+        replacer?: (key: string, value: any) => any
+        reviver?: (key: string, value: any) => any
     }
 ) => create(
     persist<S>(config.initialState, {
         name: config.nameStorage,
-        storage: createJSONStorage(() => jsonStorage(config.nameStorage))
+        storage: createJSONStorage(() => jsonStorage(config.nameStorage), {
+            replacer: config.replacer,
+            reviver: config.reviver
+        })
     })
 )
-

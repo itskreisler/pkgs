@@ -42,31 +42,3 @@ export function nodeCacheStorage(options: NodeCache.Options) {
 
     }
 }
-/*
-const tiempoDeVida = 10
-const cache = nodeCacheStorage({
-    stdTTL: tiempoDeVida,
-    checkperiod: tiempoDeVida + 10
-}) as Storage
-
-console.log('cache', cache.length)
-// añadir varios datos de prueba
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
-for (let i = 0; i < 10; i++) {
-    await sleep(1000)
-    cache.setItem(`key${i}`, `value${i}`)
-
-}
-console.log('cache', cache.length)
-let i = 0
-const intervalId = setInterval(() => {
-    for (const [key, value] of Object.entries(cache.entries())) {
-        console.log(key, value)
-    }
-    console.log('length', cache.length, i)
-    i++
-    if (i > 10) {
-        clearInterval(intervalId)
-    }
-}, 1000)
-*/
