@@ -87,12 +87,12 @@ export function createI18n<T extends Record<string, NestedTranslations>>(userCon
     return { useTranslations, config }
 }
 /*
-export const messages = {
+const messages = {
     en: {
         test: 'Hello {0}',
         world: 'World'
     }
-} as const
+}
 
 const { useTranslations, config } = createI18n({
     defaultLocale: 'en',

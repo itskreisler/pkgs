@@ -5,6 +5,11 @@
     "target": "ES2024",
     "module": "ES2022",
     "strict": true,
+    "outDir": "./dist",
+    "rootDirs": [
+      "./src",
+      "./test"
+    ],
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
@@ -28,6 +33,7 @@
     "node_modules",
     "dist",
     "build",
-    "docs"
+    "docs",
+    "tsup.config.ts",
   ]
 }
