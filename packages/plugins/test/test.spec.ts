@@ -6,12 +6,13 @@ import { describe, it, afterEach, before, after, beforeEach } from 'node:test'
 import assert from 'node:assert'
 
 // » IMPORT MODULES
-import { jsonStorage, useStore } from '@/index'
+import { jsonStorage } from '@/index'
 
 // ━━ TEST ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 // borrar los archivos json
 import fs from 'fs'
+import { usePersist } from '@/lib/zustand/zustandWrapper'
 const TEMP_STORAGE_PATH = 'temp-large-test'
 const storage = jsonStorage(TEMP_STORAGE_PATH)
 
@@ -38,9 +39,9 @@ after(() => {
     })
 })
 
-describe('useStore', () => {
+describe('usePersist', () => {
     it('should return state counter', () => {
-        const useCounterStore = useStore<{
+        const useCounterStore = usePersist<{
             count: number
             increment: () => void
             decrement: () => void
@@ -66,7 +67,7 @@ describe('useStore', () => {
 
     })
     it('should return state user', () => {
-        const useUserStore = useStore<{
+        const useUserStore = usePersist<{
             id: number
             name: string
             email: string
