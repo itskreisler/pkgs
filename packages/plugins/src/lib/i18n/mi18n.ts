@@ -57,7 +57,7 @@ const interpolateParams = (text: string, params?: (string | number)[], interpola
  * messages: {
  *    es: {
  *       test: 'Hola {0}',
- *      world: 'Mundo'
+ *       world: 'Mundo'
  *   }
  * }
  * })
@@ -71,8 +71,12 @@ export function createI18n<T extends Record<string, NestedTranslations>>(userCon
             ...(userConfig.messages || {})
         }
     }
-
     function useTranslations<Locale extends keyof T>(lang: Locale) {
+        /**
+         * @param {DotNotation<T[Locale]>} key - The key of the translation to retrieve.
+         * @param {...(string | number)[]} params - The parameters to interpolate in the translation.
+         * @returns {string} - The translated string with interpolated parameters.
+         */
         return function t(key: DotNotation<T[Locale]>, ...params: (string | number)[]): string {
             const langTranslations = config.messages[lang as string] || config.messages[config.defaultLocale] || {}
             const translation = getNestedValue(langTranslations, key as string)
