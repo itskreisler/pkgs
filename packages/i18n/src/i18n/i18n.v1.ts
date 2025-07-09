@@ -52,17 +52,21 @@ const interpolateParams = (text: string, params?: (string | number)[], interpola
 /**
  * 
  * @example 
- * const { useTranslations } = createI18n({
+ * const { useTranslations } = i18n({
  * defaultLocale: 'es',
  * messages: {
  *    es: {
  *       test: 'Hola {0}',
  *       world: 'Mundo'
+ *   },
+ *    en: {
+ *       test: 'Hello {0}',
+ *       world: 'World'
  *   }
  * }
  * })
  */
-export function createI18n<T extends Record<string, NestedTranslations>>(userConfig: Partial<I18nConfig> & { messages: T }) {
+export function i18n<T extends Record<string, NestedTranslations>>(userConfig: Partial<I18nConfig> & { messages: T }) {
     const config: I18nConfig = {
         ...defaultConfig,
         ...userConfig,
@@ -89,7 +93,7 @@ export function createI18n<T extends Record<string, NestedTranslations>>(userCon
     }
 
     return { useTranslations, config }
-}
+};
 /*
 const messages = {
     en: {
@@ -98,7 +102,7 @@ const messages = {
     }
 }
 
-const { useTranslations, config } = createI18n({
+const { useTranslations, config } = i18n({
     defaultLocale: 'en',
     messages
 })

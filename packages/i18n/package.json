@@ -1,0 +1,36 @@
+{
+  "name": "my-project",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist/**"
+  ],
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "xtart": "npx -y tsx src/index.ts",
+    "watch": "tsup --entry.index src/index.ts --format esm --clean --watch --onSuccess \"node dist/index.js\"",
+    "build": "tsup --entry.index src/index.ts --format esm,cjs --dts --clean",
+    "test:esm": "tsup --entry.test src/index.ts --format esm --clean --onSuccess \"node dist/test.js\"",
+    "test:spec": "tsup test/test.spec.ts --format esm --clean --onSuccess \"cross-env NODE_ENV=test node --test dist/test.spec.js\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {},
+  "devDependencies": {
+    "@eslint/js": "latest",
+    "@types/node": "latest",
+    "cross-env": "latest",
+    "eslint": "latest",
+    "nodemon": "latest",
+    "ts-node": "latest",
+    "tsup": "latest",
+    "tsx": "latest",
+    "typescript": "latest",
+    "typescript-eslint": "latest"
+  }
+}
