@@ -1,5 +1,5 @@
 // Utility types for extracting parameters from translation strings
-type ExtractVariables<T extends string> = T extends `${infer _}{${infer Param}}${infer Rest}`
+type ExtractVariables<T extends string> = T extends `${string}{${infer Param}}${infer Rest}`
     ? Param extends `${number}`
     ? [Param, ...ExtractVariables<Rest>]
     : [Param, ...ExtractVariables<Rest>]
@@ -119,6 +119,17 @@ function interpolateString(
     return result
 }
 
+// Helper function to create config with proper type inference
+export function createI18nConfig<
+    const Messages extends Record<string, any>,
+    DefaultLocale extends keyof Messages & string
+>(config: {
+    defaultLocale: DefaultLocale
+    messages: Messages
+}): I18nConfig<Messages, DefaultLocale> {
+    return config
+}
+
 // Main i18n function
 export function i18nStrict<
     Messages extends Record<string, any>,
@@ -152,6 +163,59 @@ export function i18nStrict<
         getDefaultLocale
     }
 }
+
+// Convenience function that combines both steps
+export function createI18n<
+    const Messages extends Record<string, any>,
+    DefaultLocale extends keyof Messages & string
+>(config: {
+    defaultLocale: DefaultLocale
+    messages: Messages
+}): I18nStrict<Messages, DefaultLocale> {
+    return i18nStrict(createI18nConfig(config))
+}
+// Versión completamente sin 'as const' - usando función de definición
+export function defineMessages<const T extends Record<string, Record<string, any>>>(messages: T): T {
+    return messages
+}
+
+const messagesWithoutAsConst = defineMessages({
+    es: {
+        simple: 'Mensaje simple',
+        saludo: 'Hola {nombre}, tienes {cantidad} mensajes',
+        lista: 'Elemento 1: {0}, Elemento 2: {1}',
+        resumen: 'Usuario: {user}, Edad: {edad}, País: {pais}',
+        bienvenido: '¡Bienvenido!',
+        numeros: 'Suma: {0} + {1} = {2}',
+        eco: 'Eco: {palabra}, otra vez: {palabra}',
+        contact: 'Mi direccion es {address} {numero}',
+        subNivel: {
+            numeros: 'Suma: {0} + {1} = {2}',
+            anotherLevel: {
+                lista: 'Elemento 1: {uno}, Elemento 2: {dos}',
+                mixto: 'Hola {0}, tu usuario es {user} y tienes {1} de edad'
+            }
+        }
+    },
+    en: {
+        simple: 'Simple message',
+        saludo: 'Hello {nombre}, you have {cantidad} messages',
+        lista: 'Item 1: {0}, Item 2: {1}',
+        resumen: 'User: {user}, Age: {edad}, Country: {pais}',
+        bienvenido: 'Welcome!',
+        numeros: 'Sum: {0} + {1} = {2}',
+        eco: 'Echo: {palabra}, again: {palabra}',
+        contact: 'My address is {address} {numero}',
+        subNivel: {
+            numeros: 'Sum: {0} + {1} = {2}',
+            anotherLevel: {
+                lista: 'Item 1: {uno}, Item 2: {dos}',
+                mixto: 'Hello {0}, your user is {user} and you are {1} years old'
+            }
+        }
+    }
+})
+
 const messages = {
     es: {
         simple: 'Mensaje simple',
@@ -187,18 +251,24 @@ const messages = {
             }
         }
     }
-}
-// Example configuration with the structure you provided
-export const usei18nStrict = i18nStrict({
-    defaultLocale: 'es' as const,
+} as const
+// Ejemplo 1: Configuration usando la nueva función helper (no 'as const' needed!)
+export const usei18nStrict = createI18n({
+    defaultLocale: 'es',
     messages
 })
 
-const tEs = usei18nStrict.useTranslations('en')
+// Ejemplo 2: Configuración completamente sin 'as const' usando defineMessages
+export const usei18nStrictNoAsConst = createI18n({
+    defaultLocale: 'es',
+    messages: messagesWithoutAsConst
+})
+
+const tEs = usei18nStrictNoAsConst.useTranslations('es')
 const examples = {
     spanish: {
         simple: tEs('simple'),
-        saludo: tEs('saludo', { nombre: 'María', cantidad: 5 }),
+        saludo: tEs('saludo', { nombre: 'Juan', cantidad: 5 }),
         lista: tEs('lista', 'Primero', 'Segundo'),
         resumen: tEs('resumen', { user: 'Juan', edad: 30, pais: 'España' }),
         bienvenido: tEs('bienvenido'),
