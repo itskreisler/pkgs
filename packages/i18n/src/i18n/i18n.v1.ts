@@ -57,7 +57,13 @@ const interpolateParams = (text: string, params?: (string | number)[], interpola
  * messages: {
  *    es: {
  *       test: 'Hola {0}',
- *       world: 'Mundo'
+ *       world: 'Mundo',
+ *       subNivel: {
+ *           numeros: 'Suma: {0} + {1} = {2}',
+ *           anotherLevel: {
+ *              lista: 'Elemento 1: {0}, Elemento 2: {1}'
+ *           }
+ *       }
  *   },
  *    en: {
  *       test: 'Hello {0}',
