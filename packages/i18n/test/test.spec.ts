@@ -8,7 +8,7 @@ import assert from 'node:assert'
 // » IMPORT MODULES
 import { i18n, i18nStrict } from '@/index'
 
-const t = i18nStrict({
+const usei18nStrict = i18nStrict({
     defaultLocale: 'es',
     messages: {
         es: {
@@ -25,62 +25,92 @@ const t = i18nStrict({
         }
     }
 })
+const tStrict = usei18nStrict.useTranslations('es')
+// 
+const usei18n = i18n({
+    defaultLocale: 'es', messages: {
+        es: {
+            hello: 'hola mundo',
+            wellcome: '¡Bienvenido {0} {1}!',
+            subNivel: {
+                numeros: 'Suma: {0} + {1} = {2}',
+                anotherLevel: {
+                    lista: 'Elemento 1: {0}, Elemento 2: {1}'
+                }
+            }
+        }
+    }
+})
+const t = usei18n.useTranslations('es')
 // ━━ TEST ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-describe('test', () => {
+describe('testNormal', () => {
     it('should return message', () => {
-        const result = i18n({ defaultLocale: 'es', messages: { es: { hello: 'hola mundo' } } }).useTranslations('es')('hello')
+        const result = t('hello')
         assert.strictEqual(result, 'hola mundo')
     })
+    it('should return message with params', () => {
+        const result = t('wellcome', 'Kreisler', 'Dev')
+        assert.strictEqual(result, '¡Bienvenido Kreisler Dev!')
+    })
+    it('should return message with sub-level', () => {
+        const result = t('subNivel.numeros', 3, 4, 7)
+        assert.strictEqual(result, 'Suma: 3 + 4 = 7')
+    })
+    it('should return message with sub-level and another level', () => {
+        const result = t('subNivel.anotherLevel.lista', 'Elemento 1', 'Elemento 2')
+        assert.strictEqual(result, 'Elemento 1: Elemento 1, Elemento 2: Elemento 2')
+    })
+
+})
+describe('testStrict', () => {
     it('should return message with params', () => {
         const result = i18nStrict({ defaultLocale: 'es', messages: { es: { hello: 'hola {name}' } } })
             .useTranslations('es')('hello', { name: 'mundo' })
         assert.strictEqual(result, 'hola mundo')
     })
-})
-describe('testLite', () => {
     it('should return simple message', () => {
-        const result = t.useTranslations('es')('simple')
+        const result = tStrict('simple')
         assert.strictEqual(result, 'Mensaje simple')
     })
 
     it('should return message with multiple params', () => {
-        const result = t.useTranslations('es')('saludo', { nombre: 'Juan', cantidad: 5 })
+        const result = tStrict('saludo', { nombre: 'Juan', cantidad: 5 })
         assert.strictEqual(result, 'Hola Juan, tienes 5 mensajes')
     })
 
     it('should return message with array params', () => {
-        const result = t.useTranslations('es')('lista', ['Elemento 1', 'Elemento 2'])
+        const result = tStrict('lista', ['Elemento 1', 'Elemento 2'])
         assert.strictEqual(result, 'Elemento 1: Elemento 1, Elemento 2: Elemento 2')
     })
 
     it('should return message with object params', () => {
-        const result = t.useTranslations('es')('resumen', { user: 'Juan', edad: 30, pais: 'España' })
+        const result = tStrict('resumen', { user: 'Juan', edad: 30, pais: 'España' })
         assert.strictEqual(result, 'Usuario: Juan, Edad: 30, País: España')
     })
 
     it('should return welcome message without params', () => {
-        const result = t.useTranslations('es')('bienvenido')
+        const result = tStrict('bienvenido')
         assert.strictEqual(result, '¡Bienvenido!')
     })
 
     it('should return mixed message with array and object params', () => {
-        const result = t.useTranslations('es')('mixto', ['Mundo', { user: 'Juan' }])
+        const result = tStrict('mixto', ['Mundo', { user: 'Juan' }])
         assert.strictEqual(result, 'Hola Mundo, tu usuario es Juan')
     })
 
     it('should return message with numeric calculations', () => {
-        const result = t.useTranslations('es')('numeros', [3, 4, 7])
+        const result = tStrict('numeros', [3, 4, 7])
         assert.strictEqual(result, 'Suma: 3 + 4 = 7')
     })
 
     it('should return eco message with repeated word', () => {
-        const result = t.useTranslations('es')('eco', { palabra: 'eco' })
+        const result = tStrict('eco', { palabra: 'eco' })
         assert.strictEqual(result, 'Eco: eco, otra vez: eco')
     })
 
     it('should return contact address message with object param', () => {
-        const result = t.useTranslations('es')('contact', { address: 'Calle Falsa 123' })
+        const result = tStrict('contact', { address: 'Calle Falsa 123' })
         assert.strictEqual(result, 'Mi direccion es Calle Falsa 123')
     })
 })
