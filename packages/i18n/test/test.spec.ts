@@ -17,11 +17,19 @@ const usei18nStrict = i18nStrict({
             lista: 'Elemento 1: {0}, Elemento 2: {1}',
             resumen: 'Usuario: {user}, Edad: {edad}, País: {pais}',
             bienvenido: '¡Bienvenido!',
-            mixto: 'Hola {0}, tu usuario es {user}',
+            mixto: 'Hola {0}, tu usuario es {user} y tengo {1} años',
             numeros: 'Suma: {0} + {1} = {2}',
             eco: 'Eco: {palabra}, otra vez: {palabra}',
-            contact: 'Mi direccion es {address}'
-
+            contact: 'Mi direccion es {address}',
+            subNivel: {
+                numeros: 'Suma: {0} + {1} = {2}',
+                anotherLevel: {
+                    lista: 'Elemento 1: {uno}, Elemento 2: {dos}'
+                }
+            }
+        },
+        en: {
+            simple: 'Simple message'
         }
     }
 })
@@ -69,18 +77,19 @@ describe('testStrict', () => {
             .useTranslations('es')('hello', { name: 'mundo' })
         assert.strictEqual(result, 'hola mundo')
     })
+
     it('should return simple message', () => {
         const result = tStrict('simple')
         assert.strictEqual(result, 'Mensaje simple')
     })
 
-    it('should return message with multiple params', () => {
+    it('should return message with named params', () => {
         const result = tStrict('saludo', { nombre: 'Juan', cantidad: 5 })
         assert.strictEqual(result, 'Hola Juan, tienes 5 mensajes')
     })
 
-    it('should return message with array params', () => {
-        const result = tStrict('lista', ['Elemento 1', 'Elemento 2'])
+    it('should return message with positional params', () => {
+        const result = tStrict('lista', 'Elemento 1', 'Elemento 2')
         assert.strictEqual(result, 'Elemento 1: Elemento 1, Elemento 2: Elemento 2')
     })
 
@@ -94,23 +103,112 @@ describe('testStrict', () => {
         assert.strictEqual(result, '¡Bienvenido!')
     })
 
-    it('should return mixed message with array and object params', () => {
-        const result = tStrict('mixto', ['Mundo', { user: 'Juan' }])
-        assert.strictEqual(result, 'Hola Mundo, tu usuario es Juan')
+    it('should return mixed message with positional and named params', () => {
+        // mixto: 'Hola {0}, tu usuario es {user} y tengo {1} años'
+        // Requiere: parámetro 0, parámetro 1, y {user}
+        const result = tStrict('mixto', 'Mundo', { user: 'Juan' }, 24)
+        assert.strictEqual(result, 'Hola Mundo, tu usuario es Juan y tengo 24 años')
     })
 
     it('should return message with numeric calculations', () => {
-        const result = tStrict('numeros', [3, 4, 7])
+        const result = tStrict('numeros', 3, 4, 7)
         assert.strictEqual(result, 'Suma: 3 + 4 = 7')
     })
 
     it('should return eco message with repeated word', () => {
-        const result = tStrict('eco', { palabra: 'eco' })
-        assert.strictEqual(result, 'Eco: eco, otra vez: eco')
+        const result = tStrict('eco', { palabra: 'hellooo' })
+        assert.strictEqual(result, 'Eco: hellooo, otra vez: hellooo')
     })
 
-    it('should return contact address message with object param', () => {
+    it('should return contact address message', () => {
         const result = tStrict('contact', { address: 'Calle Falsa 123' })
         assert.strictEqual(result, 'Mi direccion es Calle Falsa 123')
     })
+
+    it('should work with nested keys', () => {
+        const result = tStrict('subNivel.numeros', 3, 4, 7)
+        assert.strictEqual(result, 'Suma: 3 + 4 = 7')
+    })
+
+    it('should work with deep nested keys', () => {
+        const result = tStrict('subNivel.anotherLevel.lista', { uno: 'Primero', dos: 'Segundo' })
+        assert.strictEqual(result, 'Elemento 1: Primero, Elemento 2: Segundo')
+    })
+
+    it('should demonstrate NamedParams type helper', () => {
+        // mixto: 'Hola {0}, tu usuario es {user} y tengo {1} años'
+        // Uso directo con todos los parámetros necesarios
+        const result = tStrict('mixto', 'Mundo', { user: 'Juan' }, 25)
+        assert.strictEqual(result, 'Hola Mundo, tu usuario es Juan y tengo 25 años')
+    })
+
+    it('should handle array as single parameter', () => {
+        const result = tStrict('lista', ['Elemento A', 'Elemento B'])
+        assert.strictEqual(result, 'Elemento 1: Elemento A, Elemento 2: Elemento B')
+    })
+
+    // Tests adicionales para verificar funcionalidades específicas
+    it('should handle missing translation keys gracefully', () => {
+        // @ts-expect-error - Testing with invalid key for runtime behavior
+        const result = tStrict('keyInexistente')
+        assert.strictEqual(result, '{keyInexistente}')
+    })
+
+    it('should handle missing parameters gracefully', () => {
+        // Caso donde faltan parámetros - debería mantener los placeholders
+        const result = tStrict('numeros', 3, 4) // Falta el tercer parámetro
+        assert.strictEqual(result, 'Suma: 3 + 4 = {2}')
+    })
+
+    it('should handle excess parameters', () => {
+        // Caso donde sobran parámetros - debería ignorar los extras
+        const result = tStrict('simple', 'extra1', 'extra2')
+        assert.strictEqual(result, 'Mensaje simple')
+    })
+
+    it('should handle mixed parameters with missing named param', () => {
+        // mixto sin el parámetro {user} - debería mantener el placeholder
+        const result = tStrict('mixto', 'Mundo', 25)
+        assert.strictEqual(result, 'Hola Mundo, tu usuario es {user} y tengo 25 años')
+    })
+
+    it('should handle only named parameters when object has extra properties', () => {
+        const result = tStrict('saludo', { nombre: 'Ana', cantidad: 3, extra: 'ignorado' })
+        assert.strictEqual(result, 'Hola Ana, tienes 3 mensajes')
+    })
+
+    it('should work with different locales', () => {
+        const tEn = usei18nStrict.useTranslations('en')
+        const result = tEn('simple')
+        assert.strictEqual(result, 'Simple message')
+    })
+
+    it('should handle non-existent keys in different locales', () => {
+        const tEn = usei18nStrict.useTranslations('en')
+        // Para probar comportamiento con keys no existentes
+        // @ts-expect-error - Testing behavior with non-existent key in 'en'
+        const result = tEn('saludo', { nombre: 'John', cantidad: 2 })
+        // Debería devolver el placeholder de la key
+        assert.strictEqual(result, '{saludo}')
+    })
+
+    it('should handle numbers and strings equally in parameters', () => {
+        const result1 = tStrict('numeros', 3, 4, 7)
+        const result2 = tStrict('numeros', '3', '4', '7')
+        assert.strictEqual(result1, 'Suma: 3 + 4 = 7')
+        assert.strictEqual(result2, 'Suma: 3 + 4 = 7')
+    })
+
+    it('should handle nested object access correctly', () => {
+        const result1 = tStrict('subNivel.numeros', 10, 20, 30)
+        const result2 = tStrict('subNivel.anotherLevel.lista', { uno: 'First', dos: 'Second' })
+        assert.strictEqual(result1, 'Suma: 10 + 20 = 30')
+        assert.strictEqual(result2, 'Elemento 1: First, Elemento 2: Second')
+    })
+
+    it('should handle repeated parameter names correctly', () => {
+        const result = tStrict('eco', { palabra: 'test123' })
+        assert.strictEqual(result, 'Eco: test123, otra vez: test123')
+    })
+
 })
