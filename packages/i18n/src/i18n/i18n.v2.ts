@@ -28,9 +28,27 @@ type NamedParams<S extends string> = {
     K extends `${number}` ? never : string | number;
 };
 
+// Check if string has both positional and named parameters (mixed)
+type HasMixedParams<S extends string> =
+    S extends `${string}{${number}}${string}`
+    ? S extends `${string}{${string}}${string}`
+    ? ExtractPlaceholders<S> extends `${number}`
+    ? false
+    : true
+    : false
+    : false;
+
+// Type for mixed parameters (both positional and named)
+type MixedParams<S extends string> = [
+    ...PositionalParams<S>,
+    NamedParams<S>
+];
+
 // Type to determine the parameter type based on the translation string
 type ParamType<S extends string> =
-    S extends `${string}{${number}}${string}`
+    HasMixedParams<S> extends true
+    ? MixedParams<S>
+    : S extends `${string}{${number}}${string}`
     ? PositionalParams<S>
     : S extends `${string}{${string}}${string}`
     ? NamedParams<S>
@@ -42,17 +60,19 @@ type GetMessage<T extends Messages, L extends keyof T, K extends keyof T[L]> = T
 // Check if a string has placeholders
 type HasPlaceholders<S extends string> = S extends `${string}{${string}}${string}` ? true : false;
 
-// Translation function with overloads
+// Translation function with overloads that preserve specific typing
 interface TranslationFunction<T extends Messages, L extends keyof T> {
     // No parameters needed (when string has no placeholders)
     <K extends keyof T[L]>(
         key: K
     ): HasPlaceholders<GetMessage<T, L, K>> extends false ? string : never;
 
-    // With parameters (when string has placeholders)
+    // With parameters (preserves intellisense but allows flexibility for mixed params)
     <K extends keyof T[L]>(
         key: K,
-        params: ParamType<GetMessage<T, L, K>>
+        params: HasPlaceholders<GetMessage<T, L, K>> extends true
+            ? ParamType<GetMessage<T, L, K>> | [...(string | number)[], Record<string, string | number>]
+            : never
     ): HasPlaceholders<GetMessage<T, L, K>> extends true ? string : never;
 }
 
@@ -89,6 +109,31 @@ export function i18nLite<
             // If no params, return the translation string as is
             if (params === undefined) {
                 return message
+            }
+
+            // Handle mixed parameters (array with object at the end)
+            if (Array.isArray(params) && params.length > 0 &&
+                typeof params[params.length - 1] === 'object' &&
+                !Array.isArray(params[params.length - 1])) {
+
+                let result = message
+                const namedParams = params[params.length - 1] as Record<string, any>
+                const positionalParams = params.slice(0, -1)
+
+                // Replace positional parameters first
+                positionalParams.forEach((param, index) => {
+                    result = result.replace(new RegExp(`\\{${index}\\}`, 'g'), String(param))
+                })
+
+                // Then replace named parameters
+                result = result.replace(/\{([^{}]+)\}/g, (_, name) => {
+                    if (/^\d+$/.test(name)) {
+                        return `{${name}}` // Keep unmatched positional params
+                    }
+                    return name in namedParams ? String(namedParams[name]) : `{${name}}`
+                })
+
+                return result
             }
 
             // Handle named parameters (object)
