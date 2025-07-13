@@ -83,11 +83,11 @@ interface I18nConfig<T extends Messages> {
 /**
  * 
  * @example
- * const i18n = i18nLite({
+ * const i18n = i18nStrict({
  * 
  * 
  */
-export function i18nLite<
+export function i18nStrict<
     const T extends Record<string, Record<string, string>>
 >(config: I18nConfig<T>) {
     function useTranslations<L extends keyof T>(locale: L): TranslationFunction<T, L> {
@@ -161,7 +161,7 @@ export function i18nLite<
 }
 //
 /* 
-const { useTranslations } = i18nLite({
+const { useTranslations } = i18nStrict({
     defaultLocale: 'es',
     messages: {
         es: {

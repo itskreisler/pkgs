@@ -53,12 +53,12 @@ console.log(t('nested.welcome', 'María'))    // "Bienvenido María"
 console.log(t('farewell', 'Pedro'))          // "Adiós Pedro"
 ```
 
-### Versión v2 - i18nLite con tipado estricto
+### Versión v2 - i18nStrict con tipado estricto
 
 ```typescript
-import { i18nLite } from '@kreisler/i18n/v2'
+import { i18nStrict } from '@kreisler/i18n/v2'
 
-const { useTranslations } = i18nLite({
+const { useTranslations } = i18nStrict({
   defaultLocale: 'es',
   messages: {
     es: {
@@ -131,7 +131,7 @@ interface I18nConfig {
 - `useTranslations<Locale>(lang: Locale)` - Crea una función de traducción para el idioma especificado
 - `t(key: string, ...params: (string | number)[])` - Traduce una clave con parámetros opcionales
 
-### i18nLite (v2)
+### i18nStrict (v2)
 
 #### Configuración
 
