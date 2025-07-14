@@ -178,6 +178,14 @@ export function createI18n<
 export function defineMessages<const T extends Record<string, Record<string, any>>>(messages: T): T {
     return messages
 }
+
+createI18n({
+    defaultLocale: 'es', messages: {
+        es: {
+            hello: 'hola {name}'
+        }
+    }
+}).useTranslations('es')('hello', { name: 'mundo' })
 /*
 const messagesWithoutAsConst = defineMessages({
     es: {

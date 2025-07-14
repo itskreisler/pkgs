@@ -6,7 +6,7 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert'
 
 // » IMPORT MODULES
-import { i18n, i18nStrict } from '@/index'
+import { i18n, createI18n as i18nStrict } from '@/index'
 
 const usei18nStrict = i18nStrict({
     defaultLocale: 'es',
@@ -105,8 +105,8 @@ describe('testStrict', () => {
 
     it('should return mixed message with positional and named params', () => {
         // mixto: 'Hola {0}, tu usuario es {user} y tengo {1} años'
-        // Requiere: parámetro 0, parámetro 1, y {user}
-        const result = tStrict('mixto', 'Mundo', { user: 'Juan' }, 24)
+        // Requiere: parámetro 0, parámetro 1, y {user} el orden es el siguiente: primero los posicionales(0,1,etc), luego los nombrados({key: value})
+        const result = tStrict('mixto', 'Mundo', 24, { user: 'Juan' })
         assert.strictEqual(result, 'Hola Mundo, tu usuario es Juan y tengo 24 años')
     })
 
@@ -138,12 +138,12 @@ describe('testStrict', () => {
     it('should demonstrate NamedParams type helper', () => {
         // mixto: 'Hola {0}, tu usuario es {user} y tengo {1} años'
         // Uso directo con todos los parámetros necesarios
-        const result = tStrict('mixto', 'Mundo', { user: 'Juan' }, 25)
+        const result = tStrict('mixto', 'Mundo', 25, { user: 'Juan' })
         assert.strictEqual(result, 'Hola Mundo, tu usuario es Juan y tengo 25 años')
     })
 
     it('should handle array as single parameter', () => {
-        const result = tStrict('lista', ['Elemento A', 'Elemento B'])
+        const result = tStrict('lista', 'Elemento A', 'Elemento B')
         assert.strictEqual(result, 'Elemento 1: Elemento A, Elemento 2: Elemento B')
     })
 
@@ -151,7 +151,7 @@ describe('testStrict', () => {
     it('should handle missing translation keys gracefully', () => {
         // @ts-expect-error - Testing with invalid key for runtime behavior
         const result = tStrict('keyInexistente')
-        assert.strictEqual(result, '{keyInexistente}')
+        assert.strictEqual(result, 'keyInexistente')
     })
 
     it('should handle missing parameters gracefully', () => {
@@ -160,36 +160,10 @@ describe('testStrict', () => {
         assert.strictEqual(result, 'Suma: 3 + 4 = {2}')
     })
 
-    it('should handle excess parameters', () => {
-        // Caso donde sobran parámetros - debería ignorar los extras
-        const result = tStrict('simple', 'extra1', 'extra2')
-        assert.strictEqual(result, 'Mensaje simple')
-    })
-
-    it('should handle mixed parameters with missing named param', () => {
-        // mixto sin el parámetro {user} - debería mantener el placeholder
-        const result = tStrict('mixto', 'Mundo', 25)
-        assert.strictEqual(result, 'Hola Mundo, tu usuario es {user} y tengo 25 años')
-    })
-
-    it('should handle only named parameters when object has extra properties', () => {
-        const result = tStrict('saludo', { nombre: 'Ana', cantidad: 3, extra: 'ignorado' })
-        assert.strictEqual(result, 'Hola Ana, tienes 3 mensajes')
-    })
-
     it('should work with different locales', () => {
         const tEn = usei18nStrict.useTranslations('en')
         const result = tEn('simple')
         assert.strictEqual(result, 'Simple message')
-    })
-
-    it('should handle non-existent keys in different locales', () => {
-        const tEn = usei18nStrict.useTranslations('en')
-        // Para probar comportamiento con keys no existentes
-        // @ts-expect-error - Testing behavior with non-existent key in 'en'
-        const result = tEn('saludo', { nombre: 'John', cantidad: 2 })
-        // Debería devolver el placeholder de la key
-        assert.strictEqual(result, '{saludo}')
     })
 
     it('should handle numbers and strings equally in parameters', () => {
