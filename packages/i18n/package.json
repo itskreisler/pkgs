@@ -1,7 +1,7 @@
 {
-  "name": "my-project",
+  "name": "@kreisler/i18n",
   "version": "1.0.0",
-  "description": "",
+  "description": "A simple i18n library for managing translations in JavaScript applications.",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -18,8 +18,14 @@
     "test:esm": "tsup --entry.test src/index.ts --format esm --clean --onSuccess \"node dist/test.js\"",
     "test:spec": "tsup test/test.spec.ts --format esm --clean --onSuccess \"cross-env NODE_ENV=test node --test dist/test.spec.js\""
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "i18n",
+    "internationalization",
+    "localization",
+    "translations",
+    "javascript"
+  ],
+  "author": "kreisler",
   "license": "ISC",
   "dependencies": {},
   "devDependencies": {
