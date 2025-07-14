@@ -6,9 +6,9 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert'
 
 // » IMPORT MODULES
-import { i18n, createI18n as i18nStrict } from '@/index'
+import { i18n, createI18n } from '@/index'
 
-const usei18nStrict = i18nStrict({
+const usei18nStrict = createI18n({
     defaultLocale: 'es',
     messages: {
         es: {
@@ -73,7 +73,7 @@ describe('testNormal', () => {
 })
 describe('testStrict', () => {
     it('should return message with params', () => {
-        const result = i18nStrict({ defaultLocale: 'es', messages: { es: { hello: 'hola {name}' } } })
+        const result = createI18n({ defaultLocale: 'es', messages: { es: { hello: 'hola {name}' } } })
             .useTranslations('es')('hello', { name: 'mundo' })
         assert.strictEqual(result, 'hola mundo')
     })
