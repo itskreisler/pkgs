@@ -1,128 +1,288 @@
-// ============================================================================
-// NUEVA ITERACIÓN: i18nStrict limpio y funcional
-// ============================================================================
+// Utility types for extracting parameters from translation strings
+type ExtractVariables<T extends string> = T extends `${string}{${infer Param}}${infer Rest}`
+    ? Param extends `${number}`
+    ? [Param, ...ExtractVariables<Rest>]
+    : [Param, ...ExtractVariables<Rest>]
+    : []
 
-// Tipos básicos
-interface NestedTranslations {
-    [key: string]: string | NestedTranslations;
-}
+// Extract positional parameters (numeric indices)
+type ExtractPositionalParams<T extends string[]> = {
+    [K in keyof T]: T[K] extends `${infer N extends number}` ? N : never
+}[number]
 
-type DotNotation<T> = T extends object
+// Extract named parameters (non-numeric)
+type ExtractNamedParams<T extends string[]> = {
+    [K in keyof T]: T[K] extends `${number}` ? never : T[K]
+}[number]
+
+// Create the parameter object type for named parameters
+type CreateNamedParamsObject<T extends string> = ExtractNamedParams<ExtractVariables<T>> extends never
+    ? object
+    : Record<ExtractNamedParams<ExtractVariables<T>>, string | number>
+
+// Get the highest positional index
+type GetMaxPositionalIndex<T extends string[]> = ExtractPositionalParams<T> extends never
+    ? -1
+    : ExtractPositionalParams<T>
+
+// Create tuple type for positional parameters
+type CreatePositionalParamsTuple<T extends string, Max extends number = GetMaxPositionalIndex<ExtractVariables<T>>> =
+    Max extends -1
+    ? []
+    : Max extends 0
+    ? [string | number]
+    : Max extends 1
+    ? [string | number, string | number]
+    : Max extends 2
+    ? [string | number, string | number, string | number]
+    : Max extends 3
+    ? [string | number, string | number, string | number, string | number]
+    : (string | number)[]
+
+// Deep key paths for nested objects - ONLY for string leaf nodes
+type DeepKeyPaths<T> = T extends object
     ? {
-        [K in keyof T]: T[K] extends string
-        ? K
+        [K in keyof T]: K extends string
+        ? T[K] extends string
+        ? `${K}`  // This is a string leaf, include it
         : T[K] extends object
-        ? `${K & string}.${DotNotation<T[K]> & string}`
-        : never;
+        ? `${K}.${DeepKeyPaths<T[K]>}`  // This is an object, recurse but don't include the intermediate path
+        : never
+        : never
     }[keyof T]
-    : never;
+    : never
 
-// Tipo para extraer parámetros nombrados de un string (simplificado)
-type ExtractNamedParams<T extends string> =
-    T extends `${string}{${infer ParamName}}${infer Rest}`
-    ? ParamName extends `${number}`
-    ? ExtractNamedParams<Rest>
-    : { [K in ParamName]: string | number } & ExtractNamedParams<Rest>
-    : Record<string, never>;
+// Get value at deep path
+type DeepValue<T, P extends string> = P extends `${infer Key}.${infer Rest}`
+    ? Key extends keyof T
+    ? DeepValue<T[Key], Rest>
+    : never
+    : P extends keyof T
+    ? T[P]
+    : never
 
-// Tipo helper exportado para crear parámetros nombrados desde un string
-export type NamedParams<T extends string> = ExtractNamedParams<T> extends Record<string, never>
-    ? Record<string, never>
-    : ExtractNamedParams<T>;
+// Translation function signature
+type TranslationFunction<Messages, Locale extends keyof Messages> = <
+    Key extends DeepKeyPaths<Messages[Locale]>
+>(
+    key: Key,
+    ...args: DeepValue<Messages[Locale], Key> extends string
+        ? [
+            ...CreatePositionalParamsTuple<DeepValue<Messages[Locale], Key>>,
+            ...(keyof CreateNamedParamsObject<DeepValue<Messages[Locale], Key>> extends never
+                ? []
+                : [CreateNamedParamsObject<DeepValue<Messages[Locale], Key>>])
+        ]
+        : never[]
+) => string
 
-interface I18nStrictConfig<T extends Record<string, NestedTranslations>> {
-    defaultLocale: keyof T;
-    messages: T;
+// Main i18n configuration interface
+export interface I18nConfig<Messages extends Record<string, any>, DefaultLocale extends keyof Messages> {
+    defaultLocale: DefaultLocale
+    messages: Messages
 }
 
-// Función helper para obtener valores anidados
-const getNestedValue = (obj: Record<string, any>, path: string): string => {
-    return path.split('.').reduce((acc, key) => acc?.[key], obj) as unknown as string
+// Return type for the i18n hook
+export interface I18nStrict<Messages extends Record<string, any>, DefaultLocale extends keyof Messages> {
+    useTranslations: <Locale extends keyof Messages>(locale: Locale) => TranslationFunction<Messages, Locale>
+    getAvailableLocales: () => (keyof Messages)[]
+    getDefaultLocale: () => DefaultLocale
 }
 
-// Función de interpolación que soporta múltiples tipos de parámetros
-const interpolateParams = (text: string, params?: (string | number | Record<string, any>)[]): string => {
-    if (!params || params.length === 0) return text
+//
 
-    // Caso especial: si hay un solo parámetro y es un array, usar interpolación posicional
-    if (params.length === 1 && Array.isArray(params[0])) {
-        return params[0].reduce((result: string, param, index) => {
-            const placeholder = `{${index}}`
-            return result.replace(placeholder, String(param))
-        }, text)
-    }
+// Helper function to get nested value from object using dot notation
+function getNestedValue(obj: any, path: string): any {
+    return path.split('.').reduce((current, key) => current?.[key], obj)
+}
 
-    // Separar parámetros posicionales de objetos
-    const positionalParams: (string | number)[] = []
-    let namedParams: Record<string, any> = {}
+// Helper function to replace variables in translation strings
+function interpolateString(
+    template: string,
+    positionalArgs: (string | number)[],
+    namedArgs: Record<string, string | number>
+): string {
+    let result = template
 
-    params.forEach(param => {
-        if (typeof param === 'object' && !Array.isArray(param) && param !== null) {
-            // Es un objeto, agregar a parámetros nombrados
-            namedParams = { ...namedParams, ...param }
-        } else {
-            // Es un primitivo, agregar a parámetros posicionales
-            positionalParams.push(param as string | number)
-        }
+    // Replace named variables first
+    Object.entries(namedArgs).forEach(([key, value]) => {
+        const regex = new RegExp(`\\{${key}\\}`, 'g')
+        result = result.replace(regex, String(value))
     })
 
-    let result = text
-
-    // Reemplazar parámetros posicionales primero
-    positionalParams.forEach((param, index) => {
-        result = result.replace(new RegExp(`\\{${index}\\}`, 'g'), String(param))
-    })
-
-    // Luego reemplazar parámetros nombrados
-    result = result.replace(/\{([^{}]+)\}/g, (_, name) => {
-        if (/^\d+$/.test(name)) {
-            return `{${name}}` // Mantener parámetros posicionales no encontrados
-        }
-        return name in namedParams ? String(namedParams[name]) : `{${name}}`
+    // Replace positional variables
+    positionalArgs.forEach((value, index) => {
+        const regex = new RegExp(`\\{${index}\\}`, 'g')
+        result = result.replace(regex, String(value))
     })
 
     return result
 }
 
-/**
- * Versión strict de i18n con autocompletado de keys y soporte para múltiples tipos de parámetros
- * 
- * @example 
- * const { useTranslations } = i18nStrict({
- *   defaultLocale: 'es',
- *   messages: {
- *     es: {
- *       simple: 'Mensaje simple',
- *       saludo: 'Hola {nombre}',               // Named params
- *       numeros: 'Suma: {0} + {1} = {2}',     // Positional params
- *       mixto: 'Hola {0}, tu usuario es {user}' // Mixed params
- *     }
- *   }
- * })
- */
-export function i18nStrict<const T extends Record<string, NestedTranslations>>(
-    userConfig: I18nStrictConfig<T>
-) {
-    function useTranslations<Locale extends keyof T>(lang: Locale) {
-        /**
-         * Función de traducción con autocompletado de keys
-         */
-        return function t(
-            key: DotNotation<T[Locale]>,
-            ...params: (string | number | Record<string, any>)[]
-        ): string {
-            const langTranslations = userConfig.messages[lang] || userConfig.messages[userConfig.defaultLocale] || {}
-            const translation = getNestedValue(langTranslations as Record<string, any>, key as string)
-                || `{${key.toString()}}`
+// Helper function to create config with proper type inference
+export function createI18nConfig<
+    const Messages extends Record<string, any>,
+    DefaultLocale extends keyof Messages & string
+>(config: {
+    defaultLocale: DefaultLocale
+    messages: Messages
+}): I18nConfig<Messages, DefaultLocale> {
+    return config
+}
 
-            // Si no hay parámetros, devolver la traducción tal como está
-            if (params.length === 0) {
-                return translation
+// Main i18n function
+export function i18nStrict<
+    Messages extends Record<string, any>,
+    DefaultLocale extends keyof Messages
+>(config: I18nConfig<Messages, DefaultLocale>): I18nStrict<Messages, DefaultLocale> {
+
+    const useTranslations = <Locale extends keyof Messages>(locale: Locale) => {
+        return (key: string, ...args: any[]): string => {
+            const messages = config.messages[locale] || config.messages[config.defaultLocale]
+            const template = getNestedValue(messages, key)
+
+            if (typeof template !== 'string') {
+                console.warn(`Translation key '${key}' not found for locale '${String(locale)}'`)
+                return key
             }
 
-            return interpolateParams(translation, params)
+            // Separate positional and named arguments
+            const namedArgs = args.find(arg => typeof arg === 'object' && arg !== null && !Array.isArray(arg)) || {}
+            const positionalArgs = args.filter(arg => typeof arg !== 'object' || arg === null || Array.isArray(arg))
+
+            return interpolateString(template, positionalArgs, namedArgs)
         }
     }
 
-    return { useTranslations }
+    const getAvailableLocales = () => Object.keys(config.messages)
+    const getDefaultLocale = () => config.defaultLocale
+
+    return {
+        useTranslations,
+        getAvailableLocales,
+        getDefaultLocale
+    }
 }
+
+// Convenience function that combines both steps
+export function createI18n<
+    const Messages extends Record<string, any>,
+    DefaultLocale extends keyof Messages & string
+>(config: {
+    defaultLocale: DefaultLocale
+    messages: Messages
+}): I18nStrict<Messages, DefaultLocale> {
+    return i18nStrict(createI18nConfig(config))
+}
+// Versión completamente sin 'as const' - usando función de definición
+export function defineMessages<const T extends Record<string, Record<string, any>>>(messages: T): T {
+    return messages
+}
+/*
+const messagesWithoutAsConst = defineMessages({
+    es: {
+        simple: 'Mensaje simple',
+        saludo: 'Hola {nombre}, tienes {cantidad} mensajes',
+        lista: 'Elemento 1: {0}, Elemento 2: {1}',
+        resumen: 'Usuario: {user}, Edad: {edad}, País: {pais}',
+        bienvenido: '¡Bienvenido!',
+        numeros: 'Suma: {0} + {1} = {2}',
+        eco: 'Eco: {palabra}, otra vez: {palabra}',
+        contact: 'Mi direccion es {address} {numero}',
+        subNivel: {
+            numeros: 'Suma: {0} + {1} = {2}',
+            anotherLevel: {
+                lista: 'Elemento 1: {uno}, Elemento 2: {dos}',
+                mixto: 'Hola {0}, tu usuario es {user} y tienes {1} de edad'
+            }
+        }
+    },
+    en: {
+        simple: 'Simple message',
+        saludo: 'Hello {nombre}, you have {cantidad} messages',
+        lista: 'Item 1: {0}, Item 2: {1}',
+        resumen: 'User: {user}, Age: {edad}, Country: {pais}',
+        bienvenido: 'Welcome!',
+        numeros: 'Sum: {0} + {1} = {2}',
+        eco: 'Echo: {palabra}, again: {palabra}',
+        contact: 'My address is {address} {numero}',
+        subNivel: {
+            numeros: 'Sum: {0} + {1} = {2}',
+            anotherLevel: {
+                lista: 'Item 1: {uno}, Item 2: {dos}',
+                mixto: 'Hello {0}, your user is {user} and you are {1} years old'
+            }
+        }
+    }
+})
+
+const messages = {
+    es: {
+        simple: 'Mensaje simple',
+        saludo: 'Hola {nombre}, tienes {cantidad} mensajes',
+        lista: 'Elemento 1: {0}, Elemento 2: {1}',
+        resumen: 'Usuario: {user}, Edad: {edad}, País: {pais}',
+        bienvenido: '¡Bienvenido!',
+        numeros: 'Suma: {0} + {1} = {2}',
+        eco: 'Eco: {palabra}, otra vez: {palabra}',
+        contact: 'Mi direccion es {address} {numero}',
+        subNivel: {
+            numeros: 'Suma: {0} + {1} = {2}',
+            anotherLevel: {
+                lista: 'Elemento 1: {uno}, Elemento 2: {dos}',
+                mixto: 'Hola {0}, tu usuario es {user} y tienes {1} de edad'
+            }
+        }
+    },
+    en: {
+        simple: 'Simple message',
+        saludo: 'Hello {nombre}, you have {cantidad} messages',
+        lista: 'Item 1: {0}, Item 2: {1}',
+        resumen: 'User: {user}, Age: {edad}, Country: {pais}',
+        bienvenido: 'Welcome!',
+        numeros: 'Sum: {0} + {1} = {2}',
+        eco: 'Echo: {palabra}, again: {palabra}',
+        contact: 'My address is {address} {numero}',
+        subNivel: {
+            numeros: 'Sum: {0} + {1} = {2}',
+            anotherLevel: {
+                lista: 'Item 1: {uno}, Item 2: {dos}',
+                mixto: 'Hello {0}, your user is {user} and you are {1} years old'
+            }
+        }
+    }
+} as const
+// Ejemplo 1: Configuration usando la nueva función helper (no 'as const' needed!)
+export const usei18nStrict = createI18n({
+    defaultLocale: 'es',
+    messages
+})
+
+// Ejemplo 2: Configuración completamente sin 'as const' usando defineMessages
+export const usei18nStrictNoAsConst = createI18n({
+    defaultLocale: 'es',
+    messages: messagesWithoutAsConst
+})
+
+const tEs = usei18nStrictNoAsConst.useTranslations('es')
+const examples = {
+    spanish: {
+        simple: tEs('simple'),
+        saludo: tEs('saludo', { nombre: 'Juan', cantidad: 5 }),
+        lista: tEs('lista', 'Primero', 'Segundo'),
+        resumen: tEs('resumen', { user: 'Juan', edad: 30, pais: 'España' }),
+        bienvenido: tEs('bienvenido'),
+        numeros: tEs('numeros', 3, 4, 7),
+        eco: tEs('eco', { palabra: 'Hola' }),
+        contact: tEs('contact', { address: 'Calle Falsa 123', numero: '#456' }),
+        // Nested examples
+        subNivelNumeros: tEs('subNivel.numeros', 5, 3, 8),
+        anotherLevelLista: tEs('subNivel.anotherLevel.lista', { uno: 'Alpha', dos: 'Beta' }),
+        // The complex mixed example you provided
+        mixto: tEs('subNivel.anotherLevel.mixto', 'Mundo', 34, { user: 'Juan' })
+    }
+}
+console.log(
+    examples.spanish
+)
+*/
