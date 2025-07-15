@@ -419,7 +419,36 @@ export function createI18n<
     return i18nStrict(createI18nConfig(config))
 }
 
-export type TranslationKey = Parameters<ReturnType<typeof createI18n>['useTranslations']>[0]
+/**
+ * Tipo para obtener las claves de traducción de una instancia i18n específica.
+ * Proporciona autocompletado real basado en la configuración concreta.
+ * 
+ * @template T - La instancia i18n de la cual extraer las claves
+ * @example
+ * ```typescript
+ * const i18n = createI18n({
+ *   defaultLocale: 'es',
+ *   messages: { es: { welcome: 'Hola' }, en: { welcome: 'Hello' } }
+ * })
+ * 
+ * type MyKeys = TranslationKey<typeof i18n> // "welcome"
+ * ```
+ */
+export type TranslationKey<T extends I18nStrict<any, any>> = Parameters<ReturnType<T['useTranslations']>>[0]
+
+/**
+ * Tipo genérico para extraer las claves de traducción de una función de traducción específica.
+ * Útil para obtener autocompletado y validación de tipos para las claves.
+ * 
+ * @template T - Función de traducción de la cual extraer las claves
+ * @example
+ * ```typescript
+ * const t = useTranslations('es')
+ * type MyTranslationKeys = TranslationKeys<typeof t>
+ * // MyTranslationKeys será "welcome" | "items" (basado en las claves disponibles)
+ * ```
+ */
+export type TranslationKeys<T extends (...args: any[]) => string> = Parameters<T>[0]
 
 /**
  * Función para definir mensajes con inferencia de tipos constantes.
@@ -453,21 +482,3 @@ export type TranslationKey = Parameters<ReturnType<typeof createI18n>['useTransl
 export function defineMessages<const T extends Record<string, Record<string, any>>>(messages: T): T {
     return messages
 }
-
-const { useTranslations } = createI18n({
-    defaultLocale: 'es',
-    messages: defineMessages({
-        es: {
-            welcome: 'Bienvenido {usuario}',
-            items: 'Tienes {0} elementos'
-        },
-        en: {
-            welcome: 'Welcome {usuario}',
-            items: 'You have {0} items'
-        }
-    })
-})
-const t = useTranslations('es')
-
-const key: Parameters<typeof t>[0] = 'welcome'
-const translatedWelcome = t('welcome', { usuario: 'Juan' }) // 'Bienvenido Juan'
