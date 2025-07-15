@@ -225,7 +225,8 @@ export interface I18nStrict<Messages extends Record<string, any>, DefaultLocale 
      * Obtiene una lista de todos los locales disponibles.
      * @returns Array con las claves de todos los locales disponibles
      */
-    getAvailableLocales: () => (keyof Messages)[]
+    getAvailableLocales: () => [keyof Messages, ...(keyof Messages)[]]
+    // getAvailableLocales: () => (keyof Messages)[]
 
     /** 
      * Obtiene el locale por defecto configurado.
@@ -366,7 +367,8 @@ export function i18nStrict<
         }
     }
 
-    const getAvailableLocales = () => Object.keys(config.messages)
+    const getAvailableLocales = () => Object.keys(config.messages) as [keyof Messages, ...(keyof Messages)[]]
+
     const getDefaultLocale = () => config.defaultLocale
 
     return {
@@ -417,6 +419,8 @@ export function createI18n<
     return i18nStrict(createI18nConfig(config))
 }
 
+export type TranslationKey = Parameters<ReturnType<typeof createI18n>['useTranslations']>[0]
+
 /**
  * Función para definir mensajes con inferencia de tipos constantes.
  * Alternativa completamente libre de `as const` para definir objetos de mensajes.
@@ -449,3 +453,21 @@ export function createI18n<
 export function defineMessages<const T extends Record<string, Record<string, any>>>(messages: T): T {
     return messages
 }
+
+const { useTranslations } = createI18n({
+    defaultLocale: 'es',
+    messages: defineMessages({
+        es: {
+            welcome: 'Bienvenido {usuario}',
+            items: 'Tienes {0} elementos'
+        },
+        en: {
+            welcome: 'Welcome {usuario}',
+            items: 'You have {0} items'
+        }
+    })
+})
+const t = useTranslations('es')
+
+const key: Parameters<typeof t>[0] = 'welcome'
+const translatedWelcome = t('welcome', { usuario: 'Juan' }) // 'Bienvenido Juan'
