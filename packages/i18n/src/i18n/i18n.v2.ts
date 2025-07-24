@@ -454,6 +454,44 @@ export type TranslationKey<T extends I18nStrict<any, any>> = Parameters<ReturnTy
 export type TranslationKeys<T extends (...args: any[]) => string> = Parameters<T>[0]
 
 /**
+ * Tipo helper para extraer una clave específica de las claves de traducción disponibles.
+ * Útil cuando necesitas garantizar que una clave dinámica sea una de las claves válidas.
+ * 
+ * @template T - Función de traducción de la cual extraer las claves
+ * @template K - La clave específica que quieres extraer
+ * @example
+ * ```typescript
+ * const t = useTranslations('es')
+ * type WelcomeKey = ExtractTranslationKey<typeof t, 'welcome'>
+ * // WelcomeKey será 'welcome' si existe, o never si no existe
+ * 
+ * const dynamicKey = 'wel' + 'come'
+ * const result = t(dynamicKey as ExtractTranslationKey<typeof t, 'welcome'>, { usuario: 'Juan' })
+ * ```
+ */
+export type ExtractTranslationKey<T extends (...args: any[]) => string, K extends string> =
+    Extract<TranslationKeys<T>, K>
+
+/**
+ * Tipo helper más flexible que permite múltiples claves para extraer.
+ * Útil cuando quieres validar que una clave dinámica sea una de varias opciones válidas.
+ * 
+ * @template T - Función de traducción de la cual extraer las claves
+ * @template K - Union de claves específicas que quieres extraer
+ * @example
+ * ```typescript
+ * const t = useTranslations('es')
+ * type ValidKeys = ExtractTranslationKeys<typeof t, 'welcome' | 'items'>
+ * // ValidKeys será 'welcome' | 'items' (solo las que existan)
+ * 
+ * const dynamicKey = getKeyFromAPI() // string
+ * const result = t(dynamicKey as ExtractTranslationKeys<typeof t, 'welcome' | 'items'>, params)
+ * ```
+ */
+export type ExtractTranslationKeys<T extends (...args: any[]) => string, K extends string> =
+    Extract<TranslationKeys<T>, K>
+
+/**
  * Función para definir mensajes con inferencia de tipos constantes.
  * Alternativa completamente libre de `as const` para definir objetos de mensajes.
  * Preserva los tipos literales automáticamente usando el modificador `const`.
@@ -485,19 +523,3 @@ export type TranslationKeys<T extends (...args: any[]) => string> = Parameters<T
 export function defineMessages<const T extends Record<string, Record<string, any>>>(messages: T): T {
     return messages
 }
-const i = createI18n({
-    defaultLocale: 'es',
-    messages: defineMessages({
-        es: {
-            welcome: 'Bienvenido {usuario}',
-            items: 'Tienes {0} elementos'
-        },
-        en: {
-            welcome: 'Welcome {usuario}',
-            items: 'You have {0} items'
-        }
-    })
-})
-/** puedes ser que benga de api */
-const textdinamico: string = 'come' as string
-const t = i.useTranslations('es')(`wel${textdinamico}`, { usuario: 'Juan' })

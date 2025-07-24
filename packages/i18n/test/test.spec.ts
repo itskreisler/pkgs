@@ -6,7 +6,7 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert'
 
 // » IMPORT MODULES
-import { i18n, createI18n, defineMessages } from '@/index'
+import { i18n, createI18n } from '@/index'
 import { es } from '@/lang/es'
 
 const usei18nStrict = createI18n({
@@ -197,6 +197,6 @@ describe('testStrict', () => {
         }).useTranslations('es')
         const result = tEs('saludo', { nombre: 'Juan', cantidad: 100 })
         assert.strictEqual(result, 'Hola Juan, tienes 100 mensajes')
-        assert.strictEqual(tEs('stw.title.any', 100, { mensaje: 's' }), '¡100 pavos disponibles! ¡Disfruta!')
+        assert.strictEqual(tEs('stw.title.any', 100, { mensaje: '¡Disfruta!' }), '¡100 pavos disponibles! ¡Disfruta!')
     })
 })
