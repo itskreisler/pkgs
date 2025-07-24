@@ -28,7 +28,7 @@ class Whatsapp {
   qr: string | null | undefined
   saveCreds: () => Promise<void>
   commands: Map<RegExp, CommandImport>
-  folderCreds: string = 'creds'
+  folderCreds = 'creds'
   //
   constructor() {
     this.logger = pino({ level: 'silent' })
@@ -51,9 +51,9 @@ class Whatsapp {
     jids: string | string[],
     media: AnyMessageContent[] | Promise<AnyMessageContent[]>,
     options?: MiscMessageGenerationOptions,
-    batchSize: number = 10 // Tamaño del lote, puedes ajustarlo según tus necesidades
-  ): Promise<Array<proto.WebMessageInfo | undefined>> {
-    const promises: Array<Promise<proto.WebMessageInfo | undefined>> = []
+    batchSize = 10 // Tamaño del lote, puedes ajustarlo según tus necesidades
+  ): Promise<(proto.WebMessageInfo | undefined)[]> {
+    const promises: Promise<proto.WebMessageInfo | undefined>[] = []
     const resolvedMedia = await Promise.resolve(media)
     if (resolvedMedia.length > batchSize) {
       return await this.sendMsgGroupBatch(jids, resolvedMedia, options)
@@ -67,20 +67,20 @@ class Whatsapp {
   async sendMsgGroupBatch(
     jids: string | string[], media: AnyMessageContent[] | Promise<AnyMessageContent[]>,
     options?: MiscMessageGenerationOptions,
-    batchSize: number = 5 // Tamaño del lote, puedes ajustarlo según tus necesidades
-  ): Promise<Array<proto.WebMessageInfo | undefined>> {
+    batchSize = 5 // Tamaño del lote, puedes ajustarlo según tus necesidades
+  ): Promise<(proto.WebMessageInfo | undefined)[]> {
     const resolvedMedia = await Promise.resolve(media)
     const jidArray = Array.isArray(jids) ? jids : [jids]
-    const results: Array<proto.WebMessageInfo | undefined> = []
+    const results: (proto.WebMessageInfo | undefined)[] = []
 
     // Helper para procesar un lote de promesas
-    const processBatch = async (batch: Array<Promise<proto.WebMessageInfo | undefined>>) => {
+    const processBatch = async (batch: Promise<proto.WebMessageInfo | undefined>[]) => {
       const batchResults = await Promise.all(batch)
       results.push(...batchResults)
     }
 
     // Crear lotes
-    let batch: Array<Promise<proto.WebMessageInfo | undefined>> = []
+    let batch: Promise<proto.WebMessageInfo | undefined>[] = []
     for (const jid of jidArray) {
       for (const chunk of resolvedMedia) {
         batch.push(this.sock.sendMessage(jid, chunk, options))
@@ -361,9 +361,9 @@ class Whatsapp {
 
   async loadEvents() {
     console.log('(⏳) Cargando eventos')
-    //this.sock.ev.removeAllListeners('creds.update')
-    //this.sock.ev.removeAllListeners('connection.update')
-    //this.sock.ev.removeAllListeners('messages.upsert')
+    // this.sock.ev.removeAllListeners('creds.update')
+    // this.sock.ev.removeAllListeners('connection.update')
+    // this.sock.ev.removeAllListeners('messages.upsert')
 
     try {
       // creds.update
@@ -384,7 +384,7 @@ class Whatsapp {
   }
 
   //
-  getCommands(): Array<[RegExp, CommandImport]> {
+  getCommands(): [RegExp, CommandImport][] {
     return Array.from(this.commands)
   }
 
@@ -455,7 +455,7 @@ class Whatsapp {
             video: (content.isVideo === true) ? content.buffer : undefined,
             image: (content.isImage === true) ? content.buffer : undefined,
             audio: (content.isAudio === true) ? content.buffer : undefined,
-            // @ts-expect-error
+            // @ts-expect-error se ignora el error de typescript porque no se puede enviar un documento con baileys
             document: (content.isDocument === true) ? content.buffer : undefined
           }, opts)) as proto.WebMessageInfo
         } else {

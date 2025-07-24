@@ -72,7 +72,7 @@
     "@kreisler/js-google-translate-free": "^4.0.2",
     "@kreisler/js-helpers": "^4.6.2",
     "@kreisler/try-catch": "^2.2.2",
-    "baileys": "^6.7.16",
+    "baileys": "^6.7.18",
     "cloudscraper": "^4.6.0",
     "crypto-js": "^4.2.0",
     "file-type": "^19.4.1",
