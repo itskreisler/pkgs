@@ -168,12 +168,15 @@ type TranslationFunction<Messages, Locale extends keyof Messages> = <
 >(
     key: Key,
     ...args: DeepValue<Messages[Locale], Key> extends string
-        ? [
-            ...CreatePositionalParamsTuple<DeepValue<Messages[Locale], Key>>,
-            ...(keyof CreateNamedParamsObject<DeepValue<Messages[Locale], Key>> extends never
-                ? []
-                : [CreateNamedParamsObject<DeepValue<Messages[Locale], Key>>])
-        ]
+        ? ExtractVariables<DeepValue<Messages[Locale], Key>> extends never[]
+        ? [] // No parameters needed
+        : ExtractPositionalParams<ExtractVariables<DeepValue<Messages[Locale], Key>>> extends never
+        ? ExtractNamedParams<ExtractVariables<DeepValue<Messages[Locale], Key>>> extends never
+        ? [] // No parameters needed
+        : [CreateNamedParamsObject<DeepValue<Messages[Locale], Key>>] // Only named parameters
+        : ExtractNamedParams<ExtractVariables<DeepValue<Messages[Locale], Key>>> extends never
+        ? CreatePositionalParamsTuple<DeepValue<Messages[Locale], Key>> // Only positional parameters
+        : [...CreatePositionalParamsTuple<DeepValue<Messages[Locale], Key>>, CreateNamedParamsObject<DeepValue<Messages[Locale], Key>>] // Both positional and named
         : never[]
 ) => string
 
@@ -482,3 +485,19 @@ export type TranslationKeys<T extends (...args: any[]) => string> = Parameters<T
 export function defineMessages<const T extends Record<string, Record<string, any>>>(messages: T): T {
     return messages
 }
+const i = createI18n({
+    defaultLocale: 'es',
+    messages: defineMessages({
+        es: {
+            welcome: 'Bienvenido {usuario}',
+            items: 'Tienes {0} elementos'
+        },
+        en: {
+            welcome: 'Welcome {usuario}',
+            items: 'You have {0} items'
+        }
+    })
+})
+/** puedes ser que benga de api */
+const textdinamico: string = 'come' as string
+const t = i.useTranslations('es')(`wel${textdinamico}`, { usuario: 'Juan' })

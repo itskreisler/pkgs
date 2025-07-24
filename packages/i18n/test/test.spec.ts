@@ -6,7 +6,8 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert'
 
 // » IMPORT MODULES
-import { i18n, createI18n } from '@/index'
+import { i18n, createI18n, defineMessages } from '@/index'
+import { es } from '@/lang/es'
 
 const usei18nStrict = createI18n({
     defaultLocale: 'es',
@@ -184,5 +185,18 @@ describe('testStrict', () => {
         const result = tStrict('eco', { palabra: 'test123' })
         assert.strictEqual(result, 'Eco: test123, otra vez: test123')
     })
-
+    it('deberia funcionar si importo un idioma desde un archivo externo', () => {
+        const tEs = createI18n({
+            defaultLocale: 'es',
+            messages: {
+                es: {
+                    ...es,
+                    saludo: 'Hola {nombre}, tienes {cantidad} mensajes'
+                }
+            }
+        }).useTranslations('es')
+        const result = tEs('saludo', { nombre: 'Juan', cantidad: 100 })
+        assert.strictEqual(result, 'Hola Juan, tienes 100 mensajes')
+        assert.strictEqual(tEs('stw.title.any', 100, { mensaje: 's' }), '¡100 pavos disponibles! ¡Disfruta!')
+    })
 })
