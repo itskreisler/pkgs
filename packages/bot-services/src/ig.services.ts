@@ -162,12 +162,12 @@ export async function instagramGetUrl (urlMedia: string): Promise<InstagramOutpu
   return await promise as InstagramOutput
 }
 export interface RootResponse {
-  data: Data
+  data: InstagramData
   extensions: Extensions
   status: string
 }
 
-export interface Data {
+export interface InstagramData {
   xdt_shortcode_media: XdtShortcodeMedia
 }
 

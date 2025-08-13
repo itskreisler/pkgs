@@ -16,11 +16,11 @@ export interface TikTokResponse {
   code: TikTokStatusCodes.OK | TikTokStatusCodes.FAILED
   msg: 'success' | 'Url parsing is failed! Please check url.'
   processed_time: number
-  data?: Data
+  data?: TikTokData
   domain: TikTokTypes.DOMAIN
 }
 
-export interface Data {
+export interface TikTokData {
   id: string
   region: string
   title: string

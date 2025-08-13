@@ -2,7 +2,7 @@ import { configEnv } from '@/bot/helpers/env'
 import { getStreamFromUrl, Cadena } from '@/bot/helpers/polyfill'
 import { type ContextMsg } from '@/bot/interfaces/inter'
 import type Whatsapp from '@/bot/main'
-import { r34API, r34Tags, r34RandomPic, type R34Tags, R34Const, R34Response } from '@/bot/services/r34.services'
+import { r34API, r34Tags, r34RandomPic, type R34Tags, R34Const, R34Response } from '@kreisler/bot-services'
 import { MarkdownWsp } from '@kreisler/js-helpers'
 import { createApi } from '@kreisler/createapi'
 const { BOT_USERNAME } = configEnv() as { BOT_USERNAME: string }

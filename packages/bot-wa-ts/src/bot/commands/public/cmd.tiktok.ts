@@ -1,6 +1,6 @@
 import { type ContextMsg } from '@/bot/interfaces/inter'
 import type Whatsapp from '@/bot/main'
-import { tikwm, TikTokStatusCodes, sizeMB } from '@/bot/services/tiktok.services'
+import { tikwm, TikTokStatusCodes, sizeMB } from '@kreisler/bot-services'
 import { nodeFetchBuffer, getStreamFromUrl } from '@/bot/helpers/polyfill'
 import { MarkdownWsp } from '@kreisler/js-helpers'
 import { proto } from 'baileys'

@@ -2,7 +2,7 @@ import { tryCatchPromise } from '@kreisler/try-catch/dist/tryCatch.mjs'
 import { getStreamFromUrl } from '@/bot/helpers/polyfill'
 import { type ContextMsg } from '@/bot/interfaces/inter'
 import type Whatsapp from '@/bot/main'
-import { instagramGetUrl } from '@/bot/services/ig.services'
+import { instagramGetUrl } from '@kreisler/bot-services'
 //
 const PATTERN_IG = /(?:https?:\/\/)?(?:www.)?instagram.com\/?([a-zA-Z0-9\\.\\_\\-]+)?\/([reel|p]+)?\/([a-zA-Z0-9\-\\_\\.]+)\/?([0-9]+)?/
 export default {
