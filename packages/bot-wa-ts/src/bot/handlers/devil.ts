@@ -3,10 +3,8 @@ import {
   JsCron
   //, buildCronExpression
 } from '@kreisler/js-cron'
-import { CMDS, GlobalDB, CmdActions } from '@/bot/services/zustand.services'
 import { type IPostMedia } from '../interfaces/inter'
-import { type IKudasaiData } from '@/bot/services/apis.services'
-import { type IEpisodeAdded } from '@/bot/services/anime.services'
+import { type IKudasaiData, type IEpisodeAdded, CMDS, GlobalDB, CmdActions } from '@kreisler/bot-services'
 const CRON_JOB = '0 */15 6-23 * * * *'
 // const CRON_JOB = buildCronExpression({ second: '*/20' })
 export async function devil(client: Whatsapp): Promise<void> {

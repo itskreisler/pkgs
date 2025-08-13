@@ -19,9 +19,8 @@
     "watch:client": "rm -rf dist/* && tsup src/bot/client.ts --watch --onSuccess \"node dist/client.js\"",
     "watch:test": "rm -rf dist/* && tsup --entry.test test/index.test.ts --format esm --watch --onSuccess \"node dist/test.js\"",
     "watch:server": "tsup src/api/server.ts --watch --onSuccess \"node dist/server.js\"",
-    "watch:services": "rm -rf dist/* && npx tsup --entry.services src/bot/services/anime.services.ts --format esm --watch --onSuccess \"node dist/services.js\"",
     "test": "rm -rf dist/* && tsup src/bot/client.ts --watch --onSuccess \"node dist/client.js\"",
-    "test:ts": "rm -rf dist/* && tsup test/test.spec.ts --format esm --onSuccess \"cross-env NODE_ENV=test node --test dist/test.spec.js\"",
+    "test:ts": "npx tsx --test test/test.spec.ts",
     "docs": "typedoc --out docs src/index.ts",
     "serve": "pnpx serve -p 1234 ./docs",
     "pp": "pnpm run build:all && pnpm run test:mjs && pnpm run test:cjs && pnpm run docs && npm publish --access public"
@@ -61,25 +60,23 @@
   "devDependencies": {
     "@types/crypto-js": "^4.2.2",
     "@types/jsdom": "^21.1.7",
-    "@types/qrcode-terminal": "^0.12.2"
+    "@types/qrcode-terminal": "^0.12.2",
+    "tsx": "latest"
   },
   "dependencies": {
     "@hapi/boom": "^10.0.1",
+    "@kreisler/bot-services": "workspace:*",
     "@kreisler/createapi": "^3.0.0",
     "@kreisler/debounce": "^1.0.1",
     "@kreisler/exec-promise": "^1.0.0",
     "@kreisler/js-cron": "latest",
-    "@kreisler/js-google-translate-free": "^4.0.2",
     "@kreisler/js-helpers": "^4.6.2",
     "@kreisler/try-catch": "^2.2.2",
     "baileys": "^6.7.18",
-    "cloudscraper": "^4.6.0",
     "crypto-js": "^4.2.0",
     "file-type": "^19.4.1",
-    "jsdom": "^25.0.1",
     "pino": "9.6.0",
     "qrcode-terminal": "^0.12.0",
-    "wa-sticker-formatter": "^4.4.4",
-    "zustand": "^5.0.1"
+    "wa-sticker-formatter": "^4.4.4"
   }
 }

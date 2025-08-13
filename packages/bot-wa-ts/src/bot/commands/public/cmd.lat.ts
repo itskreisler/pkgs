@@ -1,8 +1,7 @@
 import { EConstCMD, IPostMedia, type ContextMsg } from '@/bot/interfaces/inter'
 import type Whatsapp from '@/bot/main'
 import { MarkdownWsp } from '@kreisler/js-helpers'
-import { LatAnimeScraper, IEpisodeAdded, URIS } from '@/bot/services/anime.services'
-import { GlobalDB, CmdActions } from '@/bot/services/zustand.services'
+import { LatAnimeScraper, IEpisodeAdded, URIS, GlobalDB, CmdActions } from '@kreisler/bot-services'
 import { getStreamFromUrl } from '@/bot/helpers/polyfill'
 import { tryCatchPromise } from '@kreisler/try-catch'
 

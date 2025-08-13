@@ -1,8 +1,7 @@
 import { getStreamFromUrl } from '@/bot/helpers/polyfill'
 import { EConstCMD, type ContextMsg, type IPostMedia } from '@/bot/interfaces/inter'
 import type Whatsapp from '@/bot/main'
-import { IKudasaiData, kudasaiApi } from '@/bot/services/apis.services'
-import { GlobalDB, CmdActions } from '@/bot/services/zustand.services'
+import { IKudasaiData, kudasaiApi, GlobalDB, CmdActions } from '@kreisler/bot-services'
 import { MarkdownWsp } from '@kreisler/js-helpers'
 
 //

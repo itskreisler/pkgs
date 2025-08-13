@@ -8,7 +8,7 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
 // » IMPORT MODULES
-import { AnimeFLVScraper, LatAnimeScraper } from '@/bot/services/anime.services'
+import { AnimeFLVScraper, LatAnimeScraper } from '@kreisler/bot-services'
 // ━━ TEST ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 describe('Anime Scrapers', () => {

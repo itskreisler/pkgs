@@ -1,5 +1,4 @@
-// import { createStore as useStore } from 'zustand/vanilla'
-import { useStore } from './jsonStorage.services'
+import { usePersist as useStore } from '@kreisler/plugins'
 export type CMDS = 'k' | 'lat' | 'flv'
 
 interface GlobalState {

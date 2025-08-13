@@ -1,0 +1,48 @@
+{
+  "name": "@kreisler/bot-services",
+  "version": "1.0.0",
+  "description": "Shared services for my bots",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "sideEffects": false,
+  "files": [
+    "dist/**"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch"
+  },
+  "keywords": [
+    "bot",
+    "services",
+    "shared"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/itskreisler/pkgs.git"
+  },
+  "homepage": "https://github.com/itskreisler/pkgs/tree/master/packages/bot-services#readme",
+  "bugs": {
+    "url": "https://github.com/itskreisler/pkgs/issues"
+  },
+  "author": {
+    "email": "cvkreisler@outlook.com",
+    "name": "Kreisler",
+    "url": "https://linktr.ee/itskreisler"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jsdom": "^21.1.7"
+  },
+  "dependencies": {
+    "cloudscraper": "^4.6.0",
+    "jsdom": "^25.0.1",
+    "@kreisler/createapi": "^3.0.0",
+    "@kreisler/js-helpers": "^4.6.2",
+    "@kreisler/js-google-translate-free": "^4.0.2",
+    "@kreisler/plugins": "workspace:*",
+    "zustand": "^5.0.1"
+  }
+}
