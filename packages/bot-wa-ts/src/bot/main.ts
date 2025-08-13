@@ -266,15 +266,15 @@ class Whatsapp {
     const parts = prop.split('.')
 
     // Recorrer cada parte de la propiedad
-    for (let i = 0; i < parts.length; i++) {
+    for (const part of parts) {
       // Verificar si el objeto tiene la propiedad en cuestión
       if (obj === null || typeof obj === 'undefined') return false as boolean
-      if (parts[i] === null || typeof parts[i] === 'undefined') return false as boolean
-      if (!Object.prototype.hasOwnProperty.call(obj, parts[i])) {
+      if (part === null || typeof part === 'undefined') return false as boolean
+      if (!Object.prototype.hasOwnProperty.call(obj, part)) {
         return false as boolean // Si no la tiene, devolver false
       }
       // Si la tiene, mover el objeto a la propiedad actual para la siguiente iteración
-      obj = obj[parts[i]]
+      obj = obj[part]
     }
 
     // Si se recorrieron todas las partes y se encontraron, devolver true
@@ -292,15 +292,15 @@ class Whatsapp {
     const parts = propPath.split('.')
 
     // Recorrer cada parte de la propiedad
-    for (let i = 0; i < parts.length; i++) {
+    for (const part of parts) {
       // Verificar si el objeto tiene la propiedad en cuestión
       if (obj === null) return undefined
-      if (parts[i] === null) return undefined
-      if (!Object.prototype.hasOwnProperty.call(obj, parts[i])) {
+      if (part === null) return undefined
+      if (!Object.prototype.hasOwnProperty.call(obj, part)) {
         return undefined // Si no la tiene, devolver undefined
       }
       // Si la tiene, mover el objeto a la propiedad actual para la siguiente iteración
-      obj = obj[parts[i]]
+      obj = obj[part]
     }
 
     // Devolver el valor final de la propiedad
@@ -351,6 +351,16 @@ class Whatsapp {
       console.error({ e })
       console.log('(❌) ERROR AL CARGAR EL HANDLER')
     }
+
+    // Registrar funciones de comandos automáticamente
+    try {
+      const { registerCommandFunctions } = await import('@/bot/helpers/cmdRegister')
+      registerCommandFunctions()
+    } catch (e) {
+      console.error({ e })
+      console.log('(❌) ERROR AL REGISTRAR FUNCIONES DE COMANDOS')
+    }
+
     try {
       (await import('@/bot/handlers/devil')).devil.bind(this)(this)
     } catch (e) {

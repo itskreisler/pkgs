@@ -25,10 +25,8 @@ export interface LotteryData {
 }
 
 interface LotteryAPI {
-  results: {
-    (): Promise<LotteryResults>
-    (date: string): Promise<LotteryResults>
-  }
+  results: // (): Promise<LotteryResults>
+  (date?: string) => Promise<LotteryResults>
   lotteries: () => Promise<LotteryInfo>
 }
 export const lotteryApi: LotteryAPI = createApi(LotteryConst.API)
@@ -49,12 +47,14 @@ export function getFormattedDate({ daysOffset = 0 }: { daysOffset?: number } = {
   const day = String(date.getDate()).padStart(2, '0')
   return `${year}-${month}-${day}`
 }
+/*
 console.log('lotteries', getFormattedDate({ daysOffset: -1 })) // 2024-12-09
+*/
 /* lotteryApi.results(getFormattedDate({ daysOffset: 0 })).then(loteria => {
   const sinuano = loteria.data.filter(name => name.slug.startsWith('sinuano')).map(({ slug, result }) => ({ slug, result }))
   console.log({ sinuano })
 })
  */
-lotteryApi.results().then(lotteries => {
+/* lotteryApi.results().then(lotteries => {
   console.log(JSON.stringify(lotteries, null, 2))
-})
+})*/

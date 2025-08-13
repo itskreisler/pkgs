@@ -26,10 +26,6 @@ export async function devil(client: Whatsapp): Promise<void> {
           continue
         }
         const { input, output } = CmdActions.getCmdActions(cmd) as { input: InputFunction, output: OutputFunction }
-        if (typeof input === 'undefined' || typeof output === 'undefined') {
-          console.log('No hay acciones para el comando', idGroup, cmd)
-          continue
-        }
         const latestData = await input() as (IEpisodeAdded & IKudasaiData)[]
         const newData = latestData.filter(i => typeof data.find(o => o.id === i.id) === 'undefined')
         if (newData.length === 0) {

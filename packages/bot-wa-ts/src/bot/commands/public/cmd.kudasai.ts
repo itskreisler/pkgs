@@ -1,7 +1,7 @@
 import { getStreamFromUrl } from '@/bot/helpers/polyfill'
 import { EConstCMD, type ContextMsg, type IPostMedia } from '@/bot/interfaces/inter'
 import type Whatsapp from '@/bot/main'
-import { IKudasaiData, kudasaiApi, GlobalDB, CmdActions } from '@kreisler/bot-services'
+import { IKudasaiData, kudasaiApi, GlobalDB } from '@kreisler/bot-services'
 import { MarkdownWsp } from '@kreisler/js-helpers'
 
 //
@@ -50,7 +50,6 @@ export default {
           return
         }
         GlobalDB.getState().toggleNotifications(from, EConstCMD.Kudasai, true)
-        CmdActions.setCmdActions(EConstCMD.Kudasai, fnApi, fnMedia)
         await msg.reply({ text: 'Notificaciones de Kudasai activadas' })
         break
       }
@@ -85,7 +84,7 @@ export default {
     async function fnApi() {
       return (await kudasaiApi()).map(item => ({ id: item.slug, ...item }))
     }
-    async function fnMedia(fn: Function): Promise<IPostMedia[]> {
+    async function fnMedia(fn: (...args: any[]) => Promise<IKudasaiData[]>): Promise<IPostMedia[]> {
       const data: IKudasaiData[] = await fn()
       const multimedias: IPostMedia[] = []
       for (const { image, title, category: { slug: cslug }, slug } of data) {

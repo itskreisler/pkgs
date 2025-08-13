@@ -1,7 +1,7 @@
 import { EConstCMD, IPostMedia, type ContextMsg } from '@/bot/interfaces/inter'
 import type Whatsapp from '@/bot/main'
 import { MarkdownWsp } from '@kreisler/js-helpers'
-import { AnimeFLVScraper, IEpisodeAdded, URIS, GlobalDB, CmdActions } from '@kreisler/bot-services'
+import { AnimeFLVScraper, IEpisodeAdded, URIS, GlobalDB } from '@kreisler/bot-services'
 import { getStreamFromUrl } from '@/bot/helpers/polyfill'
 import { tryCatchPromise } from '@kreisler/try-catch'
 //
@@ -46,7 +46,6 @@ export default {
           return
         }
         GlobalDB.getState().toggleNotifications(from, EConstCMD.Flv, true)
-        CmdActions.setCmdActions(EConstCMD.Flv, fnApi, fnMedia)
         await msg.reply({ text: 'Notificaciones de AnimeFlv activadas' })
         break
       }
@@ -64,13 +63,13 @@ export default {
         const datos = GlobalDB.getState().getCommandData(from, EConstCMD.Flv) as IEpisodeAdded[]
         const grouped = datos
           .sort((a, b) => a.id.localeCompare(b.id))
-          .reduce<{ [key: string]: number[] }>((acc, item) => {
-          if (typeof acc[item.title] === 'undefined') {
-            acc[item.title] = []
-          }
-          acc[item.title].push(item.episode)
-          return acc
-        }, {})
+          .reduce<Record<string, number[]>>((acc, item) => {
+            if (typeof acc[item.title] === 'undefined') {
+              acc[item.title] = []
+            }
+            acc[item.title].push(item.episode)
+            return acc
+          }, {})
         const total = String(datos.length)
         const list = Object.entries(grouped).map(([title, episodes]) => {
           const episodeList = episodes.sort((a, b) => a - b).map(ep => `#${ep}`).join(', ')
@@ -79,7 +78,7 @@ export default {
         await msg.reply({ text: `Total: ${total}\n${list}` })
         break
       }
-      case 'id':{
+      case 'id': {
         if (typeof query === 'undefined') {
           await msg.reply({ text: 'Proporciona un id de anime' })
           return
@@ -103,7 +102,7 @@ export default {
     async function fnApi() {
       return scraper.latestEpisodesAdded()
     }
-    async function fnMedia(fn: Function): Promise<IPostMedia[]> {
+    async function fnMedia(fn: (...args: any[]) => Promise<IEpisodeAdded[]>): Promise<IPostMedia[]> {
       const data: IEpisodeAdded[] = await fn()
       const multimedias: IPostMedia[] = []
       for (const { episode, title, poster, servers } of data) {
