@@ -1,10 +1,12 @@
 import type Whatsapp from '@/bot/main'
 import {
   JsCron
-  //, buildCronExpression
+  // , buildCronExpression
 } from '@kreisler/js-cron'
 import { type IPostMedia } from '../interfaces/inter'
-import { type IKudasaiData, type IEpisodeAdded, CMDS, GlobalDB, CmdActions } from '@kreisler/bot-services'
+import { type IKudasaiData, type IEpisodeAdded, CMDS, GlobalDB, CmdActions, type InputFunction, type OutputFunction } from '@kreisler/bot-services'
+
+// Ejecutar cada 15 minutos desde las 6:00 hasta las 23:45
 const CRON_JOB = '0 */15 6-23 * * * *'
 // const CRON_JOB = buildCronExpression({ second: '*/20' })
 export async function devil(client: Whatsapp): Promise<void> {
@@ -23,12 +25,12 @@ export async function devil(client: Whatsapp): Promise<void> {
           console.log('Notificaciones desactivadas', idGroup, cmd)
           continue
         }
-        const { input, output } = CmdActions.getCmdActions(cmd) as { input: Function, output: Function }
+        const { input, output } = CmdActions.getCmdActions(cmd) as { input: InputFunction, output: OutputFunction }
         if (typeof input === 'undefined' || typeof output === 'undefined') {
           console.log('No hay acciones para el comando', idGroup, cmd)
           continue
         }
-        const latestData = await input() as Array<IEpisodeAdded & IKudasaiData>
+        const latestData = await input() as (IEpisodeAdded & IKudasaiData)[]
         const newData = latestData.filter(i => typeof data.find(o => o.id === i.id) === 'undefined')
         if (newData.length === 0) {
           console.log('No hay nuevos datos', idGroup, cmd)

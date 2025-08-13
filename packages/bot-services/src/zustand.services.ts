@@ -1,19 +1,19 @@
 import { usePersist as useStore } from '@kreisler/plugins'
 export type CMDS = 'k' | 'lat' | 'flv'
 
+// Tipos específicos para las funciones de comando
+export type InputFunction = (...args: any[]) => any
+export type OutputFunction = (...args: any[]) => any
+
 interface GlobalState {
-  groupDatabases: {
-    [groupId: string]: {
-      [command: string]: {
-        data: Array<{ [key: string]: any }>
-        notifications: boolean
-      }
-    }
-  }
+  groupDatabases: Record<string, Record<string, {
+    data: Record<string, any>[]
+    notifications: boolean
+  }>>
   getNotifications: (groupId: string, cmd: CMDS) => boolean // Obtiene el estado de las notificaciones.
   toggleNotifications: (groupId: string, cmd: CMDS, state: boolean) => void // Activa/Desactiva notificaciones.
-  addCommandData: (groupId: string, cmd: CMDS, newData: { [key: string]: any }) => void // Agrega datos.
-  getCommandData: (groupId: string, cmd: CMDS) => Array<{ [key: string]: any }> // Obtiene datos.
+  addCommandData: (groupId: string, cmd: CMDS, newData: Record<string, any>) => void // Agrega datos.
+  getCommandData: (groupId: string, cmd: CMDS) => Record<string, any>[] // Obtiene datos.
   delAllCommandData: (groupId: string, cmd: CMDS, id: string) => void // Elimina datos.
 }
 const GlobalDB = useStore<GlobalState>({
@@ -80,7 +80,7 @@ const GlobalDB = useStore<GlobalState>({
 })
 class CommandActions {
   private static instance: CommandActions // Instancia única
-  private readonly cmdActions: Map<CMDS, { input: Function, output: Function }>
+  private readonly cmdActions: Map<CMDS, { input: InputFunction, output: OutputFunction }>
 
   private constructor() {
     this.cmdActions = new Map()
@@ -100,7 +100,7 @@ class CommandActions {
   }
 
   // Configura las acciones de un comando específico
-  public setCmdActions(cmd: CMDS, input: Function, output: Function) {
+  public setCmdActions(cmd: CMDS, input: InputFunction, output: OutputFunction) {
     this.cmdActions.set(cmd, { input, output })
   }
 }
