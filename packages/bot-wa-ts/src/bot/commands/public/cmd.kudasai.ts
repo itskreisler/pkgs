@@ -32,12 +32,21 @@ export default {
         break
       }
       case 'fetch': {
-        const medias = fnMedia(fnApi)
+        const data = (await kudasaiApi()).map(item => ({ id: item.slug, ...item }))
+        const medias: IPostMedia[] = []
+        for (const { image, title, category: { slug: cslug }, slug } of data) {
+          medias.push({
+            image: {
+              stream: await getStreamFromUrl(image.replace('-150x150', ''))
+            },
+            caption: title.concat('\n\n', MarkdownWsp.Quote(urlBase.concat(cslug, '/', slug, '/')))
+          })
+        }
         await client.sendMsgGroup(from, medias)
         break
       }
       case 'start': {
-        const data = await fnApi()
+        const data = (await kudasaiApi()).map(item => ({ id: item.slug, ...item }))
         GlobalDB.getState().addCommandData(from, EConstCMD.Kudasai, data)
         await msg.reply({ text: 'Se han añadido las noticias actuales a la base de datos' })
         console.log('Datos agregados')
@@ -80,23 +89,5 @@ export default {
         break
       }
     }
-
-    async function fnApi() {
-      return (await kudasaiApi()).map(item => ({ id: item.slug, ...item }))
-    }
-    async function fnMedia(fn: (...args: any[]) => Promise<IKudasaiData[]>): Promise<IPostMedia[]> {
-      const data: IKudasaiData[] = await fn()
-      const multimedias: IPostMedia[] = []
-      for (const { image, title, category: { slug: cslug }, slug } of data) {
-        multimedias.push({
-          image: {
-            stream: await getStreamFromUrl(image.replace('-150x150', ''))
-          },
-          caption: title.concat('\n\n', MarkdownWsp.Quote(urlBase.concat(cslug, '/', slug, '/')))
-        })
-      }
-      return multimedias
-    }
-    // await client.sendMsgGroup(from, multimedias)
   }
 }

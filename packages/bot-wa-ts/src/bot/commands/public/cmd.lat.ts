@@ -28,12 +28,26 @@ export default {
 
     switch (accion) {
       case 'fetch': {
-        const medias = await fnMedia(fnApi)
+        const data = await scraper.latestEpisodesAdded()
+        const medias: IPostMedia[] = []
+        for (const { episode, title, poster, servers } of data.slice(0, 5)) {
+          const enlacesParaVer = servers.watchOnline.map(({ title, code }) => MarkdownWsp.Quote(MarkdownWsp.Bold(title).concat(': ', code))).join('\n')
+          const caption = MarkdownWsp.Quote(URIS.LAT_BASE_URL)
+            .concat('\n')
+            .concat(`${MarkdownWsp.Quote(`El episodio #${String(episode)} de ${MarkdownWsp.Bold(title)} ya está disponible\n`)}`)
+            .concat(enlacesParaVer)
+          medias.push({
+            image: {
+              stream: await getStreamFromUrl(poster)
+            },
+            caption
+          })
+        }
         await client.sendMsgGroup(from, medias)
         break
       }
       case 'start': {
-        const data = await fnApi()
+        const data = await scraper.latestEpisodesAdded()
         GlobalDB.getState().addCommandData(from, EConstCMD.Lat, data)
         await msg.reply({ text: 'Se han añadido animes de latanime.org más recientes' })
         console.log('Datos agregados')
@@ -100,30 +114,6 @@ export default {
         await msg.reply({ text: 'Ejemplo de uso:\n/lat_on\n/lat_off' })
         break
       }
-    }
-
-    //
-    async function fnApi() {
-      return scraper.latestEpisodesAdded()
-    }
-    async function fnMedia(fn: (...args: any[]) => Promise<IEpisodeAdded[]>): Promise<IPostMedia[]> {
-      const data: IEpisodeAdded[] = await fn()
-      const multimedias: IPostMedia[] = []
-      for (const { episode, title, poster, servers } of data.slice(0, 5)) {
-        const enlacesParaVer = servers.watchOnline.map(({ title, code }) => MarkdownWsp.Quote(MarkdownWsp.Bold(title).concat(': ', code))).join('\n')
-        const caption = MarkdownWsp.Quote(URIS.LAT_BASE_URL)
-          .concat('\n')
-          .concat(`${MarkdownWsp.Quote(`El episodio #${String(episode)} de ${MarkdownWsp.Bold(title)} ya está disponible\n`)}`)
-          .concat(enlacesParaVer)
-        multimedias.push({
-          image: {
-            stream: await getStreamFromUrl(poster)
-          },
-          caption
-        })
-      }
-
-      return multimedias
     }
   }
 }
