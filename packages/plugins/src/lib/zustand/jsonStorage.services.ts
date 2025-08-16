@@ -16,7 +16,9 @@ export function jsonStorage(file_path = './storage.json') {
     fs.writeFileSync(filePath, JSON.stringify({}))
   }
 
-  const readStorage = (): Record<string, string> => {
+  type StorageData = Record<string, { value: string; expire: number | null }>;
+
+  const readStorage = (): StorageData => {
     const data = fs.readFileSync(filePath, 'utf-8')
     try {
       return JSON.parse(data)
@@ -25,7 +27,7 @@ export function jsonStorage(file_path = './storage.json') {
     }
   }
 
-  const writeStorage = (data: Record<string, string>) => {
+  const writeStorage = (data: StorageData) => {
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2))
   }
 
@@ -40,7 +42,16 @@ export function jsonStorage(file_path = './storage.json') {
 
     getItem(key: string): string | null {
       const storage = readStorage()
-      return Object.hasOwn(storage, key) === true ? storage[key] : null
+      if (Object.hasOwn(storage, key)) {
+          const item = storage[key];
+          if (item.expire === null || item.expire > Date.now()) {
+              return item.value;
+          }
+          // Item has expired, remove it
+          this.removeItem(key);
+          return null;
+      }
+      return null
     },
 
     key(index: number): string | null {
@@ -51,25 +62,25 @@ export function jsonStorage(file_path = './storage.json') {
     removeItem(key: string): void {
       const storage = readStorage()
       if (Object.hasOwn(storage, key) === true) {
-        // delete storage[key]
-        // writeStorage(storage)
         const { [key]: _, ...newStorage } = storage
         writeStorage(newStorage)
       }
     },
 
-    setItem(key: string, value: string): void {
+    setItem(key: string, value: string, expire: number | null = null): void {
       const storage = readStorage()
-      storage[key] = value
+      storage[key] = { value, expire }
       writeStorage(storage)
     },
-    setItems(items: Record<string, string>) {
+
+    setItems(items: Record<string, string>, expire: number | null = null) {
       const storage = readStorage()
       for (const key in items) {
-        storage[key] = items[key]
+        storage[key] = { value: items[key], expire }
       }
       writeStorage(storage)
-    }
+    },
 
+    getRawStore: () => readStorage()
   }
 }
