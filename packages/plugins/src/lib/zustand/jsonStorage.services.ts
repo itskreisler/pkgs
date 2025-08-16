@@ -2,14 +2,19 @@ import fs from 'fs'
 import path from 'path'
 import zlib from 'zlib'
 import { debounce } from '@kreisler/debounce'
-import type { PersistentStorage } from './storage'
+import type {
+  ExtendedStateStorage,
+  JsonStorageOptions,
+  StorageData
+} from '@/types'
 
 /**
  * 
  * @param {string} file_path - ejemplo: './storage.json' o './tmp/a/b/c.json' o '../../storage.json'
  * @returns 
  */
-export function jsonStorage(file_path = './storage.json', { debounceMs = 1000, useCompression = true } = {}): PersistentStorage {
+export function jsonStorage(file_path = './storage.json', options: JsonStorageOptions = {}): ExtendedStateStorage {
+  const { debounceMs = 1000, useCompression = true } = options
   // Asegúrate de que el archivo exista
   const filePath = file_path.endsWith('.json') ? file_path : file_path.concat('.json')
   // Crear directorios de forma recursiva si se para un ./tmp/a/b/c.json
@@ -18,8 +23,6 @@ export function jsonStorage(file_path = './storage.json', { debounceMs = 1000, u
   if (!fs.existsSync(filePath)) {
     fs.writeFileSync(filePath, JSON.stringify({}))
   }
-
-  type StorageData = Record<string, { value: string; expire: number | null }>;
 
   const readStorage = (): StorageData => {
     try {
@@ -35,7 +38,7 @@ export function jsonStorage(file_path = './storage.json', { debounceMs = 1000, u
       }
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code === 'ENOENT') return {}
-      console.error("Failed to read or parse storage file:", error)
+      console.error('Failed to read or parse storage file:', error)
       return {}
     }
   }
@@ -53,55 +56,46 @@ export function jsonStorage(file_path = './storage.json', { debounceMs = 1000, u
     : _writeStorage
 
   return {
-    get length() {
-      return Object.keys(readStorage()).length
-    },
-
-    clear() {
-      writeStorage({})
-    },
-
     getItem(key: string): string | null {
       const storage = readStorage()
       if (Object.hasOwn(storage, key)) {
-          const item = storage[key];
-          if (item.expire === null || item.expire > Date.now()) {
-              return item.value;
-          }
-          // Item has expired, remove it
-          this.removeItem(key);
-          return null;
+        const item = storage[key]
+        if (item.expire === null || item.expire > Date.now()) {
+          return item.value
+        }
+        // Item has expired, remove it
+        this.removeItem(key)
+        return null
       }
       return null
     },
 
-    key(index: number): string | null {
-      const keys = Object.keys(readStorage())
-      return keys[index] ?? null
+    setItem(key: string, value: string): void {
+      const storage = readStorage()
+      storage[key] = { value, expire: null }
+      writeStorage(storage)
+    },
+
+    setItemWithTTL(key: string, value: string, ttl?: number): void {
+      const storage = readStorage()
+      const expire = ttl ? Date.now() + ttl * 1000 : null
+      storage[key] = { value, expire }
+      writeStorage(storage)
     },
 
     removeItem(key: string): void {
       const storage = readStorage()
       if (Object.hasOwn(storage, key) === true) {
-        const { [key]: _, ...newStorage } = storage
+        const newStorage = { ...storage }
+        Reflect.deleteProperty(newStorage, key)
         writeStorage(newStorage)
       }
     },
 
-    setItem(key: string, value: string, expire: number | null = null): void {
-      const storage = readStorage()
-      storage[key] = { value, expire }
-      writeStorage(storage)
-    },
+    getRawStore: () => readStorage(),
 
-    setItems(items: Record<string, string>, expire: number | null = null) {
-      const storage = readStorage()
-      for (const key in items) {
-        storage[key] = { value: items[key], expire }
-      }
-      writeStorage(storage)
-    },
-
-    getRawStore: () => readStorage()
+    clear: () => {
+      writeStorage({})
+    }
   }
 }

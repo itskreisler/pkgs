@@ -22,8 +22,16 @@ export default tseslint.config(
         'comma-dangle': ['error', 'never'],
         'no-multiple-empty-lines': ['error', { max: 1 }],
         'no-async-promise-executor': 'off',
-        'no-unused-vars': 'warn',
-        '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }]
+        'no-unused-vars': 'off',
+        '@typescript-eslint/no-unused-vars': ['warn', {
+            argsIgnorePattern: '^_',
+            varsIgnorePattern: '^_',
+            ignoreRestSiblings: true,
+            destructuredArrayIgnorePattern: '^_',
+            args: 'after-used',
+            vars: 'all',
+            caughtErrors: 'none'
+        }]
     }
   }
 )
