@@ -1,12 +1,15 @@
 import fs from 'fs'
 import path from 'path'
+import zlib from 'zlib'
+import { debounce } from '@kreisler/debounce'
+import type { PersistentStorage } from './storage'
 
 /**
  * 
  * @param {string} file_path - ejemplo: './storage.json' o './tmp/a/b/c.json' o '../../storage.json'
  * @returns 
  */
-export function jsonStorage(file_path = './storage.json') {
+export function jsonStorage(file_path = './storage.json', { debounceMs = 1000, useCompression = true } = {}): PersistentStorage {
   // Asegúrate de que el archivo exista
   const filePath = file_path.endsWith('.json') ? file_path : file_path.concat('.json')
   // Crear directorios de forma recursiva si se para un ./tmp/a/b/c.json
@@ -19,17 +22,35 @@ export function jsonStorage(file_path = './storage.json') {
   type StorageData = Record<string, { value: string; expire: number | null }>;
 
   const readStorage = (): StorageData => {
-    const data = fs.readFileSync(filePath, 'utf-8')
     try {
-      return JSON.parse(data)
-    } catch {
+      const data = fs.readFileSync(filePath, 'utf-8')
+      if (data.trim() === '') return {}
+      // Soporte para datos no comprimidos (legacy) y comprimidos
+      try {
+        const buffer = Buffer.from(data, 'base64')
+        const decompressed = zlib.gunzipSync(buffer).toString()
+        return JSON.parse(decompressed)
+      } catch {
+        return JSON.parse(data)
+      }
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') return {}
+      console.error("Failed to read or parse storage file:", error)
       return {}
     }
   }
 
-  const writeStorage = (data: StorageData) => {
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2))
+  const _writeStorage = (data: StorageData) => {
+    let content = JSON.stringify(data, null, 2)
+    if (useCompression) {
+      content = zlib.gzipSync(content).toString('base64')
+    }
+    fs.writeFileSync(filePath, content)
   }
+
+  const writeStorage = debounceMs > 0
+    ? debounce(_writeStorage, debounceMs) as (data: StorageData) => void
+    : _writeStorage
 
   return {
     get length() {

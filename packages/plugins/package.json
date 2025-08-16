@@ -22,7 +22,8 @@
   "license": "ISC",
   "dependencies": {
     "node-cache": "^5.1.2",
-    "zustand": "^5.0.4"
+    "zustand": "^5.0.4",
+    "@kreisler/debounce": "workspace:*"
   },
   "devDependencies": {
     "@eslint/js": "latest",
