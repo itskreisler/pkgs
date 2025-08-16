@@ -15,14 +15,15 @@
     "watch": "tsup --entry.index src/index.ts --format esm --clean --watch --onSuccess \"node dist/index.js\"",
     "build": "tsup --entry.index src/index.ts --format esm,cjs --dts --clean",
     "test:esm": "tsup --entry.test src/index.ts --format esm --clean --onSuccess \"node dist/test.js\"",
-    "test:spec": "tsup test/test.spec.ts --format esm --clean --onSuccess \"cross-env NODE_ENV=test node --test dist/test.spec.js\""
+    "test:spec": "npx -y tsx --test test/*.spec.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "node-cache": "^5.1.2",
-    "zustand": "^5.0.4"
+    "zustand": "^5.0.4",
+    "@kreisler/debounce": "workspace:*"
   },
   "devDependencies": {
     "@eslint/js": "latest",
