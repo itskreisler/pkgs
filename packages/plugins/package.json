@@ -15,7 +15,9 @@
     "watch": "tsup --entry.index src/index.ts --format esm --clean --watch --onSuccess \"node dist/index.js\"",
     "build": "tsup --entry.index src/index.ts --format esm,cjs --dts --clean",
     "test:esm": "tsup --entry.test src/index.ts --format esm --clean --onSuccess \"node dist/test.js\"",
-    "test:spec": "npx -y tsx --test test/*.spec.ts"
+    "test:spec": "npx -y tsx --test test/*.spec.ts",
+    "test:hybrid": "npx -y tsx --test test/hybrid-cache.test.ts",
+    "test:all": "npx -y tsx --test test/*.test.ts"
   },
   "keywords": [],
   "author": "",

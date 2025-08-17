@@ -9,9 +9,40 @@ import type {
 } from '@/types'
 
 /**
+ * Crea un sistema de almacenamiento persistente basado en archivos JSON con soporte para TTL (Time To Live),
+ * compresión y debouncing para optimizar el rendimiento.
  * 
- * @param {string} file_path - ejemplo: './storage.json' o './tmp/a/b/c.json' o '../../storage.json'
- * @returns 
+ * @param {string} file_path - Ruta del archivo JSON donde se almacenarán los datos.
+ *   Ejemplos: './storage.json', './tmp/cache/data.json', '../../config.json'
+ * @param {JsonStorageOptions} options - Opciones de configuración para el almacenamiento
+ * @param {number} [options.debounceMs=1000] - Tiempo de debounce en milisegundos para agrupar escrituras (0 para desactivar)
+ * @param {boolean} [options.useCompression=true] - Activar compresión gzip para ahorrar espacio en disco
+ * 
+ * @returns {ExtendedStateStorage} Un objeto que implementa StateStorage con métodos adicionales
+ * 
+ * @example
+ * ```typescript
+ * // Uso básico
+ * const storage = jsonStorage('./my-app-data.json')
+ * 
+ * // Con opciones personalizadas
+ * const fastStorage = jsonStorage('./cache.json', {
+ *   debounceMs: 500,     // Escribir más frecuentemente
+ *   useCompression: false // Sin compresión para mejor rendimiento
+ * })
+ * 
+ * // Uso con Zustand
+ * import { createJSONStorage } from 'zustand/middleware'
+ * 
+ * const store = create(
+ *   persist(stateCreator, {
+ *     name: 'my-store',
+ *     storage: createJSONStorage(() => jsonStorage('./store.json'))
+ *   })
+ * )
+ * ```
+ * 
+ * @since 1.0.0
  */
 export function jsonStorage(file_path = './storage.json', options: JsonStorageOptions = {}): ExtendedStateStorage {
   const { debounceMs = 1000, useCompression = true } = options

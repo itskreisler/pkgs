@@ -2,7 +2,13 @@ import type { StateStorage } from 'zustand/middleware'
 
 /**
  * Extensión de StateStorage que agrega métodos útiles para almacenamiento avanzado
- * manteniendo compatibilidad completa con StateStorage de Zustand
+ * manteniendo compatibilidad completa con StateStorage de Zustand.
+ * 
+ * Permite crear sistemas de almacenamiento más sofisticados que el StateStorage básico,
+ * con soporte para TTL, operaciones batch y acceso directo al almacenamiento raw.
+ * 
+ * @extends StateStorage
+ * @since 1.0.0
  */
 export interface ExtendedStateStorage extends StateStorage {
     /** Método estándar de StateStorage - setItem sin TTL */
