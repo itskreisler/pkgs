@@ -10,7 +10,10 @@ const twitterClient = new TwitterApi({
     accessSecret: ACCESS_SECRET
 }, { plugins: [rateLimitPlugin] }) */
 
-// sendTweetMedia('https://stw-daily.vercel.app', 'https://stw-daily.vercel.app/api/v1/og.png')
+const BASE_URL = 'https://stw-daily.vercel.app'
+const OG_IMAGE_URL = BASE_URL.concat('/api/v1/og.png')
+const API_ONLINE = BASE_URL.concat('/api/v1/online/es.json')
+console.log({ BASE_URL, OG_IMAGE_URL, API_ONLINE })
 
 export class ClientBot extends TwitterApi {
     constructor(
@@ -34,9 +37,9 @@ export class ClientBot extends TwitterApi {
         // Main bot logic goes here
         const me = await this.v2.me()
         console.log({ me })
-        // test
-        const media = await this.uploadMediaFromUrl('https://stw-daily.vercel.app/api/v1/og.png')
-        const tweet = await this.tweetWithMedia('https://stw-daily.vercel.app/es', {
+
+        const media = await this.uploadMediaFromUrl(OG_IMAGE_URL)
+        const tweet = await this.tweetWithMedia('', {
             media: {
                 media_ids: [media]
             }
