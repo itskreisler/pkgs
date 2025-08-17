@@ -89,6 +89,7 @@ export const useNodeCacheWithJson = <S>(
     config: {
         nameStorage: string
         initialState: StateCreator<S>
+        nodeCache: Parameters<typeof nodeCacheWithJson>[0]
         storage: ExtendedStateStorage
         replacer?: (key: string, value: any) => any
         reviver?: (key: string, value: any) => any
@@ -96,7 +97,7 @@ export const useNodeCacheWithJson = <S>(
 ) => create(
     persist<S>(config.initialState, {
         name: config.nameStorage,
-        storage: createJSONStorage(() => nodeCacheWithJson({ stdTTL: 3600, checkperiod: 60 }, config.storage), {
+        storage: createJSONStorage(() => nodeCacheWithJson(config.nodeCache, config.storage), {
             replacer: config.replacer,
             reviver: config.reviver
         })
@@ -107,10 +108,11 @@ export const useNodeCache = <S>(
     config: {
         nameStorage: string
         initialState: StateCreator<S>
+        nodeCache: Parameters<typeof nodeCacheStorage>[0]
     }
 ) => create(
     persist<S>(config.initialState, {
         name: config.nameStorage,
-        storage: createJSONStorage(() => nodeCacheStorage({ stdTTL: 10, checkperiod: 2 }))
+        storage: createJSONStorage(() => nodeCacheStorage(config.nodeCache))
     })
 )

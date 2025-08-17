@@ -1,13 +1,15 @@
 {
   "name": "@kreisler/plugins",
-  "version": "1.0.0",
-  "description": "",
+  "version": "1.0.1",
+  "description": "Librería completa de almacenamiento persistente y utilidades avanzadas para Zustand con soporte para caché híbrida (RAM + disco), compresión, TTL y serialización de tipos complejos.",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
-    "dist/**"
+    "dist/**",
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
     "start": "tsx src/index.ts",
@@ -17,11 +19,37 @@
     "test:esm": "tsup --entry.test src/index.ts --format esm --clean --onSuccess \"node dist/test.js\"",
     "test:spec": "npx -y tsx --test test/*.spec.ts",
     "test:hybrid": "npx -y tsx --test test/hybrid-cache.test.ts",
-    "test:all": "npx -y tsx --test test/*.test.ts"
+    "test:all": "npx -y tsx --test test/*.test.ts",
+    "publicar": "npm publish --access public"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "zustand",
+    "storage",
+    "persistence",
+    "cache",
+    "state-management",
+    "typescript",
+    "nodejs",
+    "json",
+    "compression",
+    "ttl",
+    "hybrid-cache",
+    "serialization"
+  ],
+  "author": {
+    "name": "Kreisler",
+    "url": "https://github.com/itskreisler"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/itskreisler/pkgs.git",
+    "directory": "packages/plugins"
+  },
+  "bugs": {
+    "url": "https://github.com/itskreisler/pkgs/issues"
+  },
+  "homepage": "https://github.com/itskreisler/pkgs/tree/master/packages/plugins#readme",
   "dependencies": {
     "node-cache": "^5.1.2",
     "zustand": "^5.0.4",
