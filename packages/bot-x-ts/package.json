@@ -1,0 +1,38 @@
+{
+  "type": "module",
+  "dependencies": {
+    "@twitter-api-v2/plugin-rate-limit": "^1.1.0",
+    "twitter-api-v2": "^1.24.0"
+  },
+  "name": "my-project",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist/**"
+  ],
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "xtart": "npx -y tsx src/index.ts",
+    "watch": "tsup --entry.index src/index.ts --format esm --clean --watch --onSuccess \"node dist/index.js\"",
+    "build": "tsup --entry.index src/index.ts --format esm,cjs --dts --clean",
+    "test:esm": "tsup --entry.test src/index.ts --format esm --clean --onSuccess \"node dist/test.js\"",
+    "test:spec": "tsup test/test.spec.ts --format esm --clean --onSuccess \"cross-env NODE_ENV=test node --test dist/test.spec.js\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@eslint/js": "latest",
+    "@types/node": "latest",
+    "cross-env": "latest",
+    "eslint": "latest",
+    "tsup": "latest",
+    "tsx": "latest",
+    "typescript": "latest",
+    "typescript-eslint": "latest"
+  },
+  "packageManager": "pnpm@10.14.0+sha512.ad27a79641b49c3e481a16a805baa71817a04bbe06a38d17e60e2eaee83f6a146c6a688125f5792e48dd5ba30e7da52a5cda4c3992b9ccf333f9ce223af84748"
+}
