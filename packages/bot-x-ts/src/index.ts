@@ -10,44 +10,6 @@ const twitterClient = new TwitterApi({
     accessSecret: ACCESS_SECRET
 }, { plugins: [rateLimitPlugin] }) */
 
-// console.log(await twitterClient.v2.me())
-
-export async function run(): Promise<void> {
-    const _text = 'Hello, World!'.concat(new Date().toISOString())
-    // sendTweetMedia(_text, 'https://stw-daily.vercel.app/api/v1/og.png');
-}
-
-export async function sendTweet(tweetText: string): Promise<void> {
-    try {
-        await twitterClient.v2.tweet(tweetText)
-        console.log('Tweet sent successfully!')
-    } catch (error) {
-        console.error('Error sending tweet:', error)
-    }
-}
-
-export async function sendTweetMedia(tweetText: string, mediaUrl: string): Promise<void> {
-    try {
-        // const media = await twitterClient.v1.uploadMedia(mediaUrl);
-        const fetch = await globalThis.fetch(mediaUrl)
-        const arrayBuffer = await fetch.arrayBuffer()
-        const buffer = Buffer.from(arrayBuffer)
-        // const media = await twitterClient.v2.uploadMedia(buffer,{media_type: 'image/png',})
-        const mediaIds = await Promise.all([
-            twitterClient.v2.uploadMedia(buffer, { media_type: 'image/png' })
-        ])
-        const _tweetId = await twitterClient.v2.tweet(tweetText, {
-            media: {
-                media_ids: mediaIds
-            }
-        })
-        console.log('Tweet sent successfully!')
-        // setTimeout(async () => {console.log("Deleting tweet...");await twitterClient.v2.deleteTweet(_tweetId.data.id)}, 1000 * 10)
-    } catch (error) {
-        console.error('Error sending tweet:', error)
-    }
-}
-
 // sendTweetMedia('https://stw-daily.vercel.app', 'https://stw-daily.vercel.app/api/v1/og.png')
 
 export class ClientBot extends TwitterApi {
@@ -73,11 +35,17 @@ export class ClientBot extends TwitterApi {
         const me = await this.v2.me()
         console.log({ me })
         // test
-        const media_ids = await this.uploadMediaFromUrl('https://stw-daily.vercel.app/api/v1/og.png')
-        const tweet = await this.tweetWithMedia('https://stw-daily.vercel.app/es', { media_ids })
-        console.log(tweet.ctx)
+        const media = await this.uploadMediaFromUrl('https://stw-daily.vercel.app/api/v1/og.png')
+        const tweet = await this.tweetWithMedia('https://stw-daily.vercel.app/es', {
+            media: {
+                media_ids: [media]
+            }
+        })
+        // const reply = await tweet.reply({ text: '¡Hola desde el bot' })
+        console.log({ ctx: tweet.ctx })
 
         // Cuenta regresiva de 10 segundos
+        return
         const deleteAfterSeconds = 10
         for (let i = deleteAfterSeconds; i > 0; i--) {
             console.log(`Eliminando tweet en ${i} segundo${i > 1 ? 's' : ''}...`)
@@ -88,20 +56,38 @@ export class ClientBot extends TwitterApi {
         const result = await tweet.deleteTweet()
         console.log('Tweet eliminado exitosamente!', { result })
     }
-    async uploadMediaFromUrl(url: string) {
+    async getBufferFromUrl(url: string) {
         const fetch = await globalThis.fetch(url)
         const arrayBuffer = await fetch.arrayBuffer()
-        const buffer = Buffer.from(arrayBuffer)
-        const media_ids = await Promise.all([
-            this.v2.uploadMedia(buffer, { media_type: 'image/png' })
-        ])
-        console.log({ media_ids })
-        return media_ids
+        return Buffer.from(arrayBuffer)
     }
-    async tweetWithMedia(tweetText: string, media: Parameters<TwitterApi['v2']['tweet']>[0]['media']) {
-        const PostTweetResult = await this.v2.tweet(tweetText, {
-            media
-        })
+    //
+
+    uploadMediaFromUrl(url: string): Promise<string>;
+    uploadMediaFromUrl(url: string[]): Promise<MediaIds['media_ids']>;
+    async uploadMediaFromUrl(urls: any): Promise<any> {
+        if (typeof urls === 'string') {
+            console.log(`Subiendo media desde URL: ${urls}`, 'string')
+            const buffer = await this.getBufferFromUrl(urls)
+            const media = await this.v2.uploadMedia(buffer, { media_type: 'image/png' })
+            console.log({ media })
+            return media
+        } else {
+            const media_ids: MediaIds['media_ids'] = await urls.reduce(async (accPromise: Promise<string[]>, url: string) => {
+                const acc = await accPromise
+                console.log(`Subiendo media desde URL: ${url}`, 'array')
+                const buffer = await this.getBufferFromUrl(url)
+                const media = await this.v2.uploadMedia(buffer, { media_type: 'image/png' })
+                acc.push(media)
+                return acc
+            }, Promise.resolve([] as string[]))
+            console.log({ media_ids })
+
+            return media_ids
+        }
+    }
+    async tweetWithMedia(tweetText: string, payload?: Parameters<TwitterApi['v2']['tweet']>[0]) {
+        const PostTweetResult = await this.v2.tweet(tweetText, payload)
         return new Tweet(this, PostTweetResult)
     }
 }
@@ -115,8 +101,14 @@ class Tweet {
     }
 
     async deleteTweet() {
-        return this.client.v2.deleteTweet(this.ctx.data.id)
+        return await this.client.v2.deleteTweet(this.ctx.data.id)
+    }
+    async reply(payload: ReplyPayload) {
+        return new Tweet(this.client, await this.client.v2.tweet({ quote_tweet_id: this.ctx.data.id, ...payload }))
     }
 }
 const bot = new ClientBot()
 bot.main().catch(console.error)
+//
+type ReplyPayload = Omit<Parameters<TwitterApi['v2']['tweet']>[0], 'quote_tweet_id'>
+type MediaIds = Pick<NonNullable<Parameters<TwitterApi['v2']['tweet']>[0]['media']>, 'media_ids'>
