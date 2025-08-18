@@ -16,6 +16,8 @@
     "watch:index": "rm -rf dist/* && tsup src/index.ts --watch --onSuccess \"node dist/index.js\"",
     "watch:test": "rm -rf dist/* && tsup --entry.test test/index.test.ts --format esm --watch --onSuccess \"node dist/test.mjs\"",
     "test": "rm -rf dist/* && tsup src/index.ts --format esm && tsup test/test.spec.ts --format esm --onSuccess \"cross-env NODE_ENV=test node --test dist/test.spec.mjs\"",
+    "test:cron": "npx -y tsx --test test/cronExpression.spec.ts",
+    "test:all": "npx -y tsx --test test/",
     "docs": "typedoc --out docs src/index.ts",
     "serve": "pnpx serve -p 1234 ./docs",
     "publish:public": "npm publish --access public"
