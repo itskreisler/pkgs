@@ -1,8 +1,20 @@
 import { TwitterApi } from 'twitter-api-v2'
 import { JsCron } from '@kreisler/js-cron'
+import fs from 'node:fs'
 import { TwitterApiRateLimitPlugin } from '@twitter-api-v2/plugin-rate-limit'
 import { APP_KEY, APP_SECRET, ACCESS_TOKEN, ACCESS_SECRET } from '@/SECRETS'
 const jsCron = new JsCron({ timezone: 'America/Bogota', runOnInit: true })
+
+// Archivo para persistir información del tweet
+const TWEET_DATA_FILE = './tweet-data.json'
+
+// Interfaz para los datos del tweet persistidos
+interface TweetData {
+    id: string
+    created_at: string
+    totalVbucks: number
+    date: string
+}
 /* const rateLimitPlugin = new TwitterApiRateLimitPlugin()
 const twitterClient = new TwitterApi({
     appKey: APP_KEY,
@@ -42,55 +54,60 @@ export class ClientBot extends TwitterApi {
     }
 
     async main() {
-        interface APIONLINE {
-            'totalVbucks': number,
-            missions: {
-                powerLevel: number
-                vbucks: number
-                zone: string
-                biome: string
-                name: string
-            }[]
-        }
-        interface APIEPIC {
-            success: boolean
-            data: {
-                latest: {
-                    totalVbucks: number
-                    missions: Pick<APIONLINE['missions'][number], 'vbucks' | 'zone'>[]
-                }
-                history: {
-                    id: number
-                    date: string
-                    timestamp: number
-                    value: number
-                }[]
+        try {
+            // 1. Leer archivo de datos del tweet anterior (si existe)
+            const previousTweetData = this.readTweetData()
+
+            // 2. Si existe un tweet anterior, eliminarlo
+            if (previousTweetData) {
+                console.log('Tweet anterior encontrado, eliminando...', previousTweetData)
+                await this.deletePreviousTweet(previousTweetData.id)
             }
-        }
-        const [api_online, api_epic]: [APIONLINE, APIEPIC] = await Promise.all([
-            (await globalThis.fetch(API_ONLINE)).json(),
-            (await globalThis.fetch(API_EPIC)).json()
-        ])
-        if (!api_online && !api_epic) {
-            console.log('Ambos APIs respondieron incorrectamente')
-            return
-        }
-        console.log({ api_online, api_epic })
-        if (api_online.totalVbucks === api_epic.data.latest.totalVbucks) {
-            const me = await this.v2.me()
-            console.log({ me })
-            const media = await this.uploadMediaFromUrl(OG_IMAGE_URL)
-            const tweet = await this.tweetWithMedia(`${api_online.totalVbucks} V-Bucks\n`.concat(BANNER), {
-                media: {
-                    media_ids: [media]
+
+            // 3. Consultar APIs
+            const [api_online, api_epic]: [APIONLINE, APIEPIC] = await Promise.all([
+                (await globalThis.fetch(API_ONLINE)).json(),
+                (await globalThis.fetch(API_EPIC)).json()
+            ])
+
+            if (!api_online && !api_epic) {
+                console.log('Ambos APIs respondieron incorrectamente')
+                return
+            }
+
+            console.log({ api_online, api_epic })
+
+            // 4. Verificar que los totales coincidan
+            if (api_online.totalVbucks === api_epic.data.latest.totalVbucks) {
+                const me = await this.v2.me()
+                console.log({ me })
+
+                // 5. Crear nuevo tweet
+                const media = await this.uploadMediaFromUrl(OG_IMAGE_URL)
+                const tweet = await this.tweetWithMedia(`${api_online.totalVbucks} V-Bucks\n`.concat(BANNER), {
+                    media: {
+                        media_ids: [media]
+                    }
+                })
+
+                console.log('Nuevo tweet creado:', tweet.ctx)
+
+                // 6. Guardar información del nuevo tweet
+                const tweetData: TweetData = {
+                    id: tweet.ctx.data.id,
+                    created_at: new Date().toISOString(),
+                    totalVbucks: api_online.totalVbucks,
+                    date: new Date().toDateString()
                 }
-            })
-            // Eliminar pero al dia siguiente
-            console.log('Eliminando tweet...')
-            const result = await tweet.deleteTweet()
-            console.log('Tweet eliminado exitosamente!', { result })
-        } else {
-            console.log('Los totales de V-Bucks no coinciden')
+
+                this.saveTweetData(tweetData)
+                console.log('Información del tweet guardada exitosamente')
+
+            } else {
+                console.log('Los totales de V-Bucks no coinciden')
+            }
+        } catch (error) {
+            console.error('Error en main():', error)
         }
     }
     async getBufferFromUrl(url: string) {
@@ -124,8 +141,53 @@ export class ClientBot extends TwitterApi {
         }
     }
     async tweetWithMedia(tweetText: string, payload?: Parameters<TwitterApi['v2']['tweet']>[0]) {
-        const PostTweetResult = await this.v2.tweet(tweetText, payload)
-        return new Tweet(this, PostTweetResult)
+        const postTweetResult = await this.v2.tweet(tweetText, payload)
+
+        return new Tweet(this, postTweetResult)
+    }
+    async getTweet(tweetIds: Parameters<TwitterApi['v2']['tweets']>[0]) {
+        const tweets = await this.v2.tweets(tweetIds)
+        return tweets.data.map(tweet => new Tweet(this, { data: tweet }))
+    }
+
+    /**
+     * Lee los datos del tweet desde el archivo JSON
+     */
+    readTweetData(): TweetData | null {
+        try {
+            if (fs.existsSync(TWEET_DATA_FILE)) {
+                const data = fs.readFileSync(TWEET_DATA_FILE, 'utf8')
+                return JSON.parse(data) as TweetData
+            }
+            return null
+        } catch (error) {
+            console.error('Error leyendo archivo de datos del tweet:', error)
+            return null
+        }
+    }
+
+    /**
+     * Guarda los datos del tweet en el archivo JSON
+     */
+    saveTweetData(tweetData: TweetData): void {
+        try {
+            fs.writeFileSync(TWEET_DATA_FILE, JSON.stringify(tweetData, null, 2), 'utf8')
+        } catch (error) {
+            console.error('Error guardando archivo de datos del tweet:', error)
+        }
+    }
+
+    /**
+     * Elimina un tweet anterior por su ID
+     */
+    async deletePreviousTweet(tweetId: string): Promise<void> {
+        try {
+            const result = await this.v2.deleteTweet(tweetId)
+            console.log('Tweet anterior eliminado exitosamente:', result)
+        } catch (error) {
+            console.error('Error eliminando tweet anterior:', error)
+            // No lanzamos el error para que continúe el proceso
+        }
     }
 }
 
@@ -147,12 +209,37 @@ class Tweet {
 const bot = new ClientBot()
 
 //
+interface APIONLINE {
+    'totalVbucks': number,
+    missions: {
+        powerLevel: number
+        vbucks: number
+        zone: string
+        biome: string
+        name: string
+    }[]
+}
+interface APIEPIC {
+    success: boolean
+    data: {
+        latest: {
+            totalVbucks: number
+            missions: Pick<APIONLINE['missions'][number], 'vbucks' | 'zone'>[]
+        }
+        history: {
+            id: number
+            date: string
+            timestamp: number
+            value: number
+        }[]
+    }
+}
 type ReplyPayload = Omit<Parameters<TwitterApi['v2']['tweet']>[0], 'quote_tweet_id'>
 type MediaIds = Pick<NonNullable<Parameters<TwitterApi['v2']['tweet']>[0]['media']>, 'media_ids'>
 //
 const CRON_JOB = '5 0-2 19 * * * *'
-const result = jsCron.createTask('vbucksTask', CRON_JOB, () => {
+jsCron.createTask('vbucksTask', CRON_JOB, () => {
     // console.log('Consultando alertas', new Date().toLocaleString())
-    bot.main().catch(console.error)
+    bot.main().then(console.log).catch(console.error)
 })
 // console.log(result)

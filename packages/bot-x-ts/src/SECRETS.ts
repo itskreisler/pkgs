@@ -1,4 +1,4 @@
-process.loadEnvFile('.env.local')
+process.loadEnvFile('.env')
 
 export enum EnvVars {
     APP_KEY = 'APP_KEY',
