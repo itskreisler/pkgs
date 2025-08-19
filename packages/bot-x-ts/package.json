@@ -3,6 +3,7 @@
   "dependencies": {
     "@kreisler/js-cron": "^3.0.0",
     "@twitter-api-v2/plugin-rate-limit": "^1.1.0",
+    "emit-keypress": "^1.0.1",
     "twitter-api-v2": "^1.24.0"
   },
   "name": "my-project",

@@ -1,6 +1,7 @@
 import { TwitterApi } from 'twitter-api-v2'
 import { JsCron } from '@kreisler/js-cron'
 import fs from 'node:fs'
+import { emitKeypress } from 'emit-keypress'
 import { TwitterApiRateLimitPlugin } from '@twitter-api-v2/plugin-rate-limit'
 import { APP_KEY, APP_SECRET, ACCESS_TOKEN, ACCESS_SECRET } from '@/SECRETS'
 const jsCron = new JsCron({ timezone: 'America/Bogota', runOnInit: true })
@@ -215,6 +216,42 @@ class Tweet {
 }
 const bot = new ClientBot()
 
+/**
+ * Muestra un menú bonito con formato de tabla
+ */
+function showMenu() {
+    console.clear()
+    const width = 68
+    const innerWidth = width - 2
+
+    console.log('\n' + '═'.repeat(width))
+    console.log('║' + centerText('🤖 BOT TWITTER VBUCKS', innerWidth) + '║')
+    console.log('║' + ' '.repeat(innerWidth) + '║')
+    console.log('║' + centerText('Selecciona una opción:', innerWidth) + '║')
+    console.log('╠' + '═'.repeat(innerWidth) + '╣')
+    console.log('║' + centerText('Tecla', 8) + '│' + centerText('Acción', innerWidth - 9) + '║')
+    console.log('╠' + '─'.repeat(8) + '┼' + '─'.repeat(innerWidth - 9) + '╣')
+    console.log('║' + centerText('a', 8) + '│' + ' 🚀 Ejecutar bot manualmente' + ' '.repeat(29) + '║')
+    console.log('║' + centerText('s', 8) + '│' + ' 📊 Ver estado del último tweet' + ' '.repeat(26) + '║')
+    console.log('║' + centerText('d', 8) + '│' + ' 🗑️  Eliminar tweet actual' + ' '.repeat(32) + '║')
+    console.log('║' + centerText('l', 8) + '│' + ' 📋 Ver logs del cron job' + ' '.repeat(32) + '║')
+    console.log('║' + centerText('m', 8) + '│' + ' 🔄 Volver al menú principal' + ' '.repeat(29) + '║')
+    console.log('║' + centerText('q', 8) + '│' + ' 👋 Salir del programa' + ' '.repeat(35) + '║')
+    console.log('╚' + '═'.repeat(innerWidth) + '╝')
+    console.log('\n' + centerText('💡 Presiona una tecla para continuar...', width))
+    console.log()
+}
+
+/**
+ * Centra texto en un ancho específico
+ */
+function centerText(text: string, width: number): string {
+    const padding = Math.max(0, width - text.length)
+    const leftPad = Math.floor(padding / 2)
+    const rightPad = padding - leftPad
+    return ' '.repeat(leftPad) + text + ' '.repeat(rightPad)
+}
+
 //
 interface APIONLINE {
     'totalVbucks': number,
@@ -246,7 +283,78 @@ type MediaIds = Pick<NonNullable<Parameters<TwitterApi['v2']['tweet']>[0]['media
 //
 const CRON_JOB = '5 0-2 19 * * * *'
 jsCron.createTask('vbucksTask', CRON_JOB, () => {
-    // console.log('Consultando alertas', new Date().toLocaleString())
+    console.log('Consultando alertas', new Date().toLocaleString())
     bot.main().then(console.log).catch(console.error)
 })
-// console.log(result)
+
+// Mostrar menú inicial
+showMenu()
+
+emitKeypress({
+    input: process.stdin,
+    onKeypress: async (input: string, _key: any) => {
+        // console.log(`\n⌨️  Tecla presionada: "${JSON.stringify(input)}"\n`)
+
+        switch (input) {
+            case 'a': {
+                console.log('🚀 Ejecutando bot manualmente...\n')
+                await bot.main().then(console.log).catch(console.error)
+                break
+            }
+            case 's': {
+                console.log('📊 Estado del último tweet:\n')
+                const tweetData = bot.readTweetData()
+                if (tweetData) {
+                    console.log('┌─────────────────────────────────────────┐')
+                    console.log(`│ ID: ${tweetData.id.padEnd(27)} │`)
+                    console.log(`│ V-Bucks: ${String(tweetData.totalVbucks).padEnd(23)} │`)
+                    console.log(`│ Fecha: ${tweetData.date.padEnd(25)} │`)
+                    console.log(`│ Creado: ${tweetData.created_at.slice(0, 19).padEnd(22)} │`)
+                    console.log('└─────────────────────────────────────────┘')
+                } else {
+                    console.log('❌ No hay datos de tweet guardados')
+                }
+
+                break
+            }
+            case 'd': {
+                console.log('🗑️ Eliminando tweet actual...\n')
+                const tweetData = bot.readTweetData()
+                if (tweetData) {
+                    await bot.deletePreviousTweet(tweetData.id)
+                    // Limpiar el archivo JSON
+                    bot.saveTweetData({ id: '', created_at: '', totalVbucks: 0, date: '' })
+                    console.log('✅ Tweet eliminado y datos limpiados')
+                } else {
+                    console.log('❌ No hay tweet para eliminar')
+                }
+
+                break
+            }
+            case 'l': {
+                console.log('📋 Información del cron job:\n')
+                console.log('┌─────────────────────────────────────────┐')
+                console.log(`│ Cron Pattern: ${CRON_JOB.padEnd(19)} │`)
+                console.log('│ Descripción: Diario 19:00-19:02        │')
+                console.log('│ Timezone: America/Bogota               │')
+                console.log('│ Estado: Activo ✅                       │')
+                console.log('└─────────────────────────────────────────┘')
+
+                break
+            }
+            case 'm': {
+                console.log('📋 Volver al menú principal...\n')
+                showMenu()
+                break
+            }
+            case 'q':
+                console.log('\n👋 ¡Hasta luego! Saliendo del programa...\n')
+                // process.exit(0)
+                break
+            default:
+
+                break
+        }
+    }
+})
+
