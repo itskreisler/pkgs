@@ -84,7 +84,7 @@ export class ClientBot extends TwitterApi {
 
                 // 5. Crear nuevo tweet
                 const media = await this.uploadMediaFromUrl(OG_IMAGE_URL)
-                const tweet = await this.tweetWithMedia(`${api_online.totalVbucks} V-Bucks\n`.concat(BANNER), {
+                const tweet = await this.tweetWithMedia(`${api_online.totalVbucks} Pavos(Vbucks)!\n`.concat(BANNER), {
                     media: {
                         media_ids: [media]
                     }
