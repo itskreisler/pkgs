@@ -1,7 +1,8 @@
 import { TwitterApi } from 'twitter-api-v2'
+import { JsCron } from '@kreisler/js-cron'
 import { TwitterApiRateLimitPlugin } from '@twitter-api-v2/plugin-rate-limit'
 import { APP_KEY, APP_SECRET, ACCESS_TOKEN, ACCESS_SECRET } from '@/SECRETS'
-
+const jsCron = new JsCron({ timezone: 'America/Bogota', runOnInit: true })
 /* const rateLimitPlugin = new TwitterApiRateLimitPlugin()
 const twitterClient = new TwitterApi({
     appKey: APP_KEY,
@@ -13,7 +14,14 @@ const twitterClient = new TwitterApi({
 const BASE_URL = 'https://stw-daily.vercel.app'
 const OG_IMAGE_URL = BASE_URL.concat('/api/v1/og.png')
 const API_ONLINE = BASE_URL.concat('/api/v1/online/es.json')
-console.log({ BASE_URL, OG_IMAGE_URL, API_ONLINE })
+const API_EPIC = BASE_URL.concat('/api/v1/online/vbucks.json')
+console.log({ BASE_URL, OG_IMAGE_URL, API_ONLINE, API_EPIC })
+
+const BANNER = `¡Usa el código KLEI para apoyarme! #ad
+
+Tienda: https://www.fortnite.com/item-shop?creator-code=klei
+
+Alertas en Español: ${BASE_URL.concat('/es')}`
 
 export class ClientBot extends TwitterApi {
     constructor(
@@ -34,30 +42,56 @@ export class ClientBot extends TwitterApi {
     }
 
     async main() {
-        // Main bot logic goes here
-        const me = await this.v2.me()
-        console.log({ me })
-
-        const media = await this.uploadMediaFromUrl(OG_IMAGE_URL)
-        const tweet = await this.tweetWithMedia('', {
-            media: {
-                media_ids: [media]
-            }
-        })
-        // const reply = await tweet.reply({ text: '¡Hola desde el bot' })
-        console.log({ ctx: tweet.ctx })
-
-        // Cuenta regresiva de 10 segundos
-        return
-        const deleteAfterSeconds = 10
-        for (let i = deleteAfterSeconds; i > 0; i--) {
-            console.log(`Eliminando tweet en ${i} segundo${i > 1 ? 's' : ''}...`)
-            await new Promise(resolve => setTimeout(resolve, 1000))
+        interface APIONLINE {
+            'totalVbucks': number,
+            missions: {
+                powerLevel: number
+                vbucks: number
+                zone: string
+                biome: string
+                name: string
+            }[]
         }
-
-        console.log('Eliminando tweet...')
-        const result = await tweet.deleteTweet()
-        console.log('Tweet eliminado exitosamente!', { result })
+        interface APIEPIC {
+            success: boolean
+            data: {
+                latest: {
+                    totalVbucks: number
+                    missions: Pick<APIONLINE['missions'][number], 'vbucks' | 'zone'>[]
+                }
+                history: {
+                    id: number
+                    date: string
+                    timestamp: number
+                    value: number
+                }[]
+            }
+        }
+        const [api_online, api_epic]: [APIONLINE, APIEPIC] = await Promise.all([
+            (await globalThis.fetch(API_ONLINE)).json(),
+            (await globalThis.fetch(API_EPIC)).json()
+        ])
+        if (!api_online && !api_epic) {
+            console.log('Ambos APIs respondieron incorrectamente')
+            return
+        }
+        console.log({ api_online, api_epic })
+        if (api_online.totalVbucks === api_epic.data.latest.totalVbucks) {
+            const me = await this.v2.me()
+            console.log({ me })
+            const media = await this.uploadMediaFromUrl(OG_IMAGE_URL)
+            const tweet = await this.tweetWithMedia(`${api_online.totalVbucks} V-Bucks\n`.concat(BANNER), {
+                media: {
+                    media_ids: [media]
+                }
+            })
+            // Eliminar pero al dia siguiente
+            console.log('Eliminando tweet...')
+            const result = await tweet.deleteTweet()
+            console.log('Tweet eliminado exitosamente!', { result })
+        } else {
+            console.log('Los totales de V-Bucks no coinciden')
+        }
     }
     async getBufferFromUrl(url: string) {
         const fetch = await globalThis.fetch(url)
@@ -111,7 +145,14 @@ class Tweet {
     }
 }
 const bot = new ClientBot()
-bot.main().catch(console.error)
+
 //
 type ReplyPayload = Omit<Parameters<TwitterApi['v2']['tweet']>[0], 'quote_tweet_id'>
 type MediaIds = Pick<NonNullable<Parameters<TwitterApi['v2']['tweet']>[0]['media']>, 'media_ids'>
+//
+const CRON_JOB = '5 0-2 19 * * * *'
+const result = jsCron.createTask('vbucksTask', CRON_JOB, () => {
+    // console.log('Consultando alertas', new Date().toLocaleString())
+    bot.main().catch(console.error)
+})
+// console.log(result)

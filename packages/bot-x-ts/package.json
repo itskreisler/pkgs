@@ -1,6 +1,7 @@
 {
   "type": "module",
   "dependencies": {
+    "@kreisler/js-cron": "^3.0.0",
     "@twitter-api-v2/plugin-rate-limit": "^1.1.0",
     "twitter-api-v2": "^1.24.0"
   },
@@ -27,6 +28,7 @@
   "devDependencies": {
     "@eslint/js": "latest",
     "@types/node": "latest",
+    "@types/node-cron": "^3.0.11",
     "cross-env": "latest",
     "eslint": "latest",
     "tsup": "latest",
