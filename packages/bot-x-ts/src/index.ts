@@ -84,7 +84,9 @@ export class ClientBot extends TwitterApi {
 
                 // 5. Crear nuevo tweet
                 const media = await this.uploadMediaFromUrl(OG_IMAGE_URL)
-                const tweet = await this.tweetWithMedia(`${api_online.totalVbucks} Pavos(Vbucks)!\n`.concat(BANNER), {
+                const tweet = await this.tweetWithMedia(`${api_online.totalVbucks} Pavos(Vbucks)!\n`
+                    .concat(api_online.missions.map(m => `${m.powerLevel}⚡ | ${m.vbucks} Pavos(Vbucks) en ${m.zone} (${m.biome}) - ${m.name}`).join('\n'))
+                    .concat('\n', BANNER), {
                     media: {
                         media_ids: [media]
                     }
@@ -109,6 +111,11 @@ export class ClientBot extends TwitterApi {
         } catch (error) {
             console.error('Error en main():', error)
         }
+        return new Date().toLocaleDateString('es', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        })
     }
     async getBufferFromUrl(url: string) {
         const fetch = await globalThis.fetch(url)
