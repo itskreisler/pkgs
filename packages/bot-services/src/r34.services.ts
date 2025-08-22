@@ -25,21 +25,26 @@ interface R34APIParams {
   pid?: number
   json?: 1 | 0
   id?: number
-  deleted?: 'show'
+  deleted?: 'show',
+  api_key?: string
+  user_id?: string
 }
 // Constante con valores predeterminados
 const DEFAULT_R34_OPTIONS: R34APIParams = {
   page: 'dapi',
   s: 'post',
   q: 'index',
-  json: 1
+  json: 1,
+  api_key: globalThis.atob('ZmEwN2YyMTA2ZTU3MTllMmJmYmIxYWUzODk0MjIzOGUwYWM4MjNiMDYwODhlNWNlZTZiNmFjNzg5ZjY5YzFlMDNhMzA0ZDhlMDM0ZGVmZWQ1ZWM3NjZlZTgyZjkwMWQwMTA5ZDA4YmEwNWVlZWZjYTI5MWFiMmIyZDM4MWVlNzQ='),
+  user_id: '5265148'
 }
 export async function r34API(tag: string[], options: R34APIParams = {}): Promise<R34Response[]> {
-  const { page, s, q, json, limit, pid } = { ...DEFAULT_R34_OPTIONS, ...options }
+  const { page, s, q, json, limit, pid, api_key, user_id } = { ...DEFAULT_R34_OPTIONS, ...options }
 
   const tags = tag.join(' ')
   const r34: R34API = createApi(R34Const.API)
-  const data = await r34['index.php']({ tags, page, s, q, json, limit, pid })
+
+  const data = await r34['index.php']({ tags, page, s, q, json, limit, pid, api_key, user_id })
   if (data.length < 1) return []
   return data
 }
@@ -47,8 +52,29 @@ export function r34RandomPic(pics: R34Response[]): R34Response {
   const n = Math.floor(Math.random() * pics.length)
   return pics[n]
 }
-
 export async function r34Tags(query: string) {
+  if (query.length === 0) return []
+  const data = await globalThis.fetch(`https://ac.rule34.xxx/autocomplete.php?q=${query}`, {
+    headers: {
+      accept: '*/*',
+      'accept-language': 'es-US,es-ES;q=0.9,es-CO;q=0.8,es-419;q=0.7,es;q=0.6,en;q=0.5,fr;q=0.4',
+      priority: 'u=1, i',
+      'sec-ch-ua': '"Not;A=Brand";v="99", "Google Chrome";v="139", "Chromium";v="139"',
+      'sec-ch-ua-mobile': '?0',
+      'sec-ch-ua-platform': '"Windows"',
+      'sec-fetch-dest': 'empty',
+      'sec-fetch-mode': 'cors',
+      'sec-fetch-site': 'same-site'
+    },
+    referrer: 'https://rule34.xxx/',
+    body: null,
+    method: 'GET',
+    mode: 'cors',
+    credentials: 'omit'
+  })
+  return await data.json()
+}
+export async function _r34Tags(query: string) {
   if (query.length === 0) return []
   const r34: R34AC = createApi(R34Const.AUTOCOMPLETE)
   const data = await r34['autocomplete.php']({ q: query })
