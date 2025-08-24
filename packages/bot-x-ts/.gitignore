@@ -49,7 +49,7 @@ test-output/
 junit-report.xml
 
 # TypeScript
-*.d.ts
+# *.d.ts
 
 # Mac system files
 .AppleDouble
