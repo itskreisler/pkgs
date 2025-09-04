@@ -10,15 +10,18 @@ export default {
 
   /**
    * @description
-   * @param {import("../src/bot/core/main").ClientBot} client
-   * @param {import("../src/bot/interfaces/proto").IClsBot.ICTX} { msg, ctx }
+   * @param {import("@/bot/core/main").ClientBot} client
+   * @param {import("@/bot/interfaces/proto").IClsBot.ICTX} { msg, ctx }
    * @param {RegExpMatchArray} match
    */
-  async cmd (client: ClientBot, { msg, ctx }: IClsBot.ICTX, match: RegExpMatchArray): Promise<void> {
+  async cmd(client: ClientBot, { msg, ctx }: IClsBot.ICTX, match: RegExpMatchArray): Promise<void> {
     const start = Number(new Date())
     const send = await ctx.send({ text: '*Pinging...*' }, { parse_mode: EParseMode.Markdown })
     const end = Number(new Date())
     const ping = end - start
     await send.editText(`*Pong! Latency is* \`${ping}ms\``, { parse_mode: EParseMode.Markdown })
+    setTimeout(async () => {
+      await send.delete()
+    }, 5000)
   }
 }

@@ -63,11 +63,11 @@ export class Message {
   //
   async send(content: IClsBot.TSendContent,
     options?: TelegramBot.SendMessageOptions
-    | TelegramBot.SendDocumentOptions
-    | TelegramBot.SendPhotoOptions
-    | TelegramBot.SendVideoOptions
-    | TelegramBot.SendStickerOptions
-    | TelegramBot.SendAudioOptions,
+      | TelegramBot.SendDocumentOptions
+      | TelegramBot.SendPhotoOptions
+      | TelegramBot.SendVideoOptions
+      | TelegramBot.SendStickerOptions
+      | TelegramBot.SendAudioOptions,
     fileOptions?: TelegramBot.FileOptions
   ) {
     const { text, doc, photo, audio, video } = content
@@ -91,8 +91,8 @@ export class Message {
     return await Promise.resolve(await this.client.editMessageText(text, { ...options, chat_id: this.chatId, message_id: this.message_id }))
   }
 
-  downloadMedia(): undefined {
-
+  downloadMedia() {
+    console.log('downloadMedia: Not implemented yet.')
   }
 
   getQuotedMsg() {

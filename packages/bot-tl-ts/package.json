@@ -14,7 +14,7 @@
     "build": "tsup",
     "build:all": "tsup --entry.index src/index.ts --format esm,cjs --dts",
     "build:index": "tsup src/index.ts --format esm,cjs --onSuccess \"cp -r dist/* tmpbot\"",
-    "build:bot": "rm -rf dist/* tmpbot/* && tsup --entry.example src/example.ts --format esm --onSuccess \"mv dist/* tmpbot\"",
+    "build:bot": "rm -rf dist/* tmpbot/* && tsup && tsup --entry.example src/example.ts --format esm --onSuccess \"mv dist/* tmpbot\"",
     "watch": "rm -rf dist/* && tsup && tsup src/index.ts --watch --onSuccess \"node dist/index.js\"",
     "watch:test": "rm -rf dist/* && tsup --entry.test test/index.test.ts --format esm --watch --onSuccess \"node dist/test.js\"",
     "test": "rm -rf dist/* && tsup src/bot/client.ts --watch --onSuccess \"node dist/client.js\"",

@@ -4,7 +4,7 @@ import { TELEGRAM_TOKEN_DEV, TELEGRAM_TOKEN_PROD, NODE_ENV } from '@/bot/helpers
 import { IClsBot } from '@/bot/interfaces/proto'
 const TOKEN: string = NODE_ENV === 'production' ? TELEGRAM_TOKEN_PROD : TELEGRAM_TOKEN_DEV
 export class ClientBot extends TelegramBot {
-  commands: Map<RegExp, IClsBot.IExportCMD> = new Map()
+  commands = new Map<RegExp, IClsBot.IExportCMD>()
   slashArray = []
   //
   constructor(
@@ -71,7 +71,7 @@ export class ClientBot extends TelegramBot {
     // await this.loadCommandsSlash()
   }
 
-  get getCommands(): Array<[RegExp, IClsBot.IExportCMD]> {
+  get getCommands(): [RegExp, IClsBot.IExportCMD][] {
     return Array.from(this.commands)
   }
 
@@ -131,7 +131,7 @@ export class ClientBot extends TelegramBot {
     ]
 
     for (const { path } of handlers) {
-      const handler = await this.dynamicImport<{ default: Function }>(path)
+      const handler = await this.dynamicImport<{ default: () => void }>(path)
       handler.default()
     }
   }
