@@ -90,7 +90,7 @@ export class ClientBot extends TelegramBot {
   async loadEvents() {
     console.log('📗(%) Cargando eventos')
     const events = [{
-      event: 'message', path: './message.js'
+      event: 'message', path: '@/bot/events/client/message.js'
     }]
 
     for (const { event, path } of events) {
@@ -103,7 +103,8 @@ export class ClientBot extends TelegramBot {
   async loadCommands() {
     console.log('📗(%) Cargando comandos')
     const commands = [
-      { path: './cmd.ping.js' }
+      { path: '@/bot/commands/public/cmd.ping.js' },
+      { path: '@/bot/commands/public/expregYouTube.js' }
     ]
 
     for (const { path } of commands) {
@@ -112,7 +113,7 @@ export class ClientBot extends TelegramBot {
       if (active === false) continue
       this.commands.set(regexp, moduleImport.default)
     }
-    console.log('📚(%) Comandos cargados')
+    console.log('📚(%) Comandos cargados', commands.length)
   }
 
   async loadCommandsSlash() {
@@ -127,7 +128,7 @@ export class ClientBot extends TelegramBot {
 
     const handlers = [
       // {path: './devil.js'},
-      { path: './antiCrash.js' }
+      { path: '@/bot/handlers/antiCrash.js' }
     ]
 
     for (const { path } of handlers) {
