@@ -82,6 +82,4 @@ export function registerCommandFunctions(): void {
             return multimedias
         }
     )
-
-    console.log('✅ Funciones de comandos registradas automáticamente')
 }

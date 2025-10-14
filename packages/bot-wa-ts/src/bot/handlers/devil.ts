@@ -13,39 +13,27 @@ export async function devil(client: Whatsapp): Promise<void> {
   const deamon = new JsCron()
   const { getState } = GlobalDB
   deamon.createTask('suscripciones', CRON_JOB, async () => {
-    console.log('Ejecutando tarea', new Date().toLocaleString())
     const idsGroups = Object.keys(getState().groupDatabases)
-    console.log({ idsGroups })
     for (const idGroup of idsGroups) {
       const cmds = Object.keys(getState().groupDatabases[idGroup]) as CMDS[]
-      console.log({ cmds })
       for (const cmd of cmds) {
         const { data, notifications } = getState().groupDatabases[idGroup][cmd]
-        if (notifications === false) {
-          console.log('Notificaciones desactivadas', idGroup, cmd)
-          continue
-        }
+        if (notifications === false) continue
+        
         const { input, output } = CmdActions.getCmdActions(cmd) as { input: InputFunction, output: OutputFunction }
         const latestData = await input() as (IEpisodeAdded & IKudasaiData)[]
         const newData = latestData.filter(i => typeof data.find(o => o.id === i.id) === 'undefined')
-        if (newData.length === 0) {
-          console.log('No hay nuevos datos', idGroup, cmd)
-          continue
-        }
-        console.log('Nuevos datos', newData.length, idGroup, cmd)
+        if (newData.length === 0) continue
 
         const media = output(async function () {
           return await Promise.resolve(newData)
         }) as IPostMedia[]
         client.sendMsgGroup(idGroup, media)
           .then(() => {
-            // registrar los nuevos datos
-            const oldSize = data.length
             getState().addCommandData(idGroup, cmd, newData)
-            console.log('Tamano de datos: old=', oldSize, ' new=', data.length, ' cmd=', cmd, ' group=', idGroup)
           })
           .catch(err => {
-            console.error('Error al enviar mensajes', err)
+            console.error('❌ Error al enviar mensajes:', err)
             client.sock.sendMessage(idGroup, { text: `❌Error al enviar ${data.length} mensajes` })
           })
       }

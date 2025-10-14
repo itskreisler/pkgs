@@ -2,16 +2,13 @@ export default (): void => {
   process.removeAllListeners()
 
   process.on('unhandledRejection', (reason, p) => {
-    console.log(' [ANTICRASH] :: unhandledRejection')
-    console.log(reason, p)
+    console.error('[ANTICRASH] unhandledRejection:', reason, p)
   })
   process.on('uncaughtException', (err, origin) => {
-    console.log(' [ANTICRASH] :: uncaughtException')
-    console.log(err, origin)
+    console.error('[ANTICRASH] uncaughtException:', err, origin)
   })
   process.on('uncaughtExceptionMonitor', (err, origin) => {
-    console.log(' [ANTICRASH] :: uncaughtExceptionMonitor')
-    console.log(err, origin)
+    console.error('[ANTICRASH] uncaughtExceptionMonitor:', err, origin)
   })
   process.on('multipleResolves', () => {
 

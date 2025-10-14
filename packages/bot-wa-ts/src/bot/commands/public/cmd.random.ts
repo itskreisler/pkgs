@@ -31,7 +31,6 @@ export default {
       msg.reply({ text: 'Debes escribir una lista de elementos separados por salto de línea' })
       return
     }
-    console.log({ q })
     const text = trimText(q)
     const listOfArray = text.split('\n')
     let randomArray

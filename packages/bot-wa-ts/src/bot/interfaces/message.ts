@@ -64,7 +64,6 @@ export class Message {
       WaMessageTypes.viewOnceMessage,
       WaMessageTypes.viewOnceMessageV2
     ].includes(type)
-    // console.log({ c: this.content })
   }
 
   /**

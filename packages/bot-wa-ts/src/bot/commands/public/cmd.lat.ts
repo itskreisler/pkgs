@@ -50,7 +50,6 @@ export default {
         const data = await scraper.latestEpisodesAdded()
         GlobalDB.getState().addCommandData(from, EConstCMD.Lat, data)
         await msg.reply({ text: 'Se han añadido animes de latanime.org más recientes' })
-        console.log('Datos agregados')
         break
       }
       case 'on': {

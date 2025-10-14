@@ -251,19 +251,9 @@ class Whatsapp extends ClientWsp {
     }
 
     async loadEvents() {
-        printLog('⏳ Cargando eventos', 'cyan')
-
         try {
-
-            // connection.update
-            // const { handler: conUp } = await import('@/bot/events/client/connection.update')
-            // this.sock.ev.on('connection.update', conUp.bind(null, this))
-            // messages.upsert
             const { handler: msgUpsert } = await import('@/bot/events/client/messages.upsert')
-
             this.sock.ev.on('messages.upsert', (content) => msgUpsert(this as any, content))
-            //
-
             printLog('✅ Eventos cargados correctamente', 'green')
         } catch (e) {
             printLog(`❌ Error al cargar eventos: ${e}`, 'red')
@@ -272,7 +262,6 @@ class Whatsapp extends ClientWsp {
 
     //
     async loadCommands() {
-        printLog('⏳ Cargando comandos', 'cyan')
         this.commands.clear()
         try {
             const commands = [
@@ -297,7 +286,6 @@ class Whatsapp extends ClientWsp {
                 try {
                     if (this.hasOwnProp(moduleImport.default, 'active') && moduleImport.default.active === true) {
                         this.commands.set(moduleImport.default.ExpReg, moduleImport.default as any)
-                        printLog(`✅ Comando ${name} cargado correctamente`, 'green')
                     }
                 } catch (e) {
                     printLog(`❌ Error al cargar el comando ${name}: ${e}`, 'red')
@@ -306,33 +294,19 @@ class Whatsapp extends ClientWsp {
         } catch (e) {
             printLog(`❌ Error general al cargar comandos: ${e}`, 'red')
         } finally {
-            printLog(`✅ Comandos cargados correctamente: ${this.getCommands().length}`, 'green')
+            printLog(`✅ ${this.getCommands().length} comandos cargados`, 'green')
         }
     }
 
     async loadHandlers() {
-        printLog('⏳ Cargando handlers', 'cyan')
-
         try {
-            // antiCrash
             (await import('@/bot/handlers/antiCrash')).default.bind(this)()
-            printLog('✅ Handlers cargados correctamente', 'green')
-        } catch (e) {
-            printLog(`❌ ERROR AL CARGAR EL HANDLER: ${e}`, 'red')
-        }
-
-        // Registrar funciones de comandos automáticamente
-        try {
             const { registerCommandFunctions } = await import('@/bot/helpers/cmdRegister')
             registerCommandFunctions()
-        } catch (e) {
-            printLog(`❌ ERROR AL REGISTRAR FUNCIONES DE COMANDOS: ${e}`, 'red')
-        }
-
-        try {
             (await import('@/bot/handlers/devil')).devil.bind(this)(this)
+            printLog('✅ Handlers cargados correctamente', 'green')
         } catch (e) {
-            printLog(`❌ ERROR AL CARGAR EL DEVIL: ${e}`, 'red')
+            printLog(`❌ Error al cargar handlers: ${e}`, 'red')
         }
     }
 

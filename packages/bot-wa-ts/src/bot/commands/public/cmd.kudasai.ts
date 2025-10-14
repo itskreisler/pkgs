@@ -49,7 +49,6 @@ export default {
         const data = (await kudasaiApi()).map(item => ({ id: item.slug, ...item }))
         GlobalDB.getState().addCommandData(from, EConstCMD.Kudasai, data)
         await msg.reply({ text: 'Se han añadido las noticias actuales a la base de datos' })
-        console.log('Datos agregados')
         break
       }
       case 'on': {

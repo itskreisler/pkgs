@@ -60,12 +60,8 @@ export class ClientWsp extends EventEmitter {
   }
 
   private setupEventsHandlers() {
-    printLog('🔧 Setting up event handlers', 'cyan')
     this.sock.ev.on('creds.update', this.saveCreds)
     this.sock.ev.on('connection.update', (update: Partial<ConnectionState>) => {
-      if (update.connection) {
-        printLog(`🔌 Connection update: ${update.connection}`, 'blue')
-      }
       this.emit('connectionUpdate', update)
       const { connection, lastDisconnect, qr } = update
       if (connection === WaConnectionState.close) {
@@ -92,30 +88,11 @@ export class ClientWsp extends EventEmitter {
       }
     })
     this.sock.ev.on('messages.upsert', ({ messages, type }) => {
-      printLog('🔔 messages.upsert event triggered', 'cyan')
-      printLog(`📊 Number of messages: ${messages.length}`, 'white')
-      printLog(`📝 Type: ${type}`, 'white')
-
       this.emit('wamessage', { content: { messages, type } })
 
-      messages.forEach((message, index) => {
-        printLog(`\n--- Message ${index + 1} ---`, 'blue')
-        printLog(`📱 Remote JID: ${message.key.remoteJid}`, 'white')
-        printLog(`📩 Has message content: ${message.message != null}`, 'white')
-        printLog(`🔍 Is status broadcast: ${message.key.remoteJid === 'status@broadcast'}`, 'white')
-
-        // Lógica corregida: debe emitir si NO es status@broadcast Y SI tiene contenido
-        if (message.key.remoteJid === 'status@broadcast') {
-          printLog('❌ Skipping: status broadcast', 'yellow')
-          return
-        }
-
-        if (message.message == null) {
-          printLog('❌ Skipping: no message content', 'yellow')
-          return
-        }
-
-        printLog('✅ Emitting message event', 'green')
+      messages.forEach((message) => {
+        if (message.key.remoteJid === 'status@broadcast') return
+        if (message.message == null) return
         this.emit('message', message)
       })
     })
