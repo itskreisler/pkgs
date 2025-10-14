@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unsafe-declaration-merging */
+/* eslint-disable @typescript-eslint/no-empty-function */
 import EventEmitter from 'events'
-import qrcode from 'qrcode-terminal'
+
 import {
   ConnectionState,
   DisconnectReason,
@@ -72,11 +74,11 @@ export class ClientWsp extends EventEmitter {
         } else {
           console.log('Connection closed. You are logged out.')
         }
-        client.qr = null
+        this.qr = null
       } else if (connection === WaConnectionState.open) {
         this.emit('open', lastDisconnect)
         this.emit('username', this.sock.user?.name)
-        client.qr = null
+        this.qr = null
       } else {
         if (typeof qr === 'string') {
           this.qr = update.qr
@@ -142,23 +144,3 @@ interface ClientEvents extends BaileysEventMap {
     date: Date
   } | undefined
 }
-const client = new ClientWsp()
-
-client.on('qr', (qr) => {
-  // Generate and scan this code with your phone
-  console.log('📱 QR Code received')
-  qrcode.generate(qr, { small: true })
-})
-client.on('wamessage', (message) => {
-  console.log('💬 MESSAGE RECEIVED')
-  console.dir(message, { depth: null })
-})
-
-client.on('message', (msg) => {
-  console.log('📨 Individual message event triggered')
-  console.log('From:', msg.key.remoteJid)
-  console.log('Message:', JSON.stringify(msg.message, null, 2))
-})
-
-console.log('🚀 Initializing WhatsApp client...')
-client.initialize()
