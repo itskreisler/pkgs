@@ -57,8 +57,10 @@ export class ClientWsp extends EventEmitter {
   }
 
   private setupEventsHandlers() {
+    console.log('🔧 Setting up event handlers')
     this.sock.ev.on('creds.update', this.saveCreds)
     this.sock.ev.on('connection.update', (update: Partial<ConnectionState>) => {
+      console.log('🔌 Connection update:', update.connection)
       this.emit('connectionUpdate', update)
       const { connection, lastDisconnect, qr } = update
       if (connection === WaConnectionState.close) {
@@ -85,9 +87,30 @@ export class ClientWsp extends EventEmitter {
       }
     })
     this.sock.ev.on('messages.upsert', ({ messages, type }) => {
+      console.log('🔔 messages.upsert event triggered')
+      console.log('📊 Number of messages:', messages.length)
+      console.log('📝 Type:', type)
+
       this.emit('wamessage', { content: { messages, type } })
-      messages.forEach((message) => {
-        if (message.key.remoteJid as string === 'status@broadcast' || (message.message != null)) return
+
+      messages.forEach((message, index) => {
+        console.log(`\n--- Message ${index + 1} ---`)
+        console.log('📱 Remote JID:', message.key.remoteJid)
+        console.log('📩 Has message content:', message.message != null)
+        console.log('🔍 Is status broadcast:', message.key.remoteJid === 'status@broadcast')
+
+        // Lógica corregida: debe emitir si NO es status@broadcast Y SI tiene contenido
+        if (message.key.remoteJid === 'status@broadcast') {
+          console.log('❌ Skipping: status broadcast')
+          return
+        }
+
+        if (message.message == null) {
+          console.log('❌ Skipping: no message content')
+          return
+        }
+
+        console.log('✅ Emitting message event')
         this.emit('message', message)
       })
     })
@@ -123,11 +146,19 @@ const client = new ClientWsp()
 
 client.on('qr', (qr) => {
   // Generate and scan this code with your phone
-  // console.log('QR RECEIVED', qr)
+  console.log('📱 QR Code received')
   qrcode.generate(qr, { small: true })
 })
 client.on('wamessage', (message) => {
-  console.dir('MESSAGE RECEIVED', JSON.stringify(message, null, 2))
+  console.log('💬 MESSAGE RECEIVED')
+  console.dir(message, { depth: null })
 })
 
+client.on('message', (msg) => {
+  console.log('📨 Individual message event triggered')
+  console.log('From:', msg.key.remoteJid)
+  console.log('Message:', JSON.stringify(msg.message, null, 2))
+})
+
+console.log('🚀 Initializing WhatsApp client...')
 client.initialize()
