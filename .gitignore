@@ -35,5 +35,5 @@ creds/*
 **/tmpbot/*
 auth_*
 creds_*
-globalDB.json
+globalDB*.json
 wa-logs.txt

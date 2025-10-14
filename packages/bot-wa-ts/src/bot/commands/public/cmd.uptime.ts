@@ -1,6 +1,6 @@
 import { configEnv } from '@/bot/helpers/env'
 import { type ContextMsg } from '@/bot/interfaces/inter'
-import type Whatsapp from '@/bot/main'
+import type Whatsapp from '@/bot/client.example'
 const { BOT_USERNAME } = configEnv() as { BOT_USERNAME: string }
 //
 export default {
@@ -13,7 +13,7 @@ export default {
    * @param {ContextMsg}
    * @param {RegExpMatchArray} match
    */
-  async cmd (client: Whatsapp, { wamsg, msg }: ContextMsg, match: RegExpMatchArray): Promise<void> {
+  async cmd(client: Whatsapp, { wamsg, msg }: ContextMsg, match: RegExpMatchArray): Promise<void> {
     const fechaActual = new Date(client.upTime)
     const dia = fechaActual.getDate().toString().padStart(2, '0')
     const mes = (fechaActual.getMonth() + 1).toString().padStart(2, '0')

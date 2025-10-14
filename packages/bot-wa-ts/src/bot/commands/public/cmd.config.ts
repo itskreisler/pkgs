@@ -1,6 +1,6 @@
 import { BOT_USERNAME, NEW_ADMINS, PERMANENT_ADMINS, isAuthorized } from '@/bot/helpers/env'
 import { CommandImport, type ContextMsg } from '@/bot/interfaces/inter'
-import type Whatsapp from '@/bot/main'
+import type Whatsapp from '@/bot/client.example'
 import { MarkdownWsp } from '@kreisler/js-helpers'
 
 //
@@ -14,16 +14,15 @@ export default {
    * @param {ContextMsg}
    * @param {RegExpMatchArray} match
    */
-  async cmd (client: Whatsapp, { wamsg, msg }: ContextMsg, match: RegExpMatchArray): Promise<void> {
+  async cmd(client: Whatsapp, { wamsg, msg }: ContextMsg, match: RegExpMatchArray): Promise<void> {
     const [, accion, search] = match as [string, 'on' | 'off' | 'list' | 'msg' | 'admin' | undefined, string | undefined]
     const numberPhone: string = msg.author.number
-
     if (isAuthorized(numberPhone) === false) {
-      await msg.reply({ text: 'No tienes permisos para realizar esta acción.' })
+      await msg.reply({ text: 'No tienes permisos para realizar esta acción.'.concat(numberPhone) })
       return
     }
     switch (accion?.toLowerCase()) {
-      case 'admin':{
+      case 'admin': {
         if (typeof search === 'undefined') {
           await msg.reply({ text: 'Debes incluir un parametro' })
           return
@@ -48,7 +47,7 @@ export default {
         console.log(NEW_ADMINS.concat(PERMANENT_ADMINS))
         break
       }
-      case 'on':{
+      case 'on': {
         if (typeof search === 'undefined') {
           await msg.reply({ text: 'Debes incluir un parametro de busqueda' })
           return
@@ -67,7 +66,7 @@ export default {
         client.commands.set(ExpReg, comando)
         break
       }
-      case 'off':{
+      case 'off': {
         if (typeof search === 'undefined') {
           await msg.reply({ text: 'Debes incluir un parametro de busqueda' })
           return
@@ -87,7 +86,7 @@ export default {
         client.commands.set(ExpReg, comando)
         break
       }
-      case 'list':{
+      case 'list': {
         const commands = Array.from(client.commands.entries())
         const text = commands.map(([ExpReg, { active }]) => {
           return `${MarkdownWsp.InlineCode(ExpReg.source.slice(0, 10))} - ${active as boolean ? 'Activo' : 'Desactivado'}`
@@ -95,17 +94,17 @@ export default {
         await msg.reply({ text })
         break
       }
-      case 'msg':{
+      case 'msg': {
         if (typeof search === 'undefined') {
           await msg.reply({ text: 'Debes incluir un parametro (on/off)' })
           return
         }
         switch (search.toLowerCase()) {
-          case 'on':{
+          case 'on': {
             if (msg.isGroup === true) client.sock.groupSettingUpdate(wamsg.key.remoteJid as string, 'not_announcement')
             break
           }
-          case 'off':{
+          case 'off': {
             if (msg.isGroup === true) client.sock.groupSettingUpdate(wamsg.key.remoteJid as string, 'announcement')
             break
           }
@@ -113,7 +112,7 @@ export default {
 
         break
       }
-      default:{
+      default: {
         await msg.reply({
           text: `
 Que puedes hacer con este comando:

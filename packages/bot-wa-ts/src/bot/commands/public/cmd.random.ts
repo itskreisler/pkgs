@@ -1,7 +1,7 @@
 import { configEnv } from '@/bot/helpers/env'
 import { MarkdownWsp, trimText } from '@kreisler/js-helpers'
 import { type ContextMsg } from '@/bot/interfaces/inter'
-import type Whatsapp from '@/bot/main'
+import type Whatsapp from '@/bot/client.example'
 const { BOT_USERNAME } = configEnv() as { BOT_USERNAME: string }
 //
 export default {
@@ -14,7 +14,7 @@ export default {
    * @param {ContextMsg}
    * @param {RegExpMatchArray} match
    */
-  async cmd (client: Whatsapp, { wamsg, msg, quotedBody }: ContextMsg, match: RegExpMatchArray): Promise<void> {
+  async cmd(client: Whatsapp, { wamsg, msg, quotedBody }: ContextMsg, match: RegExpMatchArray): Promise<void> {
     const [, accion, _q] = match as [string, 's' | 'shuffle' | undefined, string | undefined]
     let q: string | undefined
     if (msg.isReply === true) {
@@ -37,12 +37,12 @@ export default {
     let randomArray
     switch (accion?.toLowerCase()) {
       case 's':
-      case 'shuffle':{
+      case 'shuffle': {
         randomArray = listOfArray.sort(() => Math.random() - 0.5)
         break
       }
 
-      default:{
+      default: {
         randomArray = listOfArray
         break
       }

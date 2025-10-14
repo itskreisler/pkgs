@@ -3,11 +3,13 @@ import { Media } from './media'
 import P from 'pino'
 import { SelectTypesDL, WaMessageTypes } from './inter'
 import { FetchBuffer, fileTypeFromBuffer } from '@/bot/helpers/polyfill'
+import { printLog } from '@/bot/helpers/utils'
+
 export class Message {
   protected _message: proto.IMessage
   protected _data: proto.IWebMessageInfo
   id: string
-  client: import('@/bot/main').Whatsapp
+  client: import('@/bot/client.example').Whatsapp
   author: User
   content: string
   isReply: boolean
@@ -16,17 +18,35 @@ export class Message {
   hasMedia: boolean
   isViewOnce: boolean
   type: WaMessageTypes
-  constructor(client: import('@/bot/main').Whatsapp, data: proto.IWebMessageInfo) {
+  constructor(client: import('@/bot/client.example').Whatsapp, data: proto.IWebMessageInfo) {
     const { message, pushName, key: { remoteJid, participant, fromMe, id }, verifiedBizName } = data
+
+    // @ts-ignore - Estos campos no están en los tipos oficiales pero existen
+    const participantPn = data.key.participantPn as string | undefined
+    // @ts-ignore
+    const senderPn = data.key.senderPn as string | undefined
 
     this._message = message as proto.IMessage
     this.client = client
     this._data = data
     this.id = id as string
-    this.isGroup = !(remoteJid ?? '').endsWith('@s.whatsapp.net')
-    this.author = (remoteJid ?? '').endsWith('@s.whatsapp.net')
-      ? new User(client, pushName ?? verifiedBizName ?? '', (remoteJid ?? '').split('@')[0], (remoteJid ?? ''))
-      : new GroupUser(client, (remoteJid ?? ''), pushName ?? verifiedBizName ?? '', (participant ?? '').split('@')[0], (participant ?? ''))
+    this.isGroup = (remoteJid ?? '').endsWith('@g.us')
+
+    // Determinar el JID real del usuario
+    let userJid: string
+    if (this.isGroup) {
+      // En grupos: usar participantPn, sino participant
+      userJid = participantPn ?? participant ?? ''
+    } else {
+      // En chats individuales: usar senderPn, sino remoteJid
+      userJid = senderPn ?? remoteJid ?? ''
+    }
+
+    const userNumber = userJid.split('@')[0]
+
+    this.author = this.isGroup
+      ? new GroupUser(client, (remoteJid ?? ''), pushName ?? verifiedBizName ?? '', userNumber, userJid)
+      : new User(client, pushName ?? verifiedBizName ?? '', userNumber, userJid)
     this.fromMe = fromMe as boolean
     this.isReply = client.hasOwnProp(message, 'extendedTextMessage.contextInfo.quotedMessage')
     this.isViewOnce = client.hasOwnProp(message, WaMessageTypes.viewOnceMessageV2)
@@ -183,6 +203,7 @@ export class Message {
 
         if (mentionedJid != null) {
           for (const jid of mentionedJid) {
+            // TODO: aqui cambio algo
             if ((this._data.key.remoteJid ?? '')?.endsWith('@s.whatsapp.net')) { mentioned.push(new User(this.client, undefined, jid.split('@')[0], jid)) }
 
             mentioned.push(new GroupUser(this.client, this._data.key.remoteJid as string, undefined, jid?.split('@')[0], jid))
@@ -196,22 +217,18 @@ export class Message {
 }
 
 export class User {
-  client: import('@/bot/main').Whatsapp
+  client: import('@/bot/client.example').Whatsapp
   pushname?: string
   number: string
   countryCode: string
   id: string
 
-  constructor(client: import('@/bot/main').Whatsapp, pushname: string = '', number: string, id: string) {
+  constructor(client: import('@/bot/client.example').Whatsapp, pushname: string = '', number: string, id: string) {
     this.client = client
     this.pushname = pushname
     this.number = number
     this.id = id
     this.countryCode = '57'
-  }
-
-  sendMessage(content: string | Media | AnyMessageContent, opts?: MiscMessageGenerationOptions) {
-    this.client.send(this.id, content, opts)
   }
 
   async getProfile(): Promise<WABusinessProfile> {
@@ -241,7 +258,7 @@ export class GroupUser extends User {
   /**
      * @type { Client }
      */
-  client: import('@/bot/main').Whatsapp
+  client: import('@/bot/client.example').Whatsapp
   pushname?: string
   number
   countryCode: string
@@ -249,7 +266,7 @@ export class GroupUser extends User {
   isAdmin: boolean
   groupId: string
 
-  constructor(client: import('@/bot/main').Whatsapp, groupId: string, pushname: string = '', number: string, id: string) {
+  constructor(client: import('@/bot/client.example').Whatsapp, groupId: string, pushname: string = '', number: string, id: string) {
     super(client, pushname, number, id)
     this.groupId = groupId
     this.client = client
@@ -291,14 +308,14 @@ export class Chat {
   /**
      * @type { Client }
      */
-  client: import('@/bot/main').Whatsapp
+  client: import('@/bot/client.example').Whatsapp
   id
 
   /**
      * @param { Client } client
      * @param { string } id
      */
-  constructor(client: import('@/bot/main').Whatsapp, id: string) {
+  constructor(client: import('@/bot/client.example').Whatsapp, id: string) {
     this.client = client
     this.id = id
   }
@@ -320,7 +337,7 @@ export class Group extends Chat {
   name
   description
 
-  constructor(client: import('@/bot/main').Whatsapp, data: GroupMetadata, id: string) {
+  constructor(client: import('@/bot/client.example').Whatsapp, data: GroupMetadata, id: string) {
     super(client, id)
     this._data = data
     this.name = data.subject

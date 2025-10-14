@@ -1,5 +1,5 @@
 import { EConstCMD, IPostMedia, type ContextMsg } from '@/bot/interfaces/inter'
-import type Whatsapp from '@/bot/main'
+import type Whatsapp from '@/bot/client.example'
 import { MarkdownWsp } from '@kreisler/js-helpers'
 import { LatAnimeScraper, IEpisodeAdded, URIS, GlobalDB } from '@kreisler/bot-services'
 import { getStreamFromUrl } from '@/bot/helpers/polyfill'
@@ -93,7 +93,7 @@ export default {
           const episodeList = episodes.sort((a, b) => a - b).map(ep => `#${ep}`).join(', ')
           return MarkdownWsp.Quote(`${title} (${episodeList})`)
         }).join('\n')
-        await msg.reply({ text: `Total: ${total}\n${list}` })
+        await msg.reply({ text: `Total: ${total}\n${list.slice(0, 1000)}` })
         break
       }
       case 'id': {

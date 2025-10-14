@@ -39,7 +39,7 @@ export function printLog(message: any, type: keyof typeof CONSOLE_COLORS = 'whit
     second: '2-digit',
     hour12: false
   })
-  const formattedMessage = `[${timestamp}] ${JSON.stringify(message, null, 2)}`
+  const formattedMessage = `[${timestamp}] ${typeof message === 'string' ? message : JSON.stringify(message, null, 2)}`
   console.log(CONSOLE_COLORS[type].concat('%s\x1b[0m'), formattedMessage)
 }
 

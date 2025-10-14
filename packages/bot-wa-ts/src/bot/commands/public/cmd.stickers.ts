@@ -1,6 +1,6 @@
 import { type ContextMsg } from '@/bot/interfaces/inter'
 import { Message } from '@/bot/interfaces/message'
-import type Whatsapp from '@/bot/main'
+import type Whatsapp from '@/bot/client.example'
 import fs from 'fs'
 import { argv2Object } from '@kreisler/js-helpers'
 import { execPromise } from '@kreisler/exec-promise'

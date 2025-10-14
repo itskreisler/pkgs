@@ -1,6 +1,6 @@
 import { configEnv } from '@/bot/helpers/env'
 import { type ContextMsg } from '@/bot/interfaces/inter'
-import type Whatsapp from '@/bot/main'
+import type Whatsapp from '@/bot/client.example'
 import { MarkdownWsp } from '@kreisler/js-helpers'
 import { en2es, getAnimeById, getAnimeSearch, getRandom, groupAnimeByTitle } from '@kreisler/bot-services'
 const { BOT_USERNAME } = configEnv() as { BOT_USERNAME: string }
@@ -26,7 +26,7 @@ export default {
      * @param {ContextMsg}
      * @param {RegExpMatchArray | null} match
      */
-  async cmd (client: Whatsapp, { wamsg, msg, quotedBody }: ContextMsg, match: RegExpMatchArray): Promise<void> {
+  async cmd(client: Whatsapp, { wamsg, msg, quotedBody }: ContextMsg, match: RegExpMatchArray): Promise<void> {
     const [, accion, _q] = match as [string, 's' | 'search' | 'id' | 'byid' | 'r' | 'random' | undefined, string | undefined]
     let q: string | undefined
     if (msg.isReply === true) {

@@ -2,7 +2,7 @@ import {
   type WAMessage,
   type MessageUpsertType
 } from 'baileys'
-import type Whatsapp from '@/bot/main'
+import type Whatsapp from '@/bot/client.example'
 import { BOT_PREFIX } from '@/bot/helpers/env'
 import { type ContextMsg, type decounceMessage } from '@/bot/interfaces/inter'
 import { Message } from '@/bot/interfaces/message'

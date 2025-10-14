@@ -1,16 +1,18 @@
 import { ClientWsp } from '@/bot/client'
 import { AnyMessageContent, MiscMessageGenerationOptions, proto } from 'baileys'
-import qrcode from 'qrcode-terminal'
 import { CommandImport, WaMessageTypes, type MessageBody, type BodyMsg } from '@/bot/interfaces/inter'
 import { printLog } from '@/bot/helpers/utils'
+import { Sticker, createSticker, type IStickerOptions, StickerTypes } from 'wa-sticker-formatter';
 
 class Whatsapp extends ClientWsp {
+    upTime = Date.now();
     commands = new Map<RegExp, CommandImport>()
 
     async initialize() {
         await super.initialize()
         await this.loadEvents()
         await this.loadCommands()
+        await this.loadHandlers()
     }
 
     async sendMsgGroup(
@@ -209,6 +211,44 @@ class Whatsapp extends ClientWsp {
         // Devolver el valor final de la propiedad
         return obj
     }
+    async imageUrl2Base64(url: string): Promise<[Buffer, string]> {
+        const req = await globalThis.fetch(url, {
+            method: 'GET'
+        })
+        // leer el mimetype
+        const mimeType = req.headers.get('Content-Type') ?? 'application/octet-stream'
+        // Validar si es de tipo imagen
+        if (!mimeType.startsWith('image/')) {
+            throw new Error(`El archivo no es una imagen. Tipo MIME recibido: ${mimeType}`)
+        }
+        // const contentLength = req.headers.get('Content-Length')
+
+        const res = await req.arrayBuffer()
+        // const size = (contentLength != null) ? parseInt(contentLength, 10) : res.byteLength
+
+        return [Buffer.from(res), mimeType]
+    }
+
+    async stickerGenerator(mediaData: string | Buffer): Promise<Buffer> {
+        const stickerOption: IStickerOptions = {
+            pack: 'sticker.ly/user/itskreisler',
+            author: 'itskreisler',
+            type: StickerTypes.FULL,
+            quality: 100
+        }
+        const generateSticker = await createSticker(mediaData, stickerOption)
+        return generateSticker
+    }
+
+    async stickerGeneratorFromPath(image: string | Buffer) {
+        const sticker = new Sticker(image, {
+            pack: 'sticker.ly/user/itskreisler',
+            author: 'itskreisler',
+            type: StickerTypes.FULL,
+            quality: 100
+        })
+        return await sticker.toMessage()
+    }
 
     async loadEvents() {
         printLog('⏳ Cargando eventos', 'cyan')
@@ -236,27 +276,27 @@ class Whatsapp extends ClientWsp {
         this.commands.clear()
         try {
             const commands = [
-                { moduleImport: await import('@/bot/commands/public/cmdPing'), name: 'ping' }
-                /* { moduleImport: await import('@/bot/commands/public/cmd.random'), name: 'random' },
+                { moduleImport: await import('@/bot/commands/public/cmdPing'), name: 'ping' },
+                { moduleImport: await import('@/bot/commands/public/cmd.random'), name: 'random' },
                 { moduleImport: await import('@/bot/commands/public/cmd.kudasai'), name: 'kudasai' },
-                { moduleImport: await import('@/bot/commands/public/cmd.ig'), name: 'ig' },
-                { moduleImport: await import('@/bot/commands/public/cmd.config'), name: 'config' },
+                // { moduleImport: await import('@/bot/commands/public/cmd.ig'), name: 'ig' }, // Error de API
+                // { moduleImport: await import('@/bot/commands/public/cmd.config'), name: 'config' }, // Error
                 { moduleImport: await import('@/bot/commands/public/cmd.delete'), name: 'delete' },
                 { moduleImport: await import('@/bot/commands/public/cmd.dlurl'), name: 'dlurl' },
-                { moduleImport: await import('@/bot/commands/public/cmd.unlock'), name: 'unlock' },
+                // { moduleImport: await import('@/bot/commands/public/cmd.unlock'), name: 'unlock' }, // Duplicado
                 { moduleImport: await import('@/bot/commands/public/cmd.r34'), name: 'r34' },
                 { moduleImport: await import('@/bot/commands/public/cmd.uptime'), name: 'uptime' },
                 { moduleImport: await import('@/bot/commands/public/cmd.tiktok'), name: 'tiktok' },
                 { moduleImport: await import('@/bot/commands/public/cmd.mal'), name: 'mal' },
                 { moduleImport: await import('@/bot/commands/public/cmd.flv'), name: 'flv' },
                 { moduleImport: await import('@/bot/commands/public/cmd.lat'), name: 'lat' },
-                { moduleImport: await import('@/bot/commands/public/cmd.stickers'), name: 'st' } */
+                { moduleImport: await import('@/bot/commands/public/cmd.stickers'), name: 'st' }
             ]
 
             commands.forEach(async ({ moduleImport, name }) => {
                 try {
                     if (this.hasOwnProp(moduleImport.default, 'active') && moduleImport.default.active === true) {
-                        this.commands.set(moduleImport.default.ExpReg, moduleImport.default)
+                        this.commands.set(moduleImport.default.ExpReg, moduleImport.default as any)
                         printLog(`✅ Comando ${name} cargado correctamente`, 'green')
                     }
                 } catch (e) {
@@ -267,6 +307,32 @@ class Whatsapp extends ClientWsp {
             printLog(`❌ Error general al cargar comandos: ${e}`, 'red')
         } finally {
             printLog(`✅ Comandos cargados correctamente: ${this.getCommands().length}`, 'green')
+        }
+    }
+
+    async loadHandlers() {
+        printLog('⏳ Cargando handlers', 'cyan')
+
+        try {
+            // antiCrash
+            (await import('@/bot/handlers/antiCrash')).default.bind(this)()
+            printLog('✅ Handlers cargados correctamente', 'green')
+        } catch (e) {
+            printLog(`❌ ERROR AL CARGAR EL HANDLER: ${e}`, 'red')
+        }
+
+        // Registrar funciones de comandos automáticamente
+        try {
+            const { registerCommandFunctions } = await import('@/bot/helpers/cmdRegister')
+            registerCommandFunctions()
+        } catch (e) {
+            printLog(`❌ ERROR AL REGISTRAR FUNCIONES DE COMANDOS: ${e}`, 'red')
+        }
+
+        try {
+            (await import('@/bot/handlers/devil')).devil.bind(this)(this)
+        } catch (e) {
+            printLog(`❌ ERROR AL CARGAR EL DEVIL: ${e}`, 'red')
         }
     }
 
@@ -284,34 +350,5 @@ class Whatsapp extends ClientWsp {
         return [true, cmd]
     }
 }
-
-const client = new Whatsapp()
-
-client.on('qr', (qr) => {
-    // Generate and scan this code with your phone
-    printLog('📱 QR Code received', 'yellow')
-    qrcode.generate(qr, { small: true })
-})
-client.on('wamessage', (message) => {
-    printLog('💬 MESSAGE RECEIVED', 'cyan')
-    console.dir(message, { depth: null })
-})
-
-client.on('message', (msg) => {
-    printLog('📨 Individual message event triggered', 'blue')
-    printLog(`From: ${msg.key.remoteJid}`, 'white')
-    printLog(`Message: ${JSON.stringify(msg.message, null, 2)}`, 'white')
-    printLog(`Message ID: ${msg.key.id}`, 'white')
-
-})
-
-printLog('🚀 Initializing WhatsApp client...', 'cyan');
-(async () => {
-    try {
-        await client.initialize()
-        printLog('✅ Cliente inicializado correctamente', 'green')
-    } catch (error) {
-        printLog(`❌ Error al inicializar el cliente: ${error}`, 'red')
-        process.exit(1)
-    }
-})()
+export { Whatsapp }
+export default Whatsapp

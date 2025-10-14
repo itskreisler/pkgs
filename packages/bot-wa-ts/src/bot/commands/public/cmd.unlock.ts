@@ -1,7 +1,7 @@
 import { configEnv } from '@/bot/helpers/env'
 import { type ContextMsg } from '@/bot/interfaces/inter'
 import { type Message } from '@/bot/interfaces/message'
-import type Whatsapp from '@/bot/main'
+import type Whatsapp from '@/bot/client.example'
 const { BOT_USERNAME } = configEnv() as { BOT_USERNAME: string }
 //
 export default {
@@ -14,7 +14,7 @@ export default {
    * @param {ContextMsg}
    * @param {RegExpMatchArray} match
    */
-  async cmd (client: Whatsapp, { wamsg, msg }: ContextMsg, match: RegExpMatchArray): Promise<void> {
+  async cmd(client: Whatsapp, { wamsg, msg }: ContextMsg, match: RegExpMatchArray): Promise<void> {
     if (msg.isReply === false) {
       await msg.reply({
         text: 'P-perdona, necesitas ejecutar el comando junto a la multimedia que deseas desbloquear.'
@@ -36,10 +36,10 @@ export default {
       : media.fileType?.mime.startsWith('video') === true
         ? { video: media.buffer }
         : {
-            document: media.buffer,
-            mimetype: media.fileType?.mime as string,
-            fileName: Date.now().toString().concat('.', media.fileType?.ext as string)
-          }
+          document: media.buffer,
+          mimetype: media.fileType?.mime as string,
+          fileName: Date.now().toString().concat('.', media.fileType?.ext as string)
+        }
     await msg.send(multimedia)
   }
 }

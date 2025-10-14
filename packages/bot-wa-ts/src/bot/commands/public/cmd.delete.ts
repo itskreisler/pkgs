@@ -1,6 +1,6 @@
 import { type ContextMsg } from '@/bot/interfaces/inter'
 import { Message } from '@/bot/interfaces/message'
-import type Whatsapp from '@/bot/main'
+import type Whatsapp from '@/bot/client.example'
 //
 export default {
   active: true,
@@ -12,7 +12,7 @@ export default {
    * @param {ContextMsg}
    * @param {RegExpMatchArray} match
    */
-  async cmd (client: Whatsapp, { wamsg, msg }: ContextMsg, match: RegExpMatchArray): Promise<void> {
+  async cmd(client: Whatsapp, { wamsg, msg }: ContextMsg, match: RegExpMatchArray): Promise<void> {
     const hasReplay = msg.isReply
     if (hasReplay === false) {
       msg.reply({

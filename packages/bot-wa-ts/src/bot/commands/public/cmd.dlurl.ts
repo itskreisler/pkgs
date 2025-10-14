@@ -1,6 +1,6 @@
 import { nodeFetchBuffer, getStreamFromUrl } from '@/bot/helpers/polyfill'
 import { type ContextMsg } from '@/bot/interfaces/inter'
-import type Whatsapp from '@/bot/main'
+import type Whatsapp from '@/bot/client.example'
 //
 export default {
   active: true,
@@ -12,7 +12,7 @@ export default {
    * @param {ContextMsg}
    * @param {RegExpMatchArray} match
    */
-  async cmd (client: Whatsapp, { wamsg, msg }: ContextMsg, match: RegExpMatchArray): Promise<void> {
+  async cmd(client: Whatsapp, { wamsg, msg }: ContextMsg, match: RegExpMatchArray): Promise<void> {
     const [, opcion, url] = match as [string, string | undefined, string | undefined]
     if (typeof url === 'undefined') {
       msg.reply({ text: 'Proporciona un enlace para descargar(imagen o video)' })
