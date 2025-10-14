@@ -29,10 +29,18 @@ export enum CONSOLE_COLORS {
   purpleBlock = '\x1b[45m',
   cyanBlock = '\x1b[46m',
 }
-export function printLog (message: any, type: keyof typeof CONSOLE_COLORS = 'white') {
-  if (isDEV) {
-    console.log(CONSOLE_COLORS[type].concat('%s\x1b[0m'), message)
-  }
+export function printLog(message: any, type: keyof typeof CONSOLE_COLORS = 'white') {
+  const timestamp = new Date().toLocaleString('es-ES', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  })
+  const formattedMessage = `[${timestamp}] ${JSON.stringify(message, null, 2)}`
+  console.log(CONSOLE_COLORS[type].concat('%s\x1b[0m'), formattedMessage)
 }
 
 //

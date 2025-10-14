@@ -46,7 +46,7 @@ export async function devil(client: Whatsapp): Promise<void> {
           })
           .catch(err => {
             console.error('Error al enviar mensajes', err)
-            client.sendText(idGroup, { text: `❌Error al enviar ${data.length} mensajes` })
+            client.sock.sendMessage(idGroup, { text: `❌Error al enviar ${data.length} mensajes` })
           })
       }
     }

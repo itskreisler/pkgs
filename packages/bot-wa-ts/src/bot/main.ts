@@ -309,7 +309,7 @@ class Whatsapp {
 
   async WAConnect() {
     if (this.sock !== null) {
-      console.log('Ya esta conectado')
+      printLog('⚠️ Ya esta conectado', 'yellow')
       this.sock = null as unknown as WASocket
     }
     const { state, saveCreds } = await useMultiFileAuthState(this.folderCreds)
@@ -341,15 +341,14 @@ class Whatsapp {
 
   //
   async loadHandlers() {
-    console.log('(⏳) Cargando handlers')
+    printLog('⏳ Cargando handlers', 'cyan')
 
     try {
       // antiCrash
       (await import('@/bot/handlers/antiCrash')).default.bind(this)()
-      console.log('(✅) Handlers cargados correctamente')
+      printLog('✅ Handlers cargados correctamente', 'green')
     } catch (e) {
-      console.error({ e })
-      console.log('(❌) ERROR AL CARGAR EL HANDLER')
+      printLog(`❌ ERROR AL CARGAR EL HANDLER: ${e}`, 'red')
     }
 
     // Registrar funciones de comandos automáticamente
@@ -357,20 +356,18 @@ class Whatsapp {
       const { registerCommandFunctions } = await import('@/bot/helpers/cmdRegister')
       registerCommandFunctions()
     } catch (e) {
-      console.error({ e })
-      console.log('(❌) ERROR AL REGISTRAR FUNCIONES DE COMANDOS')
+      printLog(`❌ ERROR AL REGISTRAR FUNCIONES DE COMANDOS: ${e}`, 'red')
     }
 
     try {
       (await import('@/bot/handlers/devil')).devil.bind(this)(this)
     } catch (e) {
-      console.error({ e })
-      console.log('(❌) ERROR AL CARGAR EL DEVIL')
+      printLog(`❌ ERROR AL CARGAR EL DEVIL: ${e}`, 'red')
     }
   }
 
   async loadEvents() {
-    console.log('(⏳) Cargando eventos')
+    printLog('⏳ Cargando eventos', 'cyan')
     // this.sock.ev.removeAllListeners('creds.update')
     // this.sock.ev.removeAllListeners('connection.update')
     // this.sock.ev.removeAllListeners('messages.upsert')
@@ -387,9 +384,9 @@ class Whatsapp {
       this.sock.ev.on('messages.upsert', msgUpsert.bind(null, this))
       //
 
-      console.log('(✅) Eventos cargados correctamente')
+      printLog('✅ Eventos cargados correctamente', 'green')
     } catch (e) {
-      console.error('(❌) Errror al cargar eventos', e)
+      printLog(`❌ Error al cargar eventos: ${e}`, 'red')
     }
   }
 
@@ -409,7 +406,7 @@ class Whatsapp {
 
   //
   async loadCommands() {
-    console.log('(⏳) Cargando comandos')
+    printLog('⏳ Cargando comandos', 'cyan')
     this.commands.clear()
     try {
       const commands = [
@@ -434,16 +431,16 @@ class Whatsapp {
         try {
           if (this.hasOwnProp(moduleImport.default, 'active') && moduleImport.default.active === true) {
             this.commands.set(moduleImport.default.ExpReg, moduleImport.default)
-            console.log(`(✅) Comando ${name} cargado correctamente`)
+            printLog(`✅ Comando ${name} cargado correctamente`, 'green')
           }
         } catch (e) {
-          console.log(`(❌) Error al cargar el comando ${name}`, { e })
+          printLog(`❌ Error al cargar el comando ${name}: ${e}`, 'red')
         }
       })
     } catch (e) {
-      console.error({ e })
+      printLog(`❌ Error general al cargar comandos: ${e}`, 'red')
     } finally {
-      console.log('(✅) Comandos cargados correctamente', this.getCommands().length)
+      printLog(`✅ Comandos cargados correctamente: ${this.getCommands().length}`, 'green')
     }
   }
 

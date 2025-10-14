@@ -7,6 +7,7 @@ import { BOT_PREFIX } from '@/bot/helpers/env'
 import { type ContextMsg, type decounceMessage } from '@/bot/interfaces/inter'
 import { Message } from '@/bot/interfaces/message'
 import { debounce } from '@kreisler/debounce'
+import { printLog } from '@/bot/helpers/utils'
 //
 const messageDebounced = debounce(messageHandler, 2500, {
   immediate: true,
@@ -23,8 +24,8 @@ const messageDebounced = debounce(messageHandler, 2500, {
   }
 })
 async function messageHandler({ client, context, comando, ExpReg }: decounceMessage): Promise<void> {
-  // @ts-expect-error
-  const match = context.body.match(ExpReg) as RegExpMatchArray
+
+  const match = context.body?.match(ExpReg) as RegExpMatchArray
   await comando.cmd(client, context, match)
 }
 /**
@@ -37,6 +38,7 @@ export async function handler(client: Whatsapp, content: {
   type: MessageUpsertType
 }): Promise<void> {
   const chat = content.messages[0]
+
   if (chat.message === null) return
   const getMessageBody = client.getMessageBody(chat.message)
   const { body, typeMessage, quotedBody } = getMessageBody
@@ -45,7 +47,7 @@ export async function handler(client: Whatsapp, content: {
   if (chat.key.fromMe === true || typeof body === 'undefined' || body === null) return
   const hasPrefix: boolean = body.startsWith(BOT_PREFIX)
   if (!hasPrefix) return
-  client.printLog(JSON.stringify({ body, typeMessage, quotedBody }, null, 2), 'cyan')
+  printLog(JSON.stringify({ body, typeMessage, quotedBody }, null, 2), 'cyan')
   const [existe, [ExpReg, comando]] = client.findCommand(body)
   if (existe === true && comando?.active === true) {
     try {
@@ -57,7 +59,7 @@ export async function handler(client: Whatsapp, content: {
     } catch (e) {
       console.error('Ha ocurrido un error al ejecutar el comando', { e })
       const from: string = chat.key.remoteJid as string
-      client.sendText(
+      client.sock.sendMessage(
         from,
         { text: `*Ha ocurrido un error al ejecutar el comando \`${body as string}\`*\n*Mira la consola para más detalle*` }
       )

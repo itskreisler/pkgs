@@ -18,6 +18,7 @@ import {
 import P, { type Logger } from 'pino'
 import { Boom } from '@hapi/boom'
 import { WaConnectionState } from '@/bot/interfaces/inter'
+import { printLog } from '@/bot/helpers/utils'
 //
 export interface ClientOptions {
   id?: string
@@ -59,10 +60,12 @@ export class ClientWsp extends EventEmitter {
   }
 
   private setupEventsHandlers() {
-    console.log('🔧 Setting up event handlers')
+    printLog('🔧 Setting up event handlers', 'cyan')
     this.sock.ev.on('creds.update', this.saveCreds)
     this.sock.ev.on('connection.update', (update: Partial<ConnectionState>) => {
-      console.log('🔌 Connection update:', update.connection)
+      if (update.connection) {
+        printLog(`🔌 Connection update: ${update.connection}`, 'blue')
+      }
       this.emit('connectionUpdate', update)
       const { connection, lastDisconnect, qr } = update
       if (connection === WaConnectionState.close) {
@@ -72,7 +75,7 @@ export class ClientWsp extends EventEmitter {
         if (razon1 || razon2) {
           this.initialize()
         } else {
-          console.log('Connection closed. You are logged out.')
+          printLog('🔴 Connection closed. You are logged out.', 'red')
         }
         this.qr = null
       } else if (connection === WaConnectionState.open) {
@@ -89,30 +92,30 @@ export class ClientWsp extends EventEmitter {
       }
     })
     this.sock.ev.on('messages.upsert', ({ messages, type }) => {
-      console.log('🔔 messages.upsert event triggered')
-      console.log('📊 Number of messages:', messages.length)
-      console.log('📝 Type:', type)
+      printLog('🔔 messages.upsert event triggered', 'cyan')
+      printLog(`📊 Number of messages: ${messages.length}`, 'white')
+      printLog(`📝 Type: ${type}`, 'white')
 
       this.emit('wamessage', { content: { messages, type } })
 
       messages.forEach((message, index) => {
-        console.log(`\n--- Message ${index + 1} ---`)
-        console.log('📱 Remote JID:', message.key.remoteJid)
-        console.log('📩 Has message content:', message.message != null)
-        console.log('🔍 Is status broadcast:', message.key.remoteJid === 'status@broadcast')
+        printLog(`\n--- Message ${index + 1} ---`, 'blue')
+        printLog(`📱 Remote JID: ${message.key.remoteJid}`, 'white')
+        printLog(`📩 Has message content: ${message.message != null}`, 'white')
+        printLog(`🔍 Is status broadcast: ${message.key.remoteJid === 'status@broadcast'}`, 'white')
 
         // Lógica corregida: debe emitir si NO es status@broadcast Y SI tiene contenido
         if (message.key.remoteJid === 'status@broadcast') {
-          console.log('❌ Skipping: status broadcast')
+          printLog('❌ Skipping: status broadcast', 'yellow')
           return
         }
 
         if (message.message == null) {
-          console.log('❌ Skipping: no message content')
+          printLog('❌ Skipping: no message content', 'yellow')
           return
         }
 
-        console.log('✅ Emitting message event')
+        printLog('✅ Emitting message event', 'green')
         this.emit('message', message)
       })
     })

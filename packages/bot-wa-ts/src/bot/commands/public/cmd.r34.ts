@@ -5,6 +5,7 @@ import type Whatsapp from '@/bot/main'
 import { r34API, r34Tags, r34RandomPic, type R34Tags, R34Const, R34Response } from '@kreisler/bot-services'
 import { MarkdownWsp } from '@kreisler/js-helpers'
 import { createApi } from '@kreisler/createapi'
+import { printLog } from '@/bot/helpers/utils'
 const { BOT_USERNAME } = configEnv() as { BOT_USERNAME: string }
 //
 
@@ -19,7 +20,7 @@ export default {
    * @param {ContextMsg}
    * @param {RegExpMatchArray} match
    */
-  async cmd (client: Whatsapp, { wamsg, msg }: ContextMsg, match: RegExpMatchArray): Promise<void> {
+  async cmd(client: Whatsapp, { wamsg, msg }: ContextMsg, match: RegExpMatchArray): Promise<void> {
     const [, accion, q] = match as [string, 'r' | 'random' | undefined, string | undefined]
 
     switch (accion?.toLowerCase()) {
@@ -27,7 +28,7 @@ export default {
       case 'random': {
         break
       }
-      default:{
+      default: {
         if (typeof q === 'undefined') {
           msg.reply({ text: 'Debes escribir una etiqueta para buscar' })
           return
@@ -60,13 +61,13 @@ export default {
             const pages = paginasCompletas + paginasExtra
             const minMaxInt = (min: number, max: number): number => Math.floor(Math.random() * (max - min + 1)) + min
             const pid = minMaxInt(0, pages - 1)
-            client.printLog({ totalRegistros, pid, pages }, 'yellow')
+            printLog({ totalRegistros, pid, pages }, 'yellow')
             result = await (async () => {
               let res
               try {
                 res = await r34API([tag], { limit, pid })
               } catch (error) {
-                client.printLog(JSON.stringify(error, null, 2), 'redBlock')
+                printLog(JSON.stringify(error, null, 2), 'redBlock')
                 res = await r34API([tag], { limit, pid: 0 })
               }
               return res
@@ -82,9 +83,9 @@ export default {
             text: 'La cantidad de resultados para '.concat(MarkdownWsp.InlineCode(tag), ' es muy baja, intenta con otras etiquetas.\nCantidad: ', String(result.length))
           })
         }
-        client.printLog({ tag, cantidad: result.length }, 'purple')
+        printLog({ tag, cantidad: result.length }, 'purple')
         const random = r34RandomPic(result)
-        client.printLog(random.file_url, 'purpleBlock')
+        printLog(random.file_url, 'purpleBlock')
         const posturl = await createApi<{
           'index.php': (id: { page: 'post', s: 'view', id: number }) => Promise<{ path: string }>
         }>(R34Const.BASE, { x_debug: true })['index.php']({ page: 'post', s: 'view', id: random.id })
@@ -93,8 +94,8 @@ export default {
         const multimedia = random.file_url.endsWith('.mp4') === true
           ? { video: { stream }, caption, viewOnce }
           : (new Cadena(random.file_url)).endsWithV2(['.png', '.jpg', '.jpeg']) === true
-              ? { image: { stream }, caption, viewOnce }
-              : { text: 'No se pudo obtener el archivo, pero aqui tienes el link.'.concat('\n', MarkdownWsp.Quote(random.file_url)) }
+            ? { image: { stream }, caption, viewOnce }
+            : { text: 'No se pudo obtener el archivo, pero aqui tienes el link.'.concat('\n', MarkdownWsp.Quote(random.file_url)) }
         await msg.send(multimedia)
       }
     }
