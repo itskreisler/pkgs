@@ -19,7 +19,7 @@ export async function devil(client: Whatsapp): Promise<void> {
       for (const cmd of cmds) {
         const { data, notifications } = getState().groupDatabases[idGroup][cmd]
         if (notifications === false) continue
-        
+
         const { input, output } = CmdActions.getCmdActions(cmd) as { input: InputFunction, output: OutputFunction }
         const latestData = await input() as (IEpisodeAdded & IKudasaiData)[]
         const newData = latestData.filter(i => typeof data.find(o => o.id === i.id) === 'undefined')
