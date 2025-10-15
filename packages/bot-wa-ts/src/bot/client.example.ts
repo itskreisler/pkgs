@@ -35,7 +35,8 @@ class Whatsapp extends ClientWsp {
     async sendMsgGroupBatch(
         jids: string | string[], media: AnyMessageContent[] | Promise<AnyMessageContent[]>,
         options?: MiscMessageGenerationOptions,
-        batchSize = 5 // Tamaño del lote, puedes ajustarlo según tus necesidades
+        batchSize = 5, // Tamaño del lote, puedes ajustarlo según tus necesidades
+        replyQuoted = false
     ): Promise<(proto.WebMessageInfo | undefined)[]> {
         const resolvedMedia = await Promise.resolve(media)
         const jidArray = Array.isArray(jids) ? jids : [jids]
@@ -45,6 +46,7 @@ class Whatsapp extends ClientWsp {
         const processBatch = async (batch: Promise<proto.WebMessageInfo | undefined>[]) => {
             await new Promise(resolve => setTimeout(resolve, Math.floor(Math.random() * 10) * 1000)) // Pausa aleatoria entre 0 y 9 segundos
             const batchResults = await Promise.all(batch)
+
             results.push(...batchResults)
         }
 
@@ -52,6 +54,10 @@ class Whatsapp extends ClientWsp {
         let batch: Promise<proto.WebMessageInfo | undefined>[] = []
         for (const jid of jidArray) {
             for (const chunk of resolvedMedia) {
+                if (replyQuoted && results.length > 0) {
+                    const _data = results[results.length - 1]
+                    options = { ...options, quoted: _data }
+                }
                 batch.push(this.sock.sendMessage(jid, chunk, options))
 
                 // Si alcanzamos el tamaño del lote, procesarlo

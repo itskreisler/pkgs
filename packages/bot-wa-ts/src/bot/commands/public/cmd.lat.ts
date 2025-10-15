@@ -107,7 +107,7 @@ export default {
           return {
             text: `Total: ${start}-${end}/${total}\n${chunk.join('\n')}`
           }
-        }), undefined, 1).catch((error) => {
+        }), undefined, 1, true).catch((error) => {
           printLog(error, 'red')
         })
         // await msg.reply({ text: `Total: ${total}\n${list.join('\n').slice(0, 1000)}` })

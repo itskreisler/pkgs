@@ -5,6 +5,7 @@ import { AnimeFLVScraper, IEpisodeAdded, URIS, GlobalDB } from '@kreisler/bot-se
 import { getStreamFromUrl } from '@/bot/helpers/polyfill'
 import { tryCatchPromise } from '@kreisler/try-catch'
 import Stream from 'stream'
+import { printLog } from '@/bot/helpers/utils'
 //
 export default {
   active: true,
@@ -98,13 +99,15 @@ export default {
           acc[chunkIndex].push(item)
           return acc
         }, [])
-        for (let i = 0; i < chunks.length; i++) {
+        await client.sendMsgGroupBatch(from, chunks.map((chunk, i) => {
           const start = i * chunkSize + 1
-          const end = start + chunks[i].length - 1
-          await msg.reply({
-            text: `Total: ${start}-${end}/${total}\n${chunks[i].join('\n')}`
-          })
-        }
+          const end = start + chunk.length - 1
+          return {
+            text: `Total: ${start}-${end}/${total}\n${chunk.join('\n')}`
+          }
+        }), undefined, 1, true).catch((error) => {
+          printLog(error, 'red')
+        })
         break
       }
       case 'file': {
