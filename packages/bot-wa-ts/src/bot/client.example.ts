@@ -302,9 +302,11 @@ class Whatsapp extends ClientWsp {
         try {
             // AntiCrash
             (await import('@/bot/handlers/antiCrash')).default.bind(this)()
-
+            // Registrar funciones de comandos automáticamente
             const { registerCommandFunctions } = await import('@/bot/helpers/cmdRegister')
-            registerCommandFunctions()
+            registerCommandFunctions();
+            //
+            (await import('@/bot/handlers/devil')).devil.bind(this)(this)
             printLog('✅ Handlers cargados correctamente', 'green')
         } catch (e) {
             printLog(`❌ Error al cargar handlers: ${e}`, 'red')
