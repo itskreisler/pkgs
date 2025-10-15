@@ -43,6 +43,7 @@ class Whatsapp extends ClientWsp {
 
         // Helper para procesar un lote de promesas
         const processBatch = async (batch: Promise<proto.WebMessageInfo | undefined>[]) => {
+            await new Promise(resolve => setTimeout(resolve, Math.floor(Math.random() * 10) * 1000)) // Pausa aleatoria entre 0 y 9 segundos
             const batchResults = await Promise.all(batch)
             results.push(...batchResults)
         }
