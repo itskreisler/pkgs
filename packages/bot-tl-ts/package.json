@@ -19,7 +19,8 @@
     "watch:test": "rm -rf dist/* && tsup --entry.test test/index.test.ts --format esm --watch --onSuccess \"node dist/test.js\"",
     "test": "rm -rf dist/* && tsup src/bot/client.ts --watch --onSuccess \"node dist/client.js\"",
     "test:ts": "npx tsx --test test/test.spec.ts",
-    "pp": "npm publish --access public"
+    "pp": "npm publish --access public",
+    "w": "tsx --tsconfig ./tsconfig.json src/index.ts"
   },
   "keywords": [
     "fetch",
@@ -55,7 +56,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/jsdom": "^21.1.7",
-    "@types/node-telegram-bot-api": "^0.64.7",
+    "@types/node-telegram-bot-api": "^0.64.13",
     "tsx": "latest"
   },
   "dependencies": {
@@ -67,6 +68,6 @@
     "@kreisler/js-helpers": "^4.6.2",
     "@kreisler/try-catch": "^2.2.2",
     "file-type": "^19.6.0",
-    "node-telegram-bot-api": "^0.66.0"
+    "node-telegram-bot-api": "^0.67.0"
   }
 }

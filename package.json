@@ -95,6 +95,7 @@
   },
   "dependencies": {
     "glob": "^11.0.3",
+    "typescript-eslint": "^8.50.1",
     "youtube-dl-exec": "^3.0.24"
   }
 }
