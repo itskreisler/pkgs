@@ -72,7 +72,7 @@
     "@kreisler/js-cron": "latest",
     "@kreisler/js-helpers": "^4.6.2",
     "@kreisler/try-catch": "^2.2.2",
-    "baileys": "^6.7.18",
+    "baileys": "7.0.0-rc.9",
     "crypto-js": "^4.2.0",
     "file-type": "^19.4.1",
     "pino": "9.6.0",

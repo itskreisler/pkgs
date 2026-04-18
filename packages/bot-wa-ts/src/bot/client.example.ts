@@ -2,10 +2,10 @@ import { ClientWsp } from '@/bot/client'
 import { AnyMessageContent, MiscMessageGenerationOptions, proto } from 'baileys'
 import { CommandImport, WaMessageTypes, type MessageBody, type BodyMsg } from '@/bot/interfaces/inter'
 import { printLog } from '@/bot/helpers/utils'
-import { Sticker, createSticker, type IStickerOptions, StickerTypes } from 'wa-sticker-formatter';
+import { Sticker, createSticker, type IStickerOptions, StickerTypes } from 'wa-sticker-formatter'
 
 class Whatsapp extends ClientWsp {
-    upTime = Date.now();
+    upTime = Date.now()
     commands = new Map<RegExp, CommandImport>()
 
     async initialize() {
@@ -54,11 +54,16 @@ class Whatsapp extends ClientWsp {
         let batch: Promise<proto.WebMessageInfo | undefined>[] = []
         for (const jid of jidArray) {
             for (const chunk of resolvedMedia) {
+                // Crear un objeto de opciones seguro
+                let currentOptions = options
                 if (replyQuoted && results.length > 0) {
                     const _data = results[results.length - 1]
-                    options = { ...options, quoted: _data }
+                    // Validar que _data existe y tiene key.id antes de usarlo como quoted
+                    if (_data && _data.key && _data.key.id) {
+                        currentOptions = { ...options, quoted: _data as any }
+                    }
                 }
-                batch.push(this.sock.sendMessage(jid, chunk, options))
+                batch.push(this.sock.sendMessage(jid, chunk, currentOptions))
 
                 // Si alcanzamos el tamaño del lote, procesarlo
                 if (batch.length >= batchSize) {
