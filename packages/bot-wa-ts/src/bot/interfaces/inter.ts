@@ -54,8 +54,9 @@ export interface decounceMessage {
   ExpReg: RegExp
 }
 export interface IPostMedia {
-  image: { stream: Readable }
-  caption: string
+  image?: { stream: Readable }
+  text?: string
+  caption?: string
 }
 export interface IPostMediaGroup {
   multimedias: IPostMedia[]

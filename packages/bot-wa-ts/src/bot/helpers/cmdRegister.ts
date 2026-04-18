@@ -2,6 +2,16 @@ import { EConstCMD, type IPostMedia } from '@/bot/interfaces/inter'
 import { CmdActions, type IKudasaiData, type IEpisodeAdded, kudasaiApi, LatAnimeScraper, AnimeFLVScraper, URIS } from '@kreisler/bot-services'
 import { getStreamFromUrl } from '@/bot/helpers/polyfill'
 import { MarkdownWsp } from '@kreisler/js-helpers'
+import { printLog } from '../helpers/utils'
+
+const safeGetStreamFromUrl = async (url: string) => {
+    try {
+        return await getStreamFromUrl(url)
+    } catch (err) {
+        printLog(`⚠️ Error al obtener imagen: ${url} - ${err}`, 'yellow')
+        return null
+    }
+}
 
 /**
  * Registra automáticamente todas las funciones de comandos al inicializar el bot
@@ -18,12 +28,17 @@ export function registerCommandFunctions(): void {
             const data: IKudasaiData[] = await fn()
             const multimedias: IPostMedia[] = []
             for (const { image, title, category: { slug: cslug }, slug } of data) {
-                multimedias.push({
-                    image: {
-                        stream: await getStreamFromUrl(image.replace('-150x150', ''))
-                    },
-                    caption: title.concat('\n\n', MarkdownWsp.Quote(urlBase.concat(cslug, '/', slug, '/')))
-                })
+                const stream = await safeGetStreamFromUrl(image.replace('-150x150', ''))
+                if (stream) {
+                    multimedias.push({
+                        image: { stream },
+                        caption: title.concat('\n\n', MarkdownWsp.Quote(urlBase.concat(cslug, '/', slug, '/')))
+                    })
+                } else {
+                    multimedias.push({
+                        text: title.concat('\n\n', MarkdownWsp.Quote(urlBase.concat(cslug, '/', slug, '/')))
+                    })
+                }
             }
             return multimedias
         }
@@ -45,12 +60,17 @@ export function registerCommandFunctions(): void {
                     .concat('\n')
                     .concat(`${MarkdownWsp.Quote(`El episodio #${String(episode)} de ${MarkdownWsp.Bold(title)} ya está disponible\n`)}`)
                     .concat(enlacesParaVer)
-                multimedias.push({
-                    image: {
-                        stream: await getStreamFromUrl(poster)
-                    },
-                    caption
-                })
+                const stream = await safeGetStreamFromUrl(poster)
+                if (stream) {
+                    multimedias.push({
+                        image: { stream },
+                        caption
+                    })
+                } else {
+                    multimedias.push({
+                        text: caption
+                    })
+                }
             }
             return multimedias
         }
@@ -72,12 +92,17 @@ export function registerCommandFunctions(): void {
                     .concat('\n')
                     .concat(`${MarkdownWsp.Quote(`El episodio #${String(episode)} de ${MarkdownWsp.Bold(title)} ya está disponible\n`)}`)
                     .concat(enlacesParaVer)
-                multimedias.push({
-                    image: {
-                        stream: await getStreamFromUrl(poster)
-                    },
-                    caption
-                })
+                const stream = await safeGetStreamFromUrl(poster)
+                if (stream) {
+                    multimedias.push({
+                        image: { stream },
+                        caption
+                    })
+                } else {
+                    multimedias.push({
+                        text: caption
+                    })
+                }
             }
             return multimedias
         }
