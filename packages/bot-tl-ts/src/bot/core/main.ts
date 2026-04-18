@@ -62,7 +62,7 @@ export class ClientBot extends TelegramBot {
 
     // Espera a que todas las promesas se completen
     return await Promise.all(promises)
-  }
+  };
 
   async initialize() {
     await this.loadEvents()
