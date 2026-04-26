@@ -73,25 +73,26 @@ const question = (text: string) => new Promise<string>((resolve) => rl.question(
  * 5. Reconecta automáticamente si se pierde la conexión (excepto logged out)
  */
 const startSock = async () => {
-    /**
-     * Verifica si se debe usar pairing code desde los argumentos de línea de comandos.
+/**
+     * Activa el modo pairing code automáticamente si se proporciona número
      * @constant {boolean}
      */
-    const usePairingCode = process.argv.includes('--pairing-code')
+    const usePairingCode = true
 
     /**
      * Extrae el número de teléfono de los argumentos si está especificado.
      * Formato: código de país + número sin símbolos (ej: 573052547705)
      * @constant {string|undefined}
      */
-    const phoneNumberArg = process.argv.find(arg => arg.startsWith('--phone='))?.split('=')[1]
+    const phoneNumberArg = process.argv.find(arg => arg.startsWith('--phone='))?.split('=')[1] || await question('Enter your phone number (with country code, no +): ')
+    const authFolder = `auth_info_${phoneNumberArg}`
 
     /**
      * Inicializa el estado de autenticación multi-file.
-     * Guarda las credenciales en la carpeta auth_info_pairing/
+     * Guarda las credenciales en la carpeta auth_info_{número}/
      * @constant {{ state: any, saveCreds: () => Promise<void> }}
      */
-    const { state, saveCreds } = await useMultiFileAuthState('auth_info_pairing')
+    const { state, saveCreds } = await useMultiFileAuthState(authFolder)
 
     /**
      * Obtiene la última versión de Baileys disponible.
@@ -147,9 +148,9 @@ const startSock = async () => {
              * @event qr
              */
             if (qr && !sock.authState.creds.registered && usePairingCode && !pairingCodeGenerated) {
-                const phoneNumber = phoneNumberArg || await question('Enter your phone number (with country code, no +): ')
-                const code = await sock.requestPairingCode(phoneNumber)
+                const code = await sock.requestPairingCode(phoneNumberArg)
                 console.log(`\n📱 PAIRING CODE: ${code}\n`)
+                console.log(`Auth folder: ${authFolder}`)
                 console.log('Enter this code in WhatsApp: Settings > Linked Devices > Link a Device > Link with Phone Number')
                 pairingCodeGenerated = true
             }
