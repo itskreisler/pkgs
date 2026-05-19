@@ -15,7 +15,8 @@ const radioStation = new Parser({
 })
 
 let currentSong = ''
-let songBuffer = Buffer.from([])
+let songChunks = []
+let currentBufferSize = 0
 let lastSong
 
 radioStation.on('metadata', (metadata) => {
@@ -27,7 +28,9 @@ radioStation.on('metadata', (metadata) => {
     // Guardar la canción solo si el nombre cambió
     if (currentSong !== lastSong) {
       lastSong = currentSong
-      saveSong(currentSong, songBuffer)
+      saveSong(currentSong, songChunks)
+      songChunks = []
+      currentBufferSize = 0
     }
   }
 })
@@ -39,12 +42,14 @@ radioStation.on('stream', (stream) => {
 
   // Escucha el evento 'data' para guardar la canción en tiempo real
   stream.on('data', (chunk) => {
-    // Agrega el fragmento de audio al búfer de la canción
-    songBuffer = Buffer.concat([songBuffer, chunk])
-    console.log(`Buffer size: ${songBuffer.length}`)
-    if (songBuffer.length > 10000000) {
-      saveSong(currentSong, songBuffer)
-      songBuffer = Buffer.from([])
+    // Bolt: Use array and push chunks to avoid O(n^2) Buffer.concat performance penalty
+    songChunks.push(chunk)
+    currentBufferSize += chunk.length
+    console.log(`Buffer size: ${currentBufferSize}`)
+    if (currentBufferSize > 10000000) {
+      saveSong(currentSong, songChunks)
+      songChunks = []
+      currentBufferSize = 0
     }
   })
   stream.on('close', () => console.log('Stream closed!'))
@@ -62,26 +67,37 @@ radioStation.on('stream', (stream) => {
     console.log('Stream ended!')
 
     // Guarda el búfer de la canción en un archivo MP3
-    if (songBuffer.length > 0) {
+    if (songChunks.length > 0) {
       // Verifica si el nombre cambió antes de guardar la canción
       if (currentSong !== lastSong) {
         lastSong = currentSong
-        saveSong(currentSong, songBuffer)
+        saveSong(currentSong, songChunks)
       }
-      songBuffer = Buffer.from([]) // Limpia el búfer de la canción
+      songChunks = [] // Limpia el búfer de la canción
+      currentBufferSize = 0
     }
   })
 })
 
 radioStation.on('end', () => {
   // Cuando se cierra el flujo de la estación de radio, guarda la última canción si es necesario
-  if (currentSong !== '' && songBuffer.length > 0) {
-    saveSong(currentSong, songBuffer)
+  if (currentSong !== '' && songChunks.length > 0) {
+    saveSong(currentSong, songChunks)
+    songChunks = []
+    currentBufferSize = 0
   }
   console.log('Stream closed!')
 })
 
-function saveSong(songTitle, songData) {
+/**
+ * BOLT OPTIMIZATION:
+ * Collecting chunks in an array and concatenating them once at the end is O(n),
+ * whereas Buffer.concat in a loop is O(n^2) because it re-allocates and copies
+ * the entire buffer on every new chunk.
+ */
+function saveSong (songTitle, songChunks) {
+  if (songChunks.length === 0) return
+  const songData = Buffer.concat(songChunks)
   const outputFilePath = `./canciones/${songTitle}.mp3`
   fs.writeFileSync(outputFilePath, songData)
   console.log(`Canción grabada y guardada: ${songTitle}`)
