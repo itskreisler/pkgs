@@ -256,44 +256,74 @@ function getNestedValue(obj: any, path: string): any {
     return path.split('.').reduce((current, key) => current?.[key], obj)
 }
 
+type TemplatePart = { type: 'text'; value: string } | { type: 'placeholder'; key: string }
+
 /**
  * Función auxiliar para reemplazar variables en cadenas de traducción.
  * Procesa tanto parámetros posicionales ({0}, {1}) como nombrados ({nombre}, {edad}).
  * Los parámetros nombrados se procesan primero para evitar conflictos.
  * 
- * @param template - La cadena plantilla con variables a reemplazar
+ * @param parts - Partes de la plantilla pre-procesadas
  * @param positionalArgs - Array de valores para parámetros posicionales
  * @param namedArgs - Objeto con valores para parámetros nombrados
  * @returns La cadena con todas las variables reemplazadas
- * @example
- * ```typescript
- * interpolateString(
- *   'Hola {nombre}, tienes {0} mensajes',
- *   [5],
- *   { nombre: 'Juan' }
- * ) // 'Hola Juan, tienes 5 mensajes'
- * ```
  */
 function interpolateString(
-    template: string,
+    parts: TemplatePart[],
     positionalArgs: (string | number)[],
     namedArgs: Record<string, string | number>
 ): string {
-    let result = template
+    let result = ''
 
-    // Replace named variables first
-    Object.entries(namedArgs).forEach(([key, value]) => {
-        const regex = new RegExp(`\\{${key}\\}`, 'g')
-        result = result.replace(regex, String(value))
-    })
+    for (const part of parts) {
+        if (part.type === 'text') {
+            result += part.value
+        } else {
+            const key = part.key
+            const positionalIndex = parseInt(key, 10)
 
-    // Replace positional variables
-    positionalArgs.forEach((value, index) => {
-        const regex = new RegExp(`\\{${index}\\}`, 'g')
-        result = result.replace(regex, String(value))
-    })
+            if (!isNaN(positionalIndex) && positionalIndex < positionalArgs.length) {
+                result += String(positionalArgs[positionalIndex])
+            } else if (key in namedArgs) {
+                result += String(namedArgs[key])
+            } else {
+                result += `{${key}}`
+            }
+        }
+    }
 
     return result
+}
+
+/**
+ * Pre-procesa una cadena de plantilla en sus partes constitutivas.
+ * @param template - La cadena de plantilla a procesar
+ * @returns Array de partes de la plantilla
+ */
+function parseTemplate(template: string): TemplatePart[] | string {
+    const regex = /\{([^}]+)\}/g
+    if (!regex.test(template)) {
+        return template
+    }
+    regex.lastIndex = 0
+
+    const parts: TemplatePart[] = []
+    let lastIndex = 0
+    let match
+
+    while ((match = regex.exec(template)) !== null) {
+        if (match.index > lastIndex) {
+            parts.push({ type: 'text', value: template.substring(lastIndex, match.index) })
+        }
+        parts.push({ type: 'placeholder', key: match[1] })
+        lastIndex = regex.lastIndex
+    }
+
+    if (lastIndex < template.length) {
+        parts.push({ type: 'text', value: template.substring(lastIndex) })
+    }
+
+    return parts
 }
 
 /**
@@ -351,22 +381,56 @@ export function i18nStrict<
     Messages extends Record<string, any>,
     DefaultLocale extends keyof Messages
 >(config: I18nConfig<Messages, DefaultLocale>): I18nStrict<Messages, DefaultLocale> {
+    const cache = new Map<string, Map<string, TemplatePart[] | string>>()
 
     const useTranslations = <Locale extends keyof Messages>(locale: Locale) => {
-        return (key: string, ...args: any[]): string => {
-            const messages = config.messages[locale] || config.messages[config.defaultLocale]
-            const template = getNestedValue(messages, key)
+        const localeStr = String(locale)
+        let langCache = cache.get(localeStr)
+        if (!langCache) {
+            langCache = new Map()
+            cache.set(localeStr, langCache)
+        }
+        const currentLangCache = langCache
 
-            if (typeof template !== 'string') {
-                console.warn(`Translation key '${key}' not found for locale '${String(locale)}'`)
-                return key
+        return (key: string, ...args: any[]): string => {
+            let cached = currentLangCache.get(key)
+
+            if (cached === undefined) {
+                const messages = config.messages[locale] || config.messages[config.defaultLocale]
+                const template = getNestedValue(messages, key)
+
+                if (typeof template !== 'string') {
+                    console.warn(`Translation key '${key}' not found for locale '${localeStr}'`)
+                    currentLangCache.set(key, key)
+                    return key
+                }
+
+                cached = parseTemplate(template)
+                currentLangCache.set(key, cached)
             }
 
-            // Separate positional and named arguments
-            const namedArgs = args.find(arg => typeof arg === 'object' && arg !== null && !Array.isArray(arg)) || {}
-            const positionalArgs = args.filter(arg => typeof arg !== 'object' || arg === null || Array.isArray(arg))
+            if (typeof cached === 'string') {
+                return cached
+            }
 
-            return interpolateString(template, positionalArgs, namedArgs)
+            if (args.length === 0) {
+                let result = ''
+                for (const part of cached) {
+                    result += part.type === 'text' ? part.value : `{${part.key}}`
+                }
+                return result
+            }
+
+            // Separate positional and named arguments - optimized
+            let positionalArgs = args
+            let namedArgs = {}
+            const lastArg = args[args.length - 1]
+            if (typeof lastArg === 'object' && lastArg !== null && !Array.isArray(lastArg)) {
+                namedArgs = lastArg
+                positionalArgs = args.slice(0, -1)
+            }
+
+            return interpolateString(cached, positionalArgs, namedArgs as any)
         }
     }
 
