@@ -9,8 +9,10 @@ export class ClientBot extends TelegramBot {
   //
   constructor(
     token = TOKEN,
-    options = {
+    options: Partial<TelegramBot.ConstructorOptions> = {
       polling: true
+      // Para usar tu servidor local de telegram-bot-api:
+      // baseApiUrl: 'http://localhost:8081',
     }
   ) {
     super(token, {
