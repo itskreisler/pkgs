@@ -6,15 +6,15 @@
       "./@types/*",
       "./@types/**/*"
     ],
-    "baseUrl": ".",
     "paths": {
       "@/*": [
         "./src/*"
       ]
     },
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "module": "ESNext",
     "target": "ESNext",
+    "ignoreDeprecations": "6.0",
     "allowJs": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,

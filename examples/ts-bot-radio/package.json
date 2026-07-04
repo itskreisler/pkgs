@@ -10,14 +10,14 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@dropb/ffprobe": "^3.0.0",
-    "@hapi/hapi": "^21.3.2",
+    "@dropb/ffprobe": "^3.0.1",
+    "@hapi/hapi": "^21.4.9",
     "dirname-for-module": "^1.0.6",
-    "express": "^4.18.2",
+    "express": "^5.2.1",
     "ffprobe-static": "^3.1.0",
-    "fluent-ffmpeg": "^2.1.2",
+    "fluent-ffmpeg": "latest",
     "fluent-ffmpeg-multistream": "^1.0.0",
-    "http": "^0.0.1-security",
+    "http": "latest",
     "icecast-parser": "^4.0.2",
     "icy": "^2.1.0",
     "jnaudiostream": "^1.0.2",
@@ -30,7 +30,7 @@
     "socket.io": "^4.7.2",
     "socket.io-client": "^4.7.2",
     "throttle": "^1.0.3",
-    "uuid": "^9.0.1"
+    "uuid": "^14.0.1"
   },
   "devDependencies": {
     "standard": "^17.1.0"

@@ -1,5 +1,9 @@
-import TelegramBot from 'node-telegram-bot-api'
-import { type Stream } from 'stream'
+import TelegramBot, {
+  type ChatId,
+  type InputMedia,
+  type Message
+} from 'node-telegram-bot-api'
+import { type Readable } from 'stream'
 import { TELEGRAM_TOKEN_DEV, TELEGRAM_TOKEN_PROD, NODE_ENV } from '@/bot/helpers/env'
 import { IClsBot } from '@/bot/interfaces/proto'
 const TOKEN: string = NODE_ENV === 'production' ? TELEGRAM_TOKEN_PROD : TELEGRAM_TOKEN_DEV
@@ -9,7 +13,7 @@ export class ClientBot extends TelegramBot {
   //
   constructor(
     token = TOKEN,
-    options: Partial<TelegramBot.ConstructorOptions> = {
+    options: ConstructorParameters<typeof TelegramBot>[1] = {
       polling: true
       // Para usar tu servidor local de telegram-bot-api:
       // baseApiUrl: 'http://localhost:8081',
@@ -34,13 +38,13 @@ export class ClientBot extends TelegramBot {
    * @description Envia un grupo de 10 (fotos) al chat
    */
   async sendMediaGroupTenByTen(
-    chatId: TelegramBot.ChatId,
-    medias: readonly TelegramBot.InputMedia[],
-    options?: TelegramBot.SendMediaGroupOptions
-  ): Promise<TelegramBot.Message[]> {
+    chatId: ChatId,
+    medias: readonly InputMedia[],
+    options?: Parameters<TelegramBot['sendMediaGroup']>[2]
+  ): Promise<Message[]> {
     const bot = this.Bot
     // Divide las imágenes en grupos de 10
-    const chunkedMedias: TelegramBot.InputMedia[][] = medias.reduce<TelegramBot.InputMedia[][]>((acc, cur, i) => {
+    const chunkedMedias: InputMedia[][] = medias.reduce<InputMedia[][]>((acc, cur, i) => {
       if (i % 10 === 0) {
         acc.push([cur])
       } else {
@@ -54,10 +58,10 @@ export class ClientBot extends TelegramBot {
   }
 
   async sendDocumentOnebyOne(
-    chatId: TelegramBot.ChatId,
-    documents: string[] | Stream[] | Buffer[],
-    options?: TelegramBot.SendDocumentOptions,
-    fileOptions?: TelegramBot.FileOptions) {
+    chatId: ChatId,
+    documents: (string | Readable | Buffer)[],
+    options?: Parameters<TelegramBot['sendDocument']>[2],
+    fileOptions?: Parameters<TelegramBot['sendDocument']>[3]) {
     const bot = this.Bot
     // Mapea cada documento a una promesa de envío
     const promises = documents.map(async (document) => await bot.sendDocument(chatId, document, options, fileOptions))

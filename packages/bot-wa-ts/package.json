@@ -59,7 +59,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/crypto-js": "^4.2.2",
-    "@types/jsdom": "^21.1.7",
+    "@types/jsdom": "^28.0.3",
     "@types/qrcode-terminal": "^0.12.2",
     "tsx": "latest"
   },
@@ -72,10 +72,10 @@
     "@kreisler/js-cron": "latest",
     "@kreisler/js-helpers": "^4.6.2",
     "@kreisler/try-catch": "^2.2.2",
-    "baileys": "7.0.0-rc.9",
+    "baileys": "7.0.0-rc13",
     "crypto-js": "^4.2.0",
-    "file-type": "^19.4.1",
-    "pino": "9.6.0",
+    "file-type": "^22.0.1",
+    "pino": "10.3.1",
     "qrcode-terminal": "^0.12.0",
     "wa-sticker-formatter": "^4.4.4"
   }

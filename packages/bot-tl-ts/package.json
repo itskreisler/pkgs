@@ -55,8 +55,9 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "@types/jsdom": "^21.1.7",
-    "@types/node-telegram-bot-api": "^0.64.13",
+    "@types/jsdom": "^28.0.3",
+    "@types/node": "^26.1.0",
+    "@types/node-telegram-bot-api": "^0.64.15",
     "tsx": "latest"
   },
   "dependencies": {
@@ -67,7 +68,10 @@
     "@kreisler/js-cron": "latest",
     "@kreisler/js-helpers": "^4.6.2",
     "@kreisler/try-catch": "^2.2.2",
-    "file-type": "^19.6.0",
-    "node-telegram-bot-api": "^0.67.0"
+    "file-type": "^22.0.1",
+    "glob": "^11.0.3",
+    "node-telegram-bot-api": "^1.1.2",
+    "youtube-dl-exec": "^3.0.24",
+    "zod": "^4.4.3"
   }
 }

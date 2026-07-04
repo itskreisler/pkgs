@@ -87,7 +87,7 @@ export default {
       addMetadata: true,
       embedThumbnail: true,
       noPlaylist: true,
-      cookies: './tmpbot/cookies.txt'
+      cookies: './cookies.txt'
     }
 
     try {

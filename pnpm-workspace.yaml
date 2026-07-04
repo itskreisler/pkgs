@@ -1,3 +1,10 @@
 packages:
   - 'examples/*'
   - 'packages/*'
+blockExoticSubdeps: false
+allowBuilds:
+  baileys: true
+  esbuild: true
+  protobufjs: true
+  sharp: true
+  youtube-dl-exec: true
