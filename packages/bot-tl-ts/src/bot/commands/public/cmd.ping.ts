@@ -14,7 +14,7 @@ export default {
    * @param {import("../../interfaces/proto").IClsBot.ICTX} { msg, ctx }
    * @param {RegExpMatchArray} match
    */
-  async cmd(client: ClientBot, { msg, ctx }: IClsBot.ICTX, match: RegExpMatchArray): Promise<void> {
+  async cmd (client: ClientBot, { msg, ctx }: IClsBot.ICTX, match: RegExpMatchArray): Promise<void> {
     const start = Number(new Date())
     const send = await ctx.send({ text: '*Pinging...*' }, { parse_mode: EParseMode.Markdown })
     const end = Number(new Date())

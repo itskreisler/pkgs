@@ -32,7 +32,7 @@ const getVideoIdFromUrl = (text: string): string => {
 const url = (text: string, id: string): string =>
   'https://img.youtube.com/vi/'.concat(getVideoIdFromUrl(text), '/', id, '.jpg')
 
-async function loadFiles(dirName: string): Promise<string[]> {
+async function loadFiles (dirName: string): Promise<string[]> {
   const patternGlob = `${process.cwd().replace(/\\/g, '/')}/${dirName}/!(*.test*).{mp3,flac}`
   return await glob(patternGlob)
 }
@@ -45,7 +45,7 @@ export default {
   active: true,
   regexp: /(?:https?:)?(?:\/\/)?(?:[0-9A-Z-]+\.)?(?:youtu\.be\/|youtube(?:-nocookie)?\.com\S*?[^^\w\s-])([\w-]{11})(?=[^\w-]|$)(?![?=&+%\w.-]*(?:['"][^<>]*>|<\/a>))[?=&+%\w.-]*/gim,
 
-  async cmd(client: ClientBot, { msg, ctx }: IClsBot.ICTX, match: RegExpMatchArray | null): Promise<void> {
+  async cmd (client: ClientBot, { msg, ctx }: IClsBot.ICTX, match: RegExpMatchArray | null): Promise<void> {
     const text = msg.text ?? ''
     const chatId = msg.chat.id
     const youtubeUrl = match?.[0] ?? text

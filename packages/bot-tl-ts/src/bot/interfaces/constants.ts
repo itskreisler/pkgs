@@ -1,4 +1,3 @@
-
 export enum EParseMode {
   Markdown = 'Markdown',
   MarkdownV2 = 'MarkdownV2',
