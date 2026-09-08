@@ -104,12 +104,13 @@ export class Message {
       | SendAudioOptions,
     fileOptions?: FileOptions
   ) {
-    const { text, doc, photo, audio, video } = content
+    const { text, doc, photo, audio, video, sticker } = content
     if (typeof text !== 'undefined') return new Message(this.client, await this.client.sendMessage(this.chatId, text, options as SendMessageOptions))
     if (typeof doc !== 'undefined') return new Message(this.client, await this.client.sendDocument(this.chatId, doc, options as SendDocumentOptions, fileOptions))
     if (typeof photo !== 'undefined') return new Message(this.client, await this.client.sendPhoto(this.chatId, photo, options as SendPhotoOptions, fileOptions))
     if (typeof video !== 'undefined') return new Message(this.client, await this.client.sendVideo(this.chatId, video, options as SendVideoOptions, fileOptions))
     if (typeof audio !== 'undefined') return new Message(this.client, await this.client.sendAudio(this.chatId, audio, options as SendAudioOptions, fileOptions))
+    if (typeof sticker !== 'undefined') return new Message(this.client, await this.client.sendSticker(this.chatId, sticker, options as SendStickerOptions))
     throw new Error('Invalid content provided.')
   }
 
