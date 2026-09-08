@@ -9,12 +9,12 @@ import type {
   EditMessageTextParams,
   InputFile
 } from 'node-telegram-bot-api'
-import { type ClientBot } from '@/bot/core/main'
-import { EChatType } from './constants'
+import { type ClientBot } from '../core/main.js'
+import { EChatType } from './constants.js'
 import { Readable } from 'stream'
 import path from 'path'
 import fs from 'fs/promises'
-import { IClsBot } from './proto'
+import { type IClsBot } from './proto'
 
 type SendMessageOptions = Omit<SendMessageParams, 'chat_id' | 'text'>
 type SendDocumentOptions = Omit<SendDocumentParams, 'chat_id' | 'document'>
@@ -50,7 +50,7 @@ export class Message {
   isGroup: boolean
   isChannel: boolean
 
-  constructor(client: ClientBot, data: TelegramMessage) {
+  constructor (client: ClientBot, data: TelegramMessage) {
     this.client = client
     this._data = data
     this.text = data.text
@@ -61,40 +61,40 @@ export class Message {
     this.message_id = data.message_id
   }
 
-  getData() {
+  getData () {
     return this._data
   }
 
   // sobre carga de metodos
-  async send(
+  async send (
     content: { text: string },
     options?: SendMessageOptions
   ): Promise<Message>
-  async send(
+  async send (
     content: { doc: string | Readable | Buffer | InputFile },
     options?: SendDocumentOptions,
     fileOptions?: FileOptions
   ): Promise<Message>
-  async send(
+  async send (
     content: { photo: string | Readable | Buffer | InputFile },
     options?: SendPhotoOptions,
     fileOptions?: FileOptions
   ): Promise<Message>
-  async send(
+  async send (
     content: { video: string | Readable | Buffer | InputFile },
     options?: SendVideoOptions,
     fileOptions?: FileOptions
   ): Promise<Message>
-  async send(
+  async send (
     content: { sticker: string | Readable | Buffer | InputFile },
     options?: SendStickerOptions
   ): Promise<Message>
-  async send(
+  async send (
     content: { audio: string | Readable | Buffer | InputFile },
     options?: SendAudioOptions,
     fileOptions?: FileOptions
   ): Promise<Message>
-  async send(content: IClsBot.TSendContent,
+  async send (content: IClsBot.TSendContent,
     options?:
       | SendMessageOptions
       | SendDocumentOptions
@@ -113,15 +113,15 @@ export class Message {
     throw new Error('Invalid content provided.')
   }
 
-  async reply(content: string, options?: SendMessageOptions) {
-    return await this.client.sendMessage(this.chatId, content, { ...options, reply_to_message_id: this._data.message_id })
+  async reply (content: string, options?: SendMessageOptions) {
+    return await this.client.sendMessage(this.chatId, content, { ...options, reply_parameters: { message_id: this._data.message_id } })
   }
 
-  async delete() {
+  async delete () {
     return await this.client.deleteMessage(this.chatId, this._data.message_id)
   }
 
-  async editText(
+  async editText (
     text: string,
     options?: Omit<EditMessageTextParams, 'text' | 'chat_id' | 'message_id'>
   ): Promise<EditMessageTextResult> {
@@ -133,11 +133,11 @@ export class Message {
     })
   }
 
-  private getSourceMessage() {
+  private getSourceMessage () {
     return this._data.reply_to_message ?? this._data
   }
 
-  private getMediaSource(message: TelegramMessage): MediaSource | null {
+  private getMediaSource (message: TelegramMessage): MediaSource | null {
     return (
       message.document ??
       message.video ??
@@ -148,7 +148,7 @@ export class Message {
     )
   }
 
-  private async getMediaBuffer(fileLink: string): Promise<Buffer> {
+  private async getMediaBuffer (fileLink: string): Promise<Buffer> {
     const response = await fetch(fileLink)
 
     if (!response.ok) {
@@ -158,7 +158,7 @@ export class Message {
     return Buffer.from(await response.arrayBuffer())
   }
 
-  private async writeMediaFile(outputDir: string, fileLink: string, fileId: string, buffer: Buffer): Promise<string> {
+  private async writeMediaFile (outputDir: string, fileLink: string, fileId: string, buffer: Buffer): Promise<string> {
     await fs.mkdir(outputDir, { recursive: true })
 
     const fileNameFromLink = path.basename(new URL(fileLink).pathname)
@@ -169,7 +169,7 @@ export class Message {
     return outputPath
   }
 
-  private buildMediaResult(fileLink: string, filePath: string, buffer: Buffer): DownloadedMedia {
+  private buildMediaResult (fileLink: string, filePath: string, buffer: Buffer): DownloadedMedia {
     return {
       fileLink,
       path: filePath,
@@ -178,12 +178,12 @@ export class Message {
     }
   }
 
-  async downloadMedia(outputDir?: string): Promise<string | null>
-  async downloadMedia(mode: 'buffer', outputDir?: string): Promise<Buffer | null>
-  async downloadMedia(mode: 'stream', outputDir?: string): Promise<Readable | null>
-  async downloadMedia(mode: 'all', outputDir?: string): Promise<DownloadedMedia | null>
-  async downloadMedia(mode: 'path', outputDir?: string): Promise<string | null>
-  async downloadMedia(
+  async downloadMedia (outputDir?: string): Promise<string | null>
+  async downloadMedia (mode: 'buffer', outputDir?: string): Promise<Buffer | null>
+  async downloadMedia (mode: 'stream', outputDir?: string): Promise<Readable | null>
+  async downloadMedia (mode: 'all', outputDir?: string): Promise<DownloadedMedia | null>
+  async downloadMedia (mode: 'path', outputDir?: string): Promise<string | null>
+  async downloadMedia (
     modeOrOutputDir: DownloadMediaMode | string = 'path',
     maybeOutputDir = './tmp'
   ): Promise<string | Buffer | Readable | DownloadedMedia | null> {
@@ -212,7 +212,7 @@ export class Message {
     return media.path
   }
 
-  getQuotedMsg() {
+  getQuotedMsg () {
     return this._data.reply_to_message
   }
 }

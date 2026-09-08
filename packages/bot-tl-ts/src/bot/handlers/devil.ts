@@ -1,4 +1,4 @@
-import { type ClientBot } from '@/bot/core/main'
+import { type ClientBot } from '../core/main.js'
 import {
   JsCron
   //, buildCronExpression

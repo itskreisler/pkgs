@@ -1,8 +1,8 @@
 import fs from 'fs'
 import { glob } from 'glob'
 import { create } from 'youtube-dl-exec'
-import { type ClientBot } from '@/bot/core/main'
-import { type IClsBot } from '@/bot/interfaces/proto'
+import { type ClientBot } from '../../core/main'
+import { type IClsBot } from '../../interfaces/proto'
 
 const exec = create('yt-dlp')
 const VIDEO_TYPES = Object.freeze({ embed: 'embed', shorts: 'shorts' })
@@ -32,7 +32,7 @@ const getVideoIdFromUrl = (text: string): string => {
 const url = (text: string, id: string): string =>
   'https://img.youtube.com/vi/'.concat(getVideoIdFromUrl(text), '/', id, '.jpg')
 
-async function loadFiles(dirName: string): Promise<string[]> {
+async function loadFiles (dirName: string): Promise<string[]> {
   const patternGlob = `${process.cwd().replace(/\\/g, '/')}/${dirName}/!(*.test*).{mp3,flac}`
   return await glob(patternGlob)
 }
@@ -45,7 +45,7 @@ export default {
   active: true,
   regexp: /(?:https?:)?(?:\/\/)?(?:[0-9A-Z-]+\.)?(?:youtu\.be\/|youtube(?:-nocookie)?\.com\S*?[^^\w\s-])([\w-]{11})(?=[^\w-]|$)(?![?=&+%\w.-]*(?:['"][^<>]*>|<\/a>))[?=&+%\w.-]*/gim,
 
-  async cmd(client: ClientBot, { msg, ctx }: IClsBot.ICTX, match: RegExpMatchArray | null): Promise<void> {
+  async cmd (client: ClientBot, { msg, ctx }: IClsBot.ICTX, match: RegExpMatchArray | null): Promise<void> {
     const text = msg.text ?? ''
     const chatId = msg.chat.id
     const youtubeUrl = match?.[0] ?? text
@@ -83,7 +83,7 @@ export default {
       noPlaylist: true,
       cookies: 'cookies.txt',
       update: true,
-      jsRuntimes: 'node',
+      jsRuntimes: 'node' as const,
       extractorArgs: 'youtube:player-client=default,-web_safari',
       remoteComponents: 'ejs:github'
     }

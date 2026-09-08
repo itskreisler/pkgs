@@ -1,6 +1,8 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "outDir": "build",
+    "rootDir": "src",
     "typeRoots": [
       "./node_modules/@types",
       "./@types/*",
@@ -14,7 +16,6 @@
     "moduleResolution": "bundler",
     "module": "ESNext",
     "target": "ESNext",
-    "ignoreDeprecations": "6.0",
     "allowJs": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
@@ -22,7 +23,7 @@
     "removeComments": false
   },
   "include": [
-    "."
+    "src/**/*"
   ],
   "exclude": [
     "dist",

@@ -22,8 +22,8 @@ declare namespace IClsBot {
 
   type AtLeastOne<T, K extends keyof T = keyof T> =
     K extends keyof T
-    ? Required<Pick<T, K>> & Partial<Omit<T, K>>
-    : never
+      ? Required<Pick<T, K>> & Partial<Omit<T, K>>
+      : never
 
   type TSendContent = AtLeastOne<{
     text?: string

@@ -1,4 +1,4 @@
-export default function(): void {
+export default function (): void {
   console.log(' [ANTICRASH] :: Iniciando')
 
   process.removeAllListeners()

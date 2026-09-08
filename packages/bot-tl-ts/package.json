@@ -17,8 +17,10 @@
     "build:bot": "rm -rf dist/* tmpbot/* && tsup && tsup --entry.example src/example.ts --format esm --onSuccess \"mv dist/* tmpbot\"",
     "watch": "rm -rf dist/* && tsup && tsup src/index.ts --watch --onSuccess \"node dist/index.js\"",
     "watch:test": "rm -rf dist/* && tsup --entry.test test/index.test.ts --format esm --watch --onSuccess \"node dist/test.js\"",
+    "lint": "eslint .",
     "test": "rm -rf dist/* && tsup src/bot/client.ts --watch --onSuccess \"node dist/client.js\"",
     "test:ts": "npx tsx --test test/test.spec.ts",
+    "test:e2e": "tsx test/e2e.test.ts",
     "pp": "npm publish --access public",
     "w": "tsx --tsconfig ./tsconfig.json src/index.ts"
   },
@@ -55,9 +57,12 @@
   ],
   "license": "MIT",
   "devDependencies": {
+    "@stylistic/eslint-plugin": "^5.10.0",
     "@types/jsdom": "^28.0.3",
     "@types/node": "^26.1.0",
     "@types/node-telegram-bot-api": "^0.64.15",
+    "eslint": "9.22.0",
+    "neostandard": "^0.13.0",
     "tsx": "latest"
   },
   "dependencies": {

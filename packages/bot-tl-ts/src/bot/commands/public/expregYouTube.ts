@@ -25,7 +25,7 @@ const getVideoIdFromURl = (text: string): string => {
 const url = (text: string, id: string): string => 'https://img.youtube.com/vi/'.concat(getVideoIdFromURl(text), '/', id, '.jpg')
 const qualities = ['maxresdefault', 'sddefault', 'hqdefault', 'mqdefault']
 
-async function loadFiles(dirName: string): Promise<string[]> {
+async function loadFiles (dirName: string): Promise<string[]> {
   // usalo si usas la version glob@^10.2.2
   // const Files = await glob(`${process.cwd().replace(/\\/g, '/')}/${dirName}/**/*.{mp3,flac}`)
   const patternGlob = `${process.cwd().replace(/\\/g, '/')}/${dirName}/!(*.test*).{mp3,flac}`
@@ -50,7 +50,7 @@ export default {
    * @param {import("@/bot/interfaces/proto").IClsBot.ICTX} { msg, ctx }
    * @param {RegExpMatchArray} match
    */
-  async cmd(client: ClientBot, { msg, ctx }: IClsBot.ICTX, match: RegExpMatchArray): Promise<void> {
+  async cmd (client: ClientBot, { msg, ctx }: IClsBot.ICTX, match: RegExpMatchArray): Promise<void> {
     const text = msg.text || ''
     const chatId = msg.chat.id
 
