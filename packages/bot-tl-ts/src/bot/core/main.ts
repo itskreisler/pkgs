@@ -192,7 +192,8 @@ export class ClientBot extends Bot {
     console.log('📗(%) Cargando comandos')
     const commands = [
       { path: '@/bot/commands/public/cmd.ping.js' },
-      { path: '@/bot/commands/public/expregYouTube.js' }
+      { path: '@/bot/commands/public/expregYouTube.js' },
+      { path: '@/bot/commands/public/expregCobalt.js' }
     ]
 
     for (const { path } of commands) {
