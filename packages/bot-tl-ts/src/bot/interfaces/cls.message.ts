@@ -9,12 +9,12 @@ import type {
   EditMessageTextParams,
   InputFile
 } from 'node-telegram-bot-api'
-import { type ClientBot } from '@/bot/core/main'
-import { EChatType } from './constants'
+import { type ClientBot } from '../core/main.js'
+import { EChatType } from './constants.js'
 import { Readable } from 'stream'
 import path from 'path'
 import fs from 'fs/promises'
-import { IClsBot } from './proto'
+import { type IClsBot } from './proto'
 
 type SendMessageOptions = Omit<SendMessageParams, 'chat_id' | 'text'>
 type SendDocumentOptions = Omit<SendDocumentParams, 'chat_id' | 'document'>
@@ -114,7 +114,7 @@ export class Message {
   }
 
   async reply(content: string, options?: SendMessageOptions) {
-    return await this.client.sendMessage(this.chatId, content, { ...options, reply_to_message_id: this._data.message_id })
+    return await this.client.sendMessage(this.chatId, content, { ...options, reply_parameters: { message_id: this._data.message_id } })
   }
 
   async delete() {

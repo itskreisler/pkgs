@@ -19,8 +19,8 @@ import {
 import { fromPath } from 'node-telegram-bot-api/node'
 import fs from 'fs'
 import { type Readable } from 'stream'
-import { TELEGRAM_TOKEN_DEV, TELEGRAM_TOKEN_PROD, NODE_ENV } from '@/bot/helpers/env'
-import { IClsBot } from '@/bot/interfaces/proto'
+import { TELEGRAM_TOKEN_DEV, TELEGRAM_TOKEN_PROD, NODE_ENV } from '../helpers/env.js'
+import { type IClsBot } from '../interfaces/proto'
 
 const TOKEN: string = NODE_ENV === 'production' ? TELEGRAM_TOKEN_PROD : TELEGRAM_TOKEN_DEV
 
@@ -174,7 +174,7 @@ export class ClientBot extends Bot {
   async loadEvents() {
     console.log('📗(%) Cargando eventos')
     const events = [{
-      event: 'message', path: '@/bot/events/client/message.js'
+      event: 'message', path: '../events/client/message.js'
     }]
 
     for (const { event, path } of events) {
@@ -191,8 +191,8 @@ export class ClientBot extends Bot {
   async loadCommands() {
     console.log('📗(%) Cargando comandos')
     const commands = [
-      { path: '@/bot/commands/public/cmd.ping.js' },
-      { path: '@/bot/commands/public/expregYouTube.js' }
+      { path: '../commands/public/cmd.ping.js' },
+      { path: '../commands/public/expregYouTube.js' }
     ]
 
     for (const { path } of commands) {
@@ -206,7 +206,7 @@ export class ClientBot extends Bot {
 
   async loadCommandsSlash() {
     console.log('📗(%) Cargando comandos slash')
-    const commands = await import('@/bot/commands/cmd/slash')
+    const commands = await import('../commands/cmd/slash.js')
     await this.setMyCommands(commands.default as BotCommand[])
     console.log('📚(%) Comandos slash cargados correctamente')
   }
@@ -216,7 +216,7 @@ export class ClientBot extends Bot {
 
     const handlers = [
       // {path: './devil.js'},
-      { path: '@/bot/handlers/antiCrash.js' }
+      { path: '../handlers/antiCrash.js' }
     ]
 
     for (const { path } of handlers) {

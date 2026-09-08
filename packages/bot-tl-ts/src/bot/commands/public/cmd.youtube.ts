@@ -1,8 +1,8 @@
 import fs from 'fs'
 import { glob } from 'glob'
 import { create } from 'youtube-dl-exec'
-import { type ClientBot } from '@/bot/core/main'
-import { type IClsBot } from '@/bot/interfaces/proto'
+import { type ClientBot } from '../../core/main'
+import { type IClsBot } from '../../interfaces/proto'
 
 const exec = create('yt-dlp')
 const VIDEO_TYPES = Object.freeze({ embed: 'embed', shorts: 'shorts' })
@@ -83,7 +83,7 @@ export default {
       noPlaylist: true,
       cookies: 'cookies.txt',
       update: true,
-      jsRuntimes: 'node',
+      jsRuntimes: 'node' as const,
       extractorArgs: 'youtube:player-client=default,-web_safari',
       remoteComponents: 'ejs:github'
     }

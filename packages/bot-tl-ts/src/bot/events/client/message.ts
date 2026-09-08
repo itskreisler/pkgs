@@ -1,8 +1,8 @@
-import { type ClientBot } from '@/bot/core/main'
+import { type ClientBot } from '../../core/main.js'
 import type { Message as TelegramMessage } from 'node-telegram-bot-api'
 import { debounce as _ } from '@kreisler/debounce'
-import { type IClsBot } from '@/bot/interfaces/proto'
-import { Message } from '@/bot/interfaces/cls.message'
+import { type IClsBot } from '../../interfaces/proto'
+import { Message } from '../../interfaces/cls.message.js'
 
 const messageDebounced = _(messageHandler, 2000, {
   immediate: true,
@@ -11,7 +11,7 @@ const messageDebounced = _(messageHandler, 2000, {
     ctx.client.sendMessage(
       ctx.msg.chat.id,
       '🚨 *Flood detectado*\n_Espera 5 segundos antes de volver a ejecutar un comando_',
-      { parse_mode: 'MarkdownV2', reply_to_message_id: ctx.msg.message_id }
+      { parse_mode: 'MarkdownV2', reply_parameters: { message_id: ctx.msg.message_id } }
     )
 })
 
