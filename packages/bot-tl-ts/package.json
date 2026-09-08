@@ -20,6 +20,7 @@
     "lint": "eslint .",
     "test": "rm -rf dist/* && tsup src/bot/client.ts --watch --onSuccess \"node dist/client.js\"",
     "test:ts": "npx tsx --test test/test.spec.ts",
+    "test:e2e": "tsx test/e2e.test.ts",
     "pp": "npm publish --access public",
     "w": "tsx --tsconfig ./tsconfig.json src/index.ts"
   },
