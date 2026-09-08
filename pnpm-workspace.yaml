@@ -7,4 +7,5 @@ allowBuilds:
   esbuild: true
   protobufjs: true
   sharp: true
+  ws: true
   youtube-dl-exec: true

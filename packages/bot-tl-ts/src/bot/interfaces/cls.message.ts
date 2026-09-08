@@ -1,4 +1,14 @@
-import type TelegramBot from 'node-telegram-bot-api'
+import type {
+  Message as TelegramMessage,
+  SendMessageParams,
+  SendDocumentParams,
+  SendPhotoParams,
+  SendVideoParams,
+  SendStickerParams,
+  SendAudioParams,
+  EditMessageTextParams,
+  InputFile
+} from 'node-telegram-bot-api'
 import { type ClientBot } from '@/bot/core/main'
 import { EChatType } from './constants'
 import { Readable } from 'stream'
@@ -6,23 +16,23 @@ import path from 'path'
 import fs from 'fs/promises'
 import { IClsBot } from './proto'
 
-type SendMessageOptions = Parameters<TelegramBot['sendMessage']>[2]
-type SendDocumentOptions = Parameters<TelegramBot['sendDocument']>[2]
-type SendPhotoOptions = Parameters<TelegramBot['sendPhoto']>[2]
-type SendVideoOptions = Parameters<TelegramBot['sendVideo']>[2]
-type SendStickerOptions = Parameters<TelegramBot['sendSticker']>[1]
-type SendAudioOptions = Parameters<TelegramBot['sendAudio']>[2]
-type FileOptions = Parameters<TelegramBot['sendDocument']>[3]
-type EditMessageTextForm = Parameters<TelegramBot['editMessageText']>[0]
-type EditMessageTextResult = Awaited<ReturnType<TelegramBot['editMessageText']>>
-type TelegramMessage = Awaited<ReturnType<TelegramBot['sendMessage']>>
+type SendMessageOptions = Omit<SendMessageParams, 'chat_id' | 'text'>
+type SendDocumentOptions = Omit<SendDocumentParams, 'chat_id' | 'document'>
+type SendPhotoOptions = Omit<SendPhotoParams, 'chat_id' | 'photo'>
+type SendVideoOptions = Omit<SendVideoParams, 'chat_id' | 'video'>
+type SendStickerOptions = Omit<SendStickerParams, 'chat_id' | 'sticker'>
+type SendAudioOptions = Omit<SendAudioParams, 'chat_id' | 'audio'>
+type FileOptions = any
+type EditMessageTextResult = TelegramMessage | boolean
 type DownloadMediaMode = 'path' | 'buffer' | 'stream' | 'all'
+
 interface DownloadedMedia {
   path: string
   buffer: Buffer
   stream: Readable
   fileLink: string
 }
+
 type MediaSource =
   | NonNullable<TelegramMessage['document']>
   | NonNullable<TelegramMessage['video']>
@@ -33,16 +43,14 @@ type MediaSource =
 export class Message {
   protected _data: TelegramMessage
   chatId: number
-  client: ClientBot | TelegramBot
+  client: ClientBot
   message_id: number
   text: string | undefined
   isReply: boolean
   isGroup: boolean
   isChannel: boolean
-  // fromMe: boolean
-  // hasMedia: boolean
 
-  constructor(client: ClientBot | TelegramBot, data: TelegramMessage) {
+  constructor(client: ClientBot, data: TelegramMessage) {
     this.client = client
     this._data = data
     this.text = data.text
@@ -54,7 +62,6 @@ export class Message {
   }
 
   getData() {
-    // this.send({text : 'hola', { parse_mode: 'Markdown' }})
     return this._data
   }
 
@@ -64,30 +71,29 @@ export class Message {
     options?: SendMessageOptions
   ): Promise<Message>
   async send(
-    content: { doc: string | Readable | Buffer },
+    content: { doc: string | Readable | Buffer | InputFile },
     options?: SendDocumentOptions,
     fileOptions?: FileOptions
   ): Promise<Message>
   async send(
-    content: { photo: string | Readable | Buffer },
+    content: { photo: string | Readable | Buffer | InputFile },
     options?: SendPhotoOptions,
     fileOptions?: FileOptions
   ): Promise<Message>
   async send(
-    content: { video: string | Readable | Buffer },
+    content: { video: string | Readable | Buffer | InputFile },
     options?: SendVideoOptions,
     fileOptions?: FileOptions
   ): Promise<Message>
   async send(
-    content: { sticker: string | Readable | Buffer },
+    content: { sticker: string | Readable | Buffer | InputFile },
     options?: SendStickerOptions
   ): Promise<Message>
   async send(
-    content: { audio: string | Readable | Buffer },
+    content: { audio: string | Readable | Buffer | InputFile },
     options?: SendAudioOptions,
     fileOptions?: FileOptions
   ): Promise<Message>
-  //
   async send(content: IClsBot.TSendContent,
     options?:
       | SendMessageOptions
@@ -99,34 +105,32 @@ export class Message {
     fileOptions?: FileOptions
   ) {
     const { text, doc, photo, audio, video } = content
-    if (typeof text !== 'undefined') return new Message(this.client, await Promise.resolve(this.client.sendMessage(this.chatId, text, options as SendMessageOptions)))
-    if (typeof doc !== 'undefined') return new Message(this.client, await Promise.resolve(this.client.sendDocument(this.chatId, doc, options as SendDocumentOptions, fileOptions)))
-    if (typeof photo !== 'undefined') return new Message(this.client, await Promise.resolve(this.client.sendPhoto(this.chatId, photo, options as SendPhotoOptions, fileOptions)))
-    if (typeof video !== 'undefined') return new Message(this.client, await Promise.resolve(this.client.sendVideo(this.chatId, video, options as SendVideoOptions, fileOptions)))
-    if (typeof audio !== 'undefined') return new Message(this.client, await Promise.resolve(this.client.sendAudio(this.chatId, audio, options as SendAudioOptions, fileOptions)))
+    if (typeof text !== 'undefined') return new Message(this.client, await this.client.sendMessage(this.chatId, text, options as SendMessageOptions))
+    if (typeof doc !== 'undefined') return new Message(this.client, await this.client.sendDocument(this.chatId, doc, options as SendDocumentOptions, fileOptions))
+    if (typeof photo !== 'undefined') return new Message(this.client, await this.client.sendPhoto(this.chatId, photo, options as SendPhotoOptions, fileOptions))
+    if (typeof video !== 'undefined') return new Message(this.client, await this.client.sendVideo(this.chatId, video, options as SendVideoOptions, fileOptions))
+    if (typeof audio !== 'undefined') return new Message(this.client, await this.client.sendAudio(this.chatId, audio, options as SendAudioOptions, fileOptions))
     throw new Error('Invalid content provided.')
   }
 
-  async reply(content: any, options?: any) {
-    return await Promise.resolve(this.client.sendMessage(this.chatId, content, { ...options, reply_to_message_id: this._data.message_id }))
+  async reply(content: string, options?: SendMessageOptions) {
+    return await this.client.sendMessage(this.chatId, content, { ...options, reply_to_message_id: this._data.message_id })
   }
 
   async delete() {
-    return await Promise.resolve(await this.client.deleteMessage(this.chatId, this._data.message_id))
+    return await this.client.deleteMessage(this.chatId, this._data.message_id)
   }
 
   async editText(
     text: string,
-    options?: Omit<EditMessageTextForm, 'text' | 'chat_id' | 'message_id'>
+    options?: Omit<EditMessageTextParams, 'text' | 'chat_id' | 'message_id'>
   ): Promise<EditMessageTextResult> {
-    return await Promise.resolve(
-      await this.client.editMessageText({
-        ...options,
-        text,
-        chat_id: this.chatId,
-        message_id: this.message_id
-      })
-    )
+    return await this.client.editMessageText({
+      ...options,
+      text,
+      chat_id: this.chatId,
+      message_id: this.message_id
+    })
   }
 
   private getSourceMessage() {

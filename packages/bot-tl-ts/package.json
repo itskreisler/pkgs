@@ -70,7 +70,7 @@
     "@kreisler/try-catch": "^2.2.2",
     "file-type": "^22.0.1",
     "glob": "^11.0.3",
-    "node-telegram-bot-api": "^1.1.2",
+    "node-telegram-bot-api": "^2.1.0",
     "youtube-dl-exec": "^3.0.24",
     "zod": "^4.4.3"
   }
